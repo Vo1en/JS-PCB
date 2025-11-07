@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PCB 下單小工具</title>
+ <style>
+  .logo-wrap {
+    text-align: center;
+    margin: 12px 0 4px;
+  }
+  .logo-wrap img {
+    max-width: 300px;
+    width: 60%;
+    height: auto;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 16px;
+    background: #f5f5f5;
+  }
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .field-group {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 8px 12px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  label {
+    font-size: 14px;
+    text-align: right;
+    color: #333;
+  }
+  select, input, textarea {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    background-color: #fff;
+  }
+  select:disabled {
+    background-color: #eee;
+    color: #888;
+  }
+  textarea {
+    min-height: 160px;
+    resize: vertical;
+    font-family: Menlo, Consolas, monospace;
+  }
+  .btn-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  button {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    background: #2563eb;
+    color: #fff;
+  }
+  button.secondary {
+    background: #6b7280;
+  }
+  textarea#output {
+    width: 100%;
+    margin-top: 0;
+    min-height: 120px;
+  }
+  .warning {
+    grid-column: 2 / span 1;
+    color: red;
+    font-size: 13px;
+    margin-top: -6px;
+  }
+
+  /* 🔻 手機版樣式（重點） */
+  @media (max-width: 600px) {
+    body {
+      margin: 8px auto;
+      padding: 0 10px;
+      max-width: 100%;
+      background: #f5f5f5;
+    }
+    h1 {
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .card {
+      padding: 12px 14px;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .field-group {
+      grid-template-columns: 1fr;  /* 標籤在上，欄位在下 */
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    label {
+      text-align: left;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+    select, input, textarea {
+      font-size: 14px;
+      padding: 7px 9px;
+    }
+    .btn-row {
+      flex-direction: column;
+      justify-content: stretch;
+    }
+    .btn-row button {
+      width: 100%;  /* 按鈕滿版 */
+    }
+    .warning {
+      grid-column: 1 / -1;
+      font-size: 12px;
+      margin-top: 0;
+    }
+    .logo-wrap img {
+      max-width: 180px;
+      width: 70%;
+    }
+    textarea#output {
+      min-height: 120px;
+      font-size: 13px;
+    }
+  }
+</style>
+</head>
+<body>
+  <h1>PCB 下單資訊填寫</h1>
+  <div class="card">
+    <div class="field-group">
+      <label for="partNo">料號</label>
+      <input type="text" id="partNo" placeholder="請輸入料號" />
+    </div>
+
+    <!-- 板材 -->
+    <div class="field-group">
+      <label for="material">板材</label>
+      <select id="material" onchange="updateStates()">
+        <option>-</option>
+        <option selected>FR-4</option>
+        <option>FR-1</option>
+      </select>
+      <div id="materialWarning" class="warning" style="display:none;">
+        FR-1 交期較長，建議以 FR-4 製作
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label for="layers">層別</label>
+      <select id="layers" onchange="updateStates()">
+        <option>-</option>
+        <option>單面板</option>
+        <option selected>雙面板</option>
+        <option>四層板</option>
+        <option>六層板</option>
+        <option>八層板</option>
+        <option>十層板</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label for="thickness">板厚</label>
+      <select id="thickness" onchange="updateStates()">
+        <option>-</option>
+        <option>0.4mm</option>
+        <option>0.6mm</option>
+        <option>0.8mm</option>
+        <option>1.0mm</option>
+        <option>1.2mm</option>
+        <option selected>1.6mm</option>
+        <option>2.0mm</option>
+        <option>2.4mm</option>
+        <option>3.0mm</option>
+        <option>3.2mm</option>
+      </select>
+      <!-- ✅ 板厚 0.4mm 提醒 -->
+      <div id="thicknessWarning" class="warning" style="display:none;">
+        板厚 0.4mm 太薄，無法進行 V-Cut。若需拼板，建議採用郵票孔設計。
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label for="innerCu">內層銅厚</label>
+      <select id="innerCu">
+        <option>-</option>
+        <option>0.5oz</option>
+        <option>1oz</option>
+        <option>2oz</option>
+      </select>
+      <div id="innerCuWarning" class="warning" style="display:none;">
+        單面板、雙面板不支援內層銅厚
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label for="outerCu">外層銅厚</label>
+      <select id="outerCu">
+        <option>-</option>
+        <option selected>1oz</option>
+        <option>2oz</option>
+        <option>3oz</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label for="solderMask">防焊顏色</label>
+      <select id="solderMask">
+        <option>-</option>
+        <option value="綠色" selected>🟢 綠色</option>
+        <option value="藍色">🔵 藍色</option>
+        <option value="黑色">⚫ 黑色</option>
+        <option value="白色">⚪ 白色</option>
+        <option value="紅色">🔴 紅色</option>
+        <option value="黃色">🟡 黃色</option>
+        <option value="無"> 無</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label for="legendColor">文字顏色</label>
+      <select id="legendColor">
+        <option>-</option>
+        <option value="白字" selected>⚪ 白字</option>
+        <option value="黑字">⚫ 黑字</option>
+        <option value="無文字">無文字</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label for="finish">表面處理</label>
+      <select id="finish">
+        <option value="-">-</option>
+        <option value="有鉛噴錫">有鉛噴錫</option>
+        <option value="無鉛噴錫" selected>無鉛噴錫</option>
+        <option value="化金 1u">化金 1u</option>
+        <option value="化金 2u">化金 2u</option>
+        <option value="化金 3u">化金 3u</option>
+        <option value="硬金 3u">硬金 3u</option>
+        <option value="硬金 5u">硬金 5u</option>
+        <option value="OSP">OSP</option>
+        <option value="裸銅">裸銅</option>
+      </select>
+      <div id="finishWarning" class="warning" style="display:none;">
+        六層板以上，統一製做化金 2u 表面處理
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label for="goldFinger">金(錫)手指</label>
+      <select id="goldFinger">
+        <option>-</option>
+        <option>斜邊30°</option>
+        <option>斜邊45°</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label for="qty">數量(出貨片)</label>
+      <select id="qty">
+        <option>-</option>
+        <option selected>5</option>
+        <option>10</option>
+        <option>15</option>
+        <option>20</option>
+        <option>25</option>
+        <option>30</option>
+        <option>50</option>
+        <option>75</option>
+        <option>100</option>
+        <option>125</option>
+        <option>150</option>
+        <option>200</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label for="special1">特殊製程#1</label>
+      <select id="special1">
+        <option>-</option>
+        <option>半孔</option>
+        <option>塞孔</option>
+        <option>樹脂塞孔</option>
+        <option>BGA</option>
+        <option>側邊鍍銅</option>
+      </select>
+      <div id="special1Warning" class="warning" style="display:none;">
+        六層板以上，統一製作樹脂塞孔製程
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label for="special2">特殊製程#2</label>
+      <select id="special2">
+        <option>-</option>
+        <option>半孔</option>
+        <option>塞孔</option>
+        <option>樹脂塞孔</option>
+        <option>BGA</option>
+        <option>側邊鍍銅</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label for="special3">特殊製程#3</label>
+      <select id="special3">
+        <option>-</option>
+        <option>半孔</option>
+        <option>塞孔</option>
+        <option>樹脂塞孔</option>
+        <option>BGA</option>
+        <option>側邊鍍銅</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label for="remark">備註</label>
+      <textarea id="remark" placeholder="如有其他需求或注意事項，請於此欄詳細說明"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" onclick="generateText()">產生訊息</button>
+      <button type="button" class="secondary" onclick="copyText()">複製訊息</button>
+    </div>
+
+    <!-- ✅ 將產生的內容也做成一個欄位，排版統一 -->
+    <div class="field-group">
+      <label for="output">產生訊息</label>
+      <textarea id="output" readonly></textarea>
+    </div>
+  </div>
+
+ <script>
+  function updateStates() {
+    var layer        = document.getElementById("layers").value;
+    var layersSel    = document.getElementById("layers");
+    var innerSelect  = document.getElementById("innerCu");
+    var innerWarn    = document.getElementById("innerCuWarning");
+    var thicknessSel = document.getElementById("thickness");
+    var thicknessWarn= document.getElementById("thicknessWarning");
+    var outerCuSel   = document.getElementById("outerCu");
+    var finishSelect = document.getElementById("finish");
+    var finishWarn   = document.getElementById("finishWarning");
+    var special1Sel  = document.getElementById("special1");
+    var special1Warn = document.getElementById("special1Warning");
+    var special2Sel  = document.getElementById("special2");
+    var special3Sel  = document.getElementById("special3");
+    var goldFingerSel= document.getElementById("goldFinger");
+    var materialSel  = document.getElementById("material");
+    var materialWarn = document.getElementById("materialWarning");
+
+    var i, opt;
+
+    // 先關掉板厚警示
+    if (thicknessWarn) {
+      thicknessWarn.style.display = "none";
+    }
+
+    // 板材 FR-1 警告
+    if (materialSel && materialWarn) {
+      if (materialSel.value === "FR-1") {
+        materialWarn.style.display = "block";
+      } else {
+        materialWarn.style.display = "none";
+      }
+    }
+
+    // 先重置所有選項為可選狀態
+    for (i = 0; i < thicknessSel.options.length; i++) {
+      thicknessSel.options[i].disabled = false;
+    }
+    for (i = 0; i < outerCuSel.options.length; i++) {
+      outerCuSel.options[i].disabled = false;
+    }
+    for (i = 0; i < layersSel.options.length; i++) {
+      layersSel.options[i].disabled = false;
+    }
+    goldFingerSel.disabled = false;
+    special1Sel.disabled = false;
+    special2Sel.disabled = false;
+    special3Sel.disabled = false;
+    special1Warn.style.display = "none";
+    finishSelect.disabled = false;
+    finishWarn.style.display = "none";
+
+    // ✅ FR-1 特殊規則
+    if (materialSel.value === "FR-1") {
+      // 層別只能單面板
+      for (i = 0; i < layersSel.options.length; i++) {
+        opt = layersSel.options[i];
+        if (opt.value !== "-" && opt.value !== "單面板") {
+          opt.disabled = true;
+        }
+      }
+      if (layersSel.value !== "單面板") {
+        layersSel.value = "單面板";
+        layer = "單面板";
+      }
+
+      // 板厚只能 1.6mm
+      for (i = 0; i < thicknessSel.options.length; i++) {
+        opt = thicknessSel.options[i];
+        opt.disabled = (opt.value !== "1.6mm");
+      }
+      thicknessSel.value = "1.6mm";
+
+      // 外層銅厚只能 1oz
+      for (i = 0; i < outerCuSel.options.length; i++) {
+        opt = outerCuSel.options[i];
+        opt.disabled = (opt.value !== "1oz");
+      }
+      outerCuSel.value = "1oz";
+
+      // 金手指不能選
+      goldFingerSel.value = "-";
+      goldFingerSel.disabled = true;
+
+      // 特殊製程不能選
+      special1Sel.value = "-";
+      special2Sel.value = "-";
+      special3Sel.value = "-";
+      special1Sel.disabled = true;
+      special2Sel.disabled = true;
+      special3Sel.disabled = true;
+
+      // 內層銅厚：同單面板一樣不支援
+      innerSelect.disabled = true;
+      innerSelect.value = "-";
+      innerWarn.style.display = "block";
+
+      // FR-1 狀態下不顯示 0.4mm 提示
+      if (thicknessWarn) thicknessWarn.style.display = "none";
+
+      // FR-1 規則處理完就結束，不再套用後面層別規則
+      return;
+    }
+
+    // 內層銅厚規則（非 FR-1）
+    if (layer === "單面板" || layer === "雙面板") {
+      innerSelect.disabled = true;
+      innerSelect.value = "-";
+      innerWarn.style.display = "block";
+    } else if (
+      layer === "四層板" ||
+      layer === "六層板" ||
+      layer === "八層板" ||
+      layer === "十層板"
+    ) {
+      innerSelect.disabled = false;
+      innerWarn.style.display = "none";
+      if (innerSelect.value === "-" || innerSelect.value === "") {
+        innerSelect.value = "0.5oz";
+      }
+    } else {
+      innerSelect.disabled = false;
+      innerWarn.style.display = "none";
+    }
+
+    // 板厚規則：四層板以上禁止 0.4mm
+    if (
+      layer === "四層板" ||
+      layer === "六層板" ||
+      layer === "八層板" ||
+      layer === "十層板"
+    ) {
+      for (i = 0; i < thicknessSel.options.length; i++) {
+        opt = thicknessSel.options[i];
+        if (opt.value === "0.4mm") opt.disabled = true;
+      }
+    }
+
+    // 八層板、十層板額外禁止 0.6mm
+    if (layer === "八層板" || layer === "十層板") {
+      for (i = 0; i < thicknessSel.options.length; i++) {
+        opt = thicknessSel.options[i];
+        if (opt.value === "0.6mm") opt.disabled = true;
+      }
+    }
+
+    // 若目前選到被禁用的厚度，自動跳回 1.6mm
+    var currentThicknessOpt = thicknessSel.options[thicknessSel.selectedIndex];
+    if (currentThicknessOpt && currentThicknessOpt.disabled) {
+      thicknessSel.value = "1.6mm";
+    }
+
+    // ✅ 板厚 0.4mm 顯示提示（只在可選狀態下）
+    currentThicknessOpt = thicknessSel.options[thicknessSel.selectedIndex];
+    if (
+      thicknessWarn &&
+      thicknessSel.value === "0.4mm" &&
+      currentThicknessOpt &&
+      !currentThicknessOpt.disabled
+    ) {
+      thicknessWarn.style.display = "block";
+    } else if (thicknessWarn) {
+      thicknessWarn.style.display = "none";
+    }
+
+    // 表面處理規則：六層板以上只做化金 2u
+    if (layer === "六層板" || layer === "八層板" || layer === "十層板") {
+      finishSelect.value = "化金 2u";
+      finishSelect.disabled = true;
+      finishWarn.style.display = "block";
+    }
+
+    // 特殊製程#1 規則：六層板以上統一樹脂塞孔
+    if (layer === "六層板" || layer === "八層板" || layer === "十層板") {
+      special1Sel.value = "樹脂塞孔";
+      special1Sel.disabled = true;
+      special1Warn.style.display = "block";
+    }
+  }
+
+  function trim(str) {
+    return str.replace(/^\s+|\s+$/g, "");
+  }
+
+  function getValue(id) {
+    var el = document.getElementById(id);
+    if (!el) return "-";
+    var v = trim(el.value);
+    return v || "-";
+  }
+
+  function generateText() {
+    // ✅ 先產生時間字串：2025/11/07 15:26
+    var now = new Date();
+    var timeStr =
+      now.getFullYear() + "/" +
+      String(now.getMonth() + 1).padStart(2, "0") + "/" +
+      String(now.getDate()).padStart(2, "0") + " " +
+      String(now.getHours()).padStart(2, "0") + ":" +
+      String(now.getMinutes()).padStart(2, "0");
+
+    var partNo      = getValue("partNo");
+    var material    = getValue("material");
+    var layers      = getValue("layers");
+    var thickness   = getValue("thickness");
+    var innerCu     = getValue("innerCu");
+    var outerCu     = getValue("outerCu");
+    var solderMask  = getValue("solderMask");
+    var legendColor = getValue("legendColor");
+    var finish      = getValue("finish");
+    var goldFinger  = getValue("goldFinger");
+    var qtyVal      = getValue("qty");
+    var remark      = trim(document.getElementById("remark").value || "");
+
+    var specialsIds = ["special1", "special2", "special3"];
+    var specials = [];
+    for (var i = 0; i < specialsIds.length; i++) {
+      var el = document.getElementById(specialsIds[i]);
+      if (!el) continue;
+      var v = trim(el.value || "");
+      if (v && v !== "-") specials.push(v);
+    }
+
+    var lines = [
+      "料號：" + partNo,
+      "板材：" + material,
+      "層別：" + layers,
+      "板厚：" + thickness
+    ];
+
+    // 單面板 / 雙面板：不顯示內層銅厚
+    if (layers !== "單面板" && layers !== "雙面板") {
+      lines.push("內層銅厚：" + innerCu);
+    }
+
+    lines.push(
+      "外層銅厚：" + outerCu,
+      "防焊顏色：" + solderMask,
+      "文字顏色：" + legendColor,
+      "表面處理：" + finish
+    );
+
+    if (goldFinger !== "-" && goldFinger !== "") {
+      lines.push("金(錫)手指：" + goldFinger);
+    }
+
+    lines.push("數量(出貨片)：" + qtyVal);
+
+    if (specials.length > 0) {
+      lines.push("特殊製程：" + specials.join("、"));
+    }
+
+    var msg = lines.join("\n");
+    if (remark) {
+      msg += "\n\n備註：" + remark;
+    }
+
+    // ✅ 最後把時間塞到第一行
+    msg = timeStr + "\n" + msg;
+
+    document.getElementById("output").value = msg;
+  }
+
+  function copyText() {
+    var out = document.getElementById("output");
+    if (!trim(out.value || "")) {
+      generateText();
+    }
+    out.focus();
+    out.select();
+    try {
+      var ok = document.execCommand("copy");
+      if (ok) {
+        alert("已複製訊息！");
+      } else {
+        alert("無法自動複製，請長按手動複製文字。");
+      }
+    } catch (e) {
+      alert("無法自動複製，請長按手動複製文字。");
+    }
+  }
+
+  // 初始化：依照預設層別/板材狀態處理所有規則
+  updateStates();
+</script>
+</body>
+</html>
