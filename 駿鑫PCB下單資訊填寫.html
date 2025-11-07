@@ -648,6 +648,24 @@ if (specialAmountEl) {
 
   document.getElementById("output").value = msg;
 }
+  function copyText() {
+    var out = document.getElementById("output");
+    if (!trim(out.value || "")) {
+      generateText();
+    }
+    out.focus();
+    out.select();
+    try {
+      var ok = document.execCommand("copy");
+      if (ok) {
+        alert("已複製訊息！");
+      } else {
+        alert("無法自動複製，請長按手動複製文字。");
+      }
+    } catch (e) {
+      alert("無法自動複製，請長按手動複製文字。");
+    }
+  }
   // 初始化：依照預設層別/板材狀態處理所有規則
   updateStates();
 </script>
