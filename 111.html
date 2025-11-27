@@ -294,14 +294,15 @@
         /* === 手機版響應式優化 (Mobile Optimization) === */
         /* ================================================= */
         @media screen and (max-width: 600px) {
+            /* 1. 增加底部留白，避免內容被固定在底部的按鈕擋住 */
             .page-container {
                 width: 100%;
                 padding: 12px;
+                padding-bottom: 80px; /* 重要：留空間給底部按鈕 */
                 box-shadow: none;
                 margin: 0;
             }
 
-            /* 藍色橫幅手機優化 */
             .no-print {
                 flex-direction: column;
                 align-items: flex-start !important;
@@ -323,7 +324,7 @@
             
             header {
                 flex-direction: column;
-                align-items: center; /* 置中對齊 */
+                align-items: center; 
                 text-align: center;
             }
             .company-info {
@@ -341,7 +342,6 @@
                 font-size: 24px;
             }
 
-            /* 卡片式表格設計 */
             table:not(#inspection-data-table) {
                 display: block;
                 width: 100%;
@@ -363,7 +363,6 @@
                 overflow: hidden;
             }
 
-            /* 隱藏空行或不需要的結構 */
             table:not(#inspection-data-table) tr[style*="display: none"] {
                 display: none !important;
             }
@@ -388,64 +387,64 @@
                 box-sizing: border-box;
             }
 
-            /* 強制手機版輸入框滿版 */
             .page-container select,
             .page-container input[type="text"],
             .page-container input[type="number"],
             .other-input-field {
                 width: 100% !important;
                 max-width: 100% !important;
-                height: 36px; /* 增加點擊高度 */
-                font-size: 16px; /* 避免 iOS 縮放 */
+                height: 40px; /* 加大高度，好點擊 */
+                font-size: 16px; 
                 margin-top: 5px;
                 box-sizing: border-box;
             }
             
-            /* 修正 contenteditable 的輸入框寬度 */
-            .page-container .editable {
+            /* 修正 contenteditable 的輸入框寬度與點擊範圍 */
+            .page-container .editable,
+            .page-container .editable-nominal {
                 width: 100% !important;
-                min-width: 0 !important;
-                min-height: 30px;
+                min-width: 60px !important;
+                min-height: 36px; /* 增加最小高度 */
+                line-height: 28px; /* 讓文字垂直居中 */
                 display: block;
                 margin-top: 5px;
+                padding: 4px; /* 增加內距 */
             }
 
-            /* 處理同一行有多個欄位的狀況 (如排版數量) */
             #pcb-spec-table tr:nth-child(3),
             #pcb-spec-table tr:nth-child(4) {
-                 display: flex; /* 恢復 Flex 讓它們堆疊 */
+                 display: flex; 
             }
             
             .pnl-input-span {
-                width: 60px !important; /* 排版數量不用太寬 */
+                width: 60px !important; 
                 display: inline-block !important;
-                height: 30px;
+                height: 36px; /* 增加高度 */
                 vertical-align: middle;
+                margin: 0 5px;
             }
 
-            /* 檢驗數據表格 (橫向捲動優化) */
             #inspection-data-table-wrapper {
                 overflow-x: auto;
                 width: 100%;
                 border: 1px solid #ddd;
                 border-radius: 6px;
-                -webkit-overflow-scrolling: touch; /* 平滑捲動 */
+                -webkit-overflow-scrolling: touch; 
                 margin-bottom: 20px;
             }
             #inspection-data-table {
-                min-width: 800px; /* 確保不被擠壓 */
+                min-width: 800px; 
                 margin-bottom: 0;
             }
             
-            /* 調整檢驗表格內的輸入框在手機上的大小 */
             #inspection-data-table .editable {
                 min-width: 40px !important;
                 width: 100% !important;
                 text-align: center;
-                padding: 8px 0; /* 增加手指點擊範圍 */
+                padding: 10px 0; /* 增加手指點擊範圍 */
+                min-height: 30px;
             }
 
-            /* Footer 簽名欄 */
             .footer-section {
                 flex-direction: column;
                 gap: 20px;
@@ -457,26 +456,34 @@
                 margin: 0 auto;
             }
             
-            /* 控制面板 (列印按鈕) */
+            /* 2. 修改：控制面板 (列印按鈕) 改到底部 */
             .controls {
-                position: static; /* 手機版不懸浮，直接放在最上面 */
+                position: fixed; /* 固定位置 */
+                bottom: 0;       /* 靠底 */
+                top: auto;       /* 取消靠頂 */
+                left: 0;
                 width: 100%;
-                box-shadow: none;
-                padding: 0 0 15px 0;
-                background: transparent;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1); /* 陰影往上 */
+                padding: 10px;
+                background: white;
                 text-align: center;
+                z-index: 9999;
+                border-top: 1px solid #ddd;
+                box-sizing: border-box; /* 確保 padding 不會撐爆寬度 */
             }
             .controls h3, .controls p {
-                display: none; /* 手機版精簡介面 */
+                display: none; 
             }
             .controls .btn {
                 width: 100%;
                 padding: 12px;
                 font-size: 16px;
+                margin-bottom: 0;
+                background-color: #2c3e50; /* 加深顏色更明顯 */
             }
         }
 
-        /* PRINT STYLES (保持原樣) */
+        /* PRINT STYLES */
         @media print {
             body {
                 background-color: white;
@@ -1225,6 +1232,19 @@
             document.getElementById('spec-hole2-nominal')?.addEventListener('input', populateAllInspectionData);
             document.getElementById('spec-hole3-nominal')?.addEventListener('input', populateAllInspectionData);
             document.getElementById('spec-hole4-nominal')?.addEventListener('input', populateAllInspectionData);
+
+            // 2. 修正點：手機版解決「點兩次才能輸入」的問題
+            // 為所有可編輯欄位加上 touchstart 事件，手指一碰到就強制 focus
+            const editables = document.querySelectorAll('[contenteditable="true"]');
+            editables.forEach(el => {
+                el.addEventListener('click', (e) => {
+                    el.focus();
+                });
+                el.addEventListener('touchstart', (e) => {
+                    // 手指觸摸時，強制取得焦點
+                    el.focus();
+                }, {passive: true});
+            });
         });
 
     </script>
