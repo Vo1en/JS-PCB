@@ -8,10 +8,10 @@
         /* --- 引入字型 --- */
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
 
-        /* --- 高級淺色金屬配色 (Light Grey & Gold) --- */
+        /* --- 高級淺色金屬配色 (Light Beige & Gold) --- */
         :root {
-            /* 背景：柔和淺灰漸層 (極光灰) */
-            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e0e6ed 100%);
+            /* === 修正點：背景改為淺香檳暖色調 (Warm Beige) === */
+            --bg-gradient: linear-gradient(135deg, #fcfaf5 0%, #f0ebde 100%);
             
             /* 容器：亮色玻璃毛玻璃 */
             --glass-bg: rgba(255, 255, 255, 0.9);
@@ -31,7 +31,6 @@
 
         body {
             font-family: 'Roboto', 'Noto Sans TC', "Microsoft JhengHei", Arial, sans-serif;
-            background: var(--bg-gradient); /* 淺色背景 */
             margin: 0;
             padding: 0;
             display: flex;
@@ -40,6 +39,38 @@
             min-height: 100vh;
             overflow-x: hidden;
             color: var(--text-main); /* 確保預設文字是深色的 */
+
+            /* === 修正點：疊加大理石紋理背景 (Subtle Marble Texture) - 增強可見度，匹配暖色底色 === */
+            background: 
+                /* Layer 1: Base soft grey gradient */
+                var(--bg-gradient),
+
+                /* Layer 2: Wide, soft, gold-tinted veins (Diagonal 1) */
+                repeating-linear-gradient(
+                    135deg,
+                    rgba(194, 168, 120, 0.3), /* Gold tint */
+                    rgba(194, 168, 120, 0.15) 4px,
+                    transparent 4px,
+                    transparent 500px
+                ), 
+                /* Layer 3: Wide, soft, grey vein lines (Diagonal 2) */
+                repeating-linear-gradient(
+                    -45deg,
+                    rgba(150, 150, 150, 0.25), 
+                    rgba(150, 150, 150, 0.12) 4px,
+                    transparent 4px,
+                    transparent 500px
+                ),
+                /* Layer 4 & 5: Soft, subtle radial gradients for cloud-like mottling - 改為暖灰調 */
+                radial-gradient(circle at 10% 80%, rgba(200, 190, 170, 0.3) 5%, transparent 60%), 
+                radial-gradient(circle at 70% 20%, rgba(200, 190, 170, 0.3) 5%, transparent 60%), 
+                
+                /* Fallback (The base gradient) */
+                var(--bg-gradient); 
+            
+            /* Define background size for the repeating linear gradients to create widely spaced veins */
+            background-size: 100% 100%, 1500px 1500px, 1500px 1500px, 100% 100%, 100% 100%, 100% 100%;
+            background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; 
         }
 
         /* 背景裝飾光暈 - 讓它更淡 */
@@ -139,7 +170,7 @@
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
             overflow: hidden;
-            /* === 修正點：讓邊框更明顯 (2px 淺藍灰) === */
+            /* === 邊框維持上次修正結果 (2px 淺藍灰) === */
             border: 2px solid #e2e8f0; 
         }
 
