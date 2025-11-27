@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PCB規格產生器</title>
-<link rel="stylesheet" href="style.css">
  <style>
   /* ================================================= */
   /* === START: 來自 navbar.html 的 CSS 樣式 === */
@@ -135,8 +134,6 @@
       /* 調整手機版 body padding-top 以適應展開的 navbar */
       body {
           padding-top: 170px !important; 
-          /* 🌟 調整: 確保 body 不會因為內容溢出而橫向捲動 */
-          overflow-x: hidden;
       }
   }
   /* ================================================= */
@@ -153,6 +150,11 @@
     height: auto;
   }
 
+  /* === 新增的 CSS：解決手機版左右橫移 === */
+  html, body {
+    overflow-x: hidden; 
+  }
+  
   body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     margin: 0;       
@@ -160,8 +162,6 @@
     padding: 80px 16px 20px 16px; 
     background: #f5f5f5; 
     width: 100%;
-    /* 🌟 新增：防止內容溢出導致的橫向捲動 (適用於所有尺寸) */
-    overflow-x: hidden;
   }
 
   /* 確保內容置中，並保留左右邊距以避免內容貼邊 */
@@ -170,8 +170,6 @@
     /* 移除頂部 margin，讓內容緊貼 body 的 padding-top */
     margin: 0 auto; 
     padding: 0; /* 左右邊距已移到 body 上 */
-    /* 🌟 調整：確保 main-container 在小螢幕上完全佔用空間，同時不溢出 */
-    width: calc(100% - 32px); /* 100% 減去左右 body padding 16px*2 */
   }
 
   h1 {
@@ -265,8 +263,7 @@
   textarea#output {
     width: 100%;
     margin-top: 0;
-    /* 🌟 調整：加長最小高度 (電腦版) */
-    min-height: 300px; 
+    min-height: 200px; 
     font-family: Menlo, Consolas, monospace; 
   }
   
@@ -283,15 +280,11 @@
       margin: 8px auto;
       padding: 0; 
       max-width: 100%;
-      /* 🌟 調整：在手機版確保 main-container 佔滿 body 寬度 */
-      width: 100%; 
     }
     
     body {
         /* 手機版 body 左右 padding 改為 10px */
         padding: 170px 10px 20px 10px; 
-        /* 🌟 調整：確保 body 不會因為內容溢出而橫向捲動 */
-        overflow-x: hidden;
     }
 
     h1 {
@@ -335,8 +328,7 @@
       width: 70%;
     }
     textarea#output {
-      /* 🌟 調整：加長最小高度 (手機版) */
-      min-height: 200px;
+      min-height: 120px;
       font-size: 13px;
     }
   }
@@ -554,10 +546,8 @@
   <div class="field-group">
     <label for="specialAmount">訂單金額</label>
     <input
-      type="text"
+      type="number"
       id="specialAmount"
-      /* 🌟 調整: 綁定 oninput 事件進行即時格式化 */
-      oninput="formatCurrency(this)"
     />
   </div>
     <div class="field-group">
@@ -578,30 +568,6 @@
 </div>
 
  <script>
-  /* 🌟 新增函式: 處理金額輸入時的千分位格式化 (含小數點) */
-  function formatCurrency(input) {
-    // 1. 移除所有非數字和小數點的字元
-    let value = input.value.replace(/[^\d.]/g, ''); 
-
-    // 2. 處理多個小數點 (只保留第一個)
-    let parts = value.split('.');
-    if (parts.length > 2) {
-        // 如果有多個小數點，將第一個之後的視為整數部分
-        value = parts[0] + '.' + parts.slice(1).join('');
-        parts = value.split('.'); // 重新分割
-    }
-
-    // 3. 格式化為千分位
-    let integerPart = parts[0];
-    let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
-
-    // 處理整數部分的千分位
-    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ','); 
-
-    // 4. 更新輸入框的值
-    input.value = integerPart + decimalPart;
-  }
-  
   function updateStates() {
     var layer        = document.getElementById("layers").value;
     var layersSel    = document.getElementById("layers");
@@ -799,14 +765,9 @@
   var specialAmountEl = document.getElementById("specialAmount");
   var specialAmount = "";
   if (specialAmountEl) {
-    /* 🌟 調整: 取值時先移除千分位符號 (,)，以確保數字轉換正確 */
-    var rawAmount = trim(specialAmountEl.value || "").replace(/,/g, ''); 
-    if (rawAmount) {
-      // 🌟 調整: 使用 toLocaleString 格式化為千分位，並允許小數
-      specialAmount = Number(rawAmount).toLocaleString("en-US", { 
-        minimumFractionDigits: 0, 
-        maximumFractionDigits: 2 // 最多保留兩位小數
-      });
+    specialAmount = trim(specialAmountEl.value || "");
+    if (specialAmount) {
+      specialAmount = Number(specialAmount).toLocaleString("en-US");
     }
   }
   
@@ -843,14 +804,14 @@
 
   lines.push("數量(出貨片)：" + qtyVal);
 
-  // 🔹 特殊製程 和 金額 分開顯示
+  // 🔹 修正後的邏輯：特殊製程 和 金額 分開顯示
   
   // 1. 如果有選特殊製程，印出特殊製程那一行
   if (specials.length > 0) {
     lines.push("特殊製程：" + specials.join("、"));
   }
 
-  // 2. 如果有填金額，獨立印出金額那一行 
+  // 2. 如果有填金額，獨立印出金額那一行 (不再跟特殊製程合併)
   if (specialAmount) {
     lines.push("訂單金額：" + specialAmount + "元");
   }
@@ -889,3 +850,4 @@
 </body>
 
 </html>
+
