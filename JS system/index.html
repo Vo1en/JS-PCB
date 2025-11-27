@@ -145,24 +145,11 @@
         }
 
         .options-grid {
-            /* 設置為相對定位，以供子選單絕對定位 */
-            position: relative; 
             display: flex;
             gap: 30px;
             justify-content: center;
             flex-wrap: wrap;
             margin-top: 50px;
-            /* 確保網格有足夠空間 */
-            min-height: 250px; 
-        }
-        
-        /* 報告區主卡片的樣式 */
-        .option-card-reports {
-            /* 調整寬度以匹配其他卡片，讓它看起來是個選項 */
-            width: 260px;
-            height: 200px;
-            box-sizing: border-box;
-            position: relative;
         }
 
         /* 卡片按鈕樣式 - 淺色金屬面板 (Light Neumorphism) */
@@ -185,7 +172,7 @@
             overflow: hidden;
             /* === 邊框維持上次修正結果 (2px 淺藍灰) === */
             border: 2px solid #e2e8f0; 
-            cursor: pointer; /* 讓點擊更有感覺 */
+            cursor: pointer;
         }
 
         .option-icon { 
@@ -219,52 +206,9 @@
             text-transform: uppercase;
         }
 
-        /* --- 報告子選單樣式 --- */
-        .report-submenu {
-            position: absolute;
-            /* 讓子選單覆蓋報告區卡片的位置 */
-            top: 0;
-            /* 這裡需要根據 Reports Area 卡片在網格中的實際位置來調整 left，
-               假設 Reports Area 是第二個卡片，網格置中，我們讓子選單佔滿整個網格寬度 */
-            left: 0; 
-            width: 100%;
-            display: none; /* 預設隱藏，等待 JS 改變為 flex */
-            flex-direction: row;
-            gap: 30px;
-            justify-content: center;
-            padding: 0;
-            /* 設定 Z-index 確保在主要卡片上層 */
-            z-index: 10;
-        }
-        
-        /* 報告子選項的卡片樣式 - 沿用 option-card 基礎樣式 */
-        .report-submenu a.option-card {
-            /* 讓子選單的卡片略小或不同，以區分主選項 */
-            width: 200px; 
-            height: 180px;
-            padding: 30px 10px;
-            /* 科技感的深藍漸層用於子選項 */
-            background: linear-gradient(145deg, #e0e9f4, #f8fcfd);
-            border: 2px solid #4a90e2; 
-        }
+        /* --- 互動特效 (Hover Effects) --- */
 
-        /* 報告子選項 Hover 樣式 */
-        .report-submenu a.option-card:hover {
-            transform: scale(1.05); /* 稍微放大 */
-            box-shadow: 0 10px 25px rgba(74, 144, 226, 0.3);
-        }
-        .report-submenu a.option-card:hover .option-title,
-        .report-submenu a.option-card:hover .option-desc {
-            color: #4a90e2; /* Hover 時文字變藍 */
-        }
-
-        /* Report Area 點擊時的樣式 (讓它變透明/消失，露出子選單) */
-        .report-submenu.active + .option-card-reports .option-card {
-            opacity: 0;
-            pointer-events: none;
-            position: absolute; /* 移除它在 Flex 佈局中的空間 */
-        }
-        /* 報告區 Hover 樣式 */
+        /* 通用 Hover 狀態 */
         .option-card:hover {
             transform: translateY(-8px);
             /* Hover 時邊框變金，這個顏色與 2px 邊框搭配會非常醒目 */
@@ -296,8 +240,8 @@
             transition: opacity 0.4s ease;
             z-index: 1;
         }
-        
-        /* Reports Area (鈦金銀漸層) */
+
+        /* NEW: Reports Area (鈦金銀漸層) */
         .card-reports::before {
             content: '';
             position: absolute;
@@ -352,7 +296,7 @@
             h1 span.brand { font-size: 2.2rem; }
             h1 span.system { font-size: 0.9rem; letter-spacing: 3px; }
             
-            .option-card, .report-submenu a.option-card {
+            .option-card {
                 width: 100%;
                 height: 140px;
                 flex-direction: row;
@@ -367,14 +311,6 @@
             .option-info { text-align: left; }
             .option-title { font-size: 1.1rem; }
             .option-desc { font-size: 0.75rem; }
-            
-            /* 手機版：子選單直接垂直顯示 */
-            .report-submenu {
-                flex-direction: column;
-                position: static;
-                width: auto;
-                margin-top: 20px;
-            }
         }
     </style>
 </head>
@@ -395,36 +331,16 @@
                     <div class="option-desc">PCB Order Info Generator</div>
                 </div>
             </a>
-            
-            <div id="reports-container" class="option-card-reports">
-                
-                <div class="option-card card-reports" onclick="toggleReportMenu()">
-                    <div class="option-icon">📂</div>
-                    <div class="option-info">
-                        <div class="option-title">報告區</div>
-                        <div class="option-desc">Reports Area</div>
-                    </div>
+
+            <a href="Reports.html" class="option-card card-reports">
+                <div class="option-icon">📂</div>
+                <div class="option-info">
+                    <div class="option-title">報告區</div>
+                    <div class="option-desc">Reports Area</div>
                 </div>
-                
-                <div id="report-submenu" class="report-submenu">
-                    <a href="Inspection Report.html" class="option-card">
-                        <div class="option-icon">🔍</div>
-                        <div class="option-info">
-                            <div class="option-title">出貨檢驗報告</div>
-                            <div class="option-desc">Inspection Report</div>
-                        </div>
-                    </a>
-                    <a href="TestReport.html" class="option-card">
-                        <div class="option-icon">📋</div>
-                        <div class="option-info">
-                            <div class="option-title">測試報告</div>
-                            <div class="option-desc">Test Report</div>
-                        </div>
-                    </a>
-                </div>
-            </div>
+            </a>
             
-            </div>
+        </div>
     </div>
 
 </body>
