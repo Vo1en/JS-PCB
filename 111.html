@@ -362,15 +362,22 @@
             }
             .test-result-group span {
                 display: flex; /* 改為 flex 讓內容和輸入框並排 */
-                align-items: center;
+                align-items: center; /* 讓文字和輸入框在行內垂直置中 */
                 margin-bottom: 10px; /* 每個結果佔滿一行並增加間距 */
             }
-            .test-result-input {
+            /* 調整文字 PASS/OPEN/SHORT 的對齊，確保文字靠左，輸入框拉伸 */
+            .test-result-group span input {
                 flex-grow: 1; /* 讓輸入框填滿剩餘空間 */
-                width: auto; /* 移除固定寬度 */
+                width: auto; 
                 margin-left: 10px;
                 margin-right: 0;
                 text-align: center!important; /* 確保內容依然置中 */
+            }
+            /* 調整 .test-result-input 避免與上面的規則衝突導致對齊異常 */
+            .test-result-input {
+                width: auto; /* 重置為 auto */
+                margin: 0; /* 重置 margin */
+                text-align: center!important; 
             }
 
             /* 4. 簽名區塊垂直堆疊 */
@@ -613,7 +620,7 @@
 
         <section class="test-parameters">
             <div class="section-title-wrapper">
-                <h2 class="section-title">測試參數及條件</h2>
+                <h2 class="section-title">·測試參數及條件</h2>
             </div>
             <table class="param-table">
                 <tbody>
@@ -647,7 +654,7 @@
 
         <section class="remarks">
             <div class="section-title-wrapper">
-                <h2 class="section-title">備註</h2>
+                <h2 class="section-title">·備註</h2>
             </div>
             <textarea placeholder="請在此處填寫任何額外的測試說明、環境條件或異常情況記錄。"></textarea>
         </section>
