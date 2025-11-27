@@ -5,14 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PCB規格產生器</title>
   <link rel="stylesheet" href="style.css">
+
   <style>
-  /* 全域 box-sizing，避免 padding 把寬度撐超過螢幕造成橫向捲動 */
-  *, *::before, *::after {
+  /* 全局設定，避免 padding 撐出畫面寬度造成左右滑動 */
+  *,
+  *::before,
+  *::after {
       box-sizing: border-box;
   }
 
+  /* 為了防止整頁橫移 */
+  html, body {
+    overflow-x: hidden;
+  }
+
   /* ================================================= */
-  /* === START: 來自 navbar.html 的 CSS 樣式 === */
+  /* === START: 來自 navbar.html 的 CSS 樣式（調整版） === */
   /* ================================================= */
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
 
@@ -31,11 +39,10 @@
       position: fixed;
       top: 0;
       left: 0;
-      right: 0;              /* 避免固定寬度＋padding 撐出畫面 */
       width: 100%;
       display: flex;
       align-items: center;
-      padding: 10px 24px;    /* 稍微縮小一點，手機比較不會擠 */
+      padding: 10px 40px;
       justify-content: flex-start;
       gap: 50px;
       background-color: var(--glass-bg);
@@ -55,7 +62,7 @@
 
   .text-logo {
       font-family: 'Roboto', sans-serif;
-      font-size: 2.0rem;
+      font-size: 2.2rem;
       font-weight: 900;
       letter-spacing: -1px;
       background: var(--gold-text-gradient);
@@ -76,7 +83,6 @@
   .nav-links {
       display: flex;
       gap: 25px;
-      flex-wrap: wrap;        /* 避免在窄螢幕橫向撐太寬 */
   }
 
   .nav-item {
@@ -87,7 +93,7 @@
       padding: 5px 0;
       position: relative;
       transition: color 0.3s;
-      white-space: nowrap;    /* 文字保持在一行，視覺較穩定 */
+      white-space: nowrap; /* 避免單一連結自己換行 */
   }
 
   .nav-item::after {
@@ -105,7 +111,7 @@
   .nav-item:hover {
       color: var(--active-color);
   }
-  
+
   .nav-item.current {
       color: var(--active-color);
   }
@@ -121,99 +127,103 @@
       100% { background-position: 100% 50%; }
   }
 
+  /* 🔻 手機 / 平板寬度調整：保持橫向一行，不再變成兩行排版 */
   @media (max-width: 768px) {
       .navbar {
-          flex-direction: column;
-          align-items: flex-start;
-          padding: 12px 16px;
-          gap: 10px;
+          /* 保持一行橫向排列 */
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 16px;
+          gap: 16px;
       }
+
       .text-logo {
           font-size: 1.8rem;
           letter-spacing: -0.5px;
       }
+
       .nav-links {
-          width: 100%;
-          gap: 8px 16px;
+          display: flex;
+          gap: 12px;
+          flex-wrap: nowrap;      /* 不讓連結自動掉到下一行 */
       }
+
       .nav-item {
           font-size: 0.9rem;
       }
-      /* 調整手機版 body padding-top 以適應展開的 navbar */
+
+      /* 調整手機版 body padding-top 以適應固定 navbar 高度 */
       body {
-          padding-top: 170px !important; 
+          padding-top: 120px !important;
       }
   }
   /* ================================================= */
-  /* === END: 來自 navbar.html 的 CSS 樣式 === */
+  /* === END: navbar CSS === */
   /* ================================================= */
 
   .logo-wrap {
     text-align: center;
-    margin: 12px 0 4px; 
+    margin: 12px 0 4px;
   }
   .logo-wrap img {
     max-width: 300px;
     width: 60%;
     height: auto;
-  }
-  
-  /* 為了防止橫移，新增這段 */
-  html, body {
-    overflow-x: hidden;
-    max-width: 100%;
+    display: inline-block;
   }
 
   body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    margin: 0;       
-    padding: 80px 16px 20px 16px;  /* 上方留空給 navbar */
-    background: #f5f5f5; 
+    margin: 0;
+    padding: 80px 16px 20px 16px;  /* 預留 navbar 空間 */
+    background: #f5f5f5;
+    width: 100%;
   }
 
   /* 確保內容置中，並保留左右邊距以避免內容貼邊 */
   .main-container {
     max-width: 800px;
-    margin: 0 auto; 
+    margin: 0 auto;
     padding: 0;
   }
 
   h1 {
     text-align: center;
     font-size: 22px;
-    margin-top: 0; 
-    margin-bottom: 20px; 
+    margin-top: 0;
+    margin-bottom: 20px;
   }
-  
+
   /* 強化卡片視覺效果 */
   .card {
     background: #fff;
-    border-radius: 12px; 
-    padding: 24px; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
-  
+
   /* 欄位組件間距更清晰 */
   .field-group {
     display: grid;
-    grid-template-columns: 100px 1fr; 
-    gap: 12px; 
-    margin-bottom: 15px; 
+    grid-template-columns: 100px 1fr;
+    gap: 12px;
+    margin-bottom: 15px;
     align-items: center;
   }
-  
+
   label {
     font-size: 14px;
     text-align: left;
     color: #333;
     padding-left: 0;
   }
-  
+
   select, input, textarea {
     width: 100%;
-    padding: 8px 10px; 
+    padding: 8px 10px;
     font-size: 14px;
-    border-radius: 8px; 
+    border-radius: 8px;
     border: 1px solid #ccc;
     box-sizing: border-box;
     background-color: #fff;
@@ -222,28 +232,30 @@
     background-color: #eee;
     color: #888;
   }
-  
+
+  /* 備註欄位: 保持縮小高度 */
   textarea#remark {
-    min-height: 80px; 
+    min-height: 80px;
     resize: vertical;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
+  /* 按鈕區塊間距與置中 */
   .btn-row {
     display: flex;
-    justify-content: center; 
-    gap: 15px; 
-    margin: 30px 0; 
+    justify-content: center;
+    gap: 15px;
+    margin: 30px 0;
   }
   button {
     border: none;
     border-radius: 999px;
-    padding: 10px 20px; 
+    padding: 10px 20px;
     font-size: 15px;
     cursor: pointer;
     background: #2563eb;
     color: #fff;
-    transition: background 0.2s; 
+    transition: background 0.2s;
   }
   button:hover {
     background: #1d4ed8;
@@ -251,13 +263,14 @@
   button.secondary {
     background: #6b7280;
   }
-  
+
+  /* 輸出訊息區塊: 獨立排版，使其佔滿橫幅 */
   .output-area {
     margin-top: 15px;
   }
 
   .output-area label {
-    text-align: left; 
+    text-align: left;
     display: block;
     margin-bottom: 4px;
   }
@@ -265,10 +278,10 @@
   textarea#output {
     width: 100%;
     margin-top: 0;
-    min-height: 300px; 
-    font-family: Menlo, Consolas, monospace; 
+    min-height: 300px;       /* 桌面高度 */
+    font-family: Menlo, Consolas, monospace;
   }
-  
+
   .warning {
     grid-column: 2 / span 1;
     color: red;
@@ -280,12 +293,12 @@
   @media (max-width: 600px) {
     .main-container {
       margin: 8px auto;
-      padding: 0; 
+      padding: 0;
       max-width: 100%;
     }
-    
+
     body {
-        padding: 170px 10px 20px 10px; 
+        padding: 120px 10px 20px 10px;  /* 與上面 navbar 設定一致 */
     }
 
     h1 {
@@ -293,7 +306,7 @@
       margin-bottom: 12px;
     }
     .card {
-      padding: 18px 14px; 
+      padding: 18px 14px;
       border-radius: 8px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
@@ -329,7 +342,7 @@
       width: 70%;
     }
     textarea#output {
-      min-height: 300px;
+      min-height: 200px;     /* 手機高度 */
       font-size: 13px;
     }
   }
@@ -353,13 +366,10 @@
 <div class="main-container">
   <div class="card">
     <div class="logo-wrap">
-      <img
-        src="pic/JS_LOGO.png"
-        alt="JS PCB Logo"
-      >
+      <img src="pic/JS_LOGO.png" alt="JS PCB Logo">
     </div>
     <h1>PCB 規格產生器</h1>
-    
+
     <div class="field-group">
       <label for="partNo">料號</label>
       <input type="text" id="partNo" placeholder="請輸入料號" />
@@ -543,16 +553,17 @@
         <option>側邊鍍銅</option>
       </select>
     </div>
-    
+
     <div class="field-group">
       <label for="specialAmount">訂單金額</label>
       <input
         type="text"
         id="specialAmount"
+        placeholder="例如: 10,000"
         oninput="formatAmount(this)"
       />
     </div>
-    
+
     <div class="field-group">
       <label for="remark">備註</label>
       <textarea id="remark" placeholder="如有其他需求或注意事項，請於此欄詳細說明"></textarea>
@@ -571,8 +582,9 @@
 </div>
 
 <script>
+  // 即時格式化訂單金額，加上千分位逗號
   function formatAmount(input) {
-    var value = input.value.replace(/[^\d]/g, ''); 
+    var value = input.value.replace(/[^\d]/g, '');
     if (value === "") {
         input.value = "";
         return;
@@ -584,7 +596,7 @@
         input.value = "";
     }
   }
-  
+
   function updateStates() {
     var layer        = document.getElementById("layers").value;
     var layersSel    = document.getElementById("layers");
@@ -788,7 +800,7 @@
         specialAmount = Number(specialAmount).toLocaleString("en-US");
       }
     }
-    
+
     var specialsIds = ["special1", "special2", "special3"];
     var specials = [];
     for (var i = 0; i < specialsIds.length; i++) {
