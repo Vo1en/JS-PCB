@@ -4,24 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PCB規格產生器</title>
-  <link rel="stylesheet" href="style.css">
-
-  <style>
-  /* ================================================= */
-  /* === 全局 Reset，避免手機左右滑動 === */
-  /* ================================================= */
-  *, *::before, *::after {
-      box-sizing: border-box;
-  }
-
-  html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;  /* 關鍵：禁止水平卷動 */
-  }
-
+<link rel="stylesheet" href="style.css">
+ <style>
   /* ================================================= */
   /* === START: 來自 navbar.html 的 CSS 樣式 === */
   /* ================================================= */
@@ -54,7 +38,6 @@
       border-bottom: 2px solid var(--glass-border);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
       z-index: 1000;
-      box-sizing: border-box; /* 確保 padding 不撐出畫面寬度 */
   }
 
   .brand-logo {
@@ -87,7 +70,6 @@
   .nav-links {
       display: flex;
       gap: 25px;
-      flex-wrap: wrap;            /* 讓小螢幕自動換行，避免撐爆寬度 */
   }
 
   .nav-item {
@@ -98,7 +80,6 @@
       padding: 5px 0;
       position: relative;
       transition: color 0.3s;
-      white-space: nowrap;        /* 文字一個按鈕內不換行 */
   }
 
   .nav-item::after {
@@ -116,7 +97,7 @@
   .nav-item:hover {
       color: var(--active-color);
   }
-
+  
   .nav-item.current {
       color: var(--active-color);
   }
@@ -154,6 +135,8 @@
       /* 調整手機版 body padding-top 以適應展開的 navbar */
       body {
           padding-top: 170px !important; 
+          /* 🌟 調整: 確保 body 不會因為內容溢出而橫向捲動 */
+          overflow-x: hidden;
       }
   }
   /* ================================================= */
@@ -172,16 +155,23 @@
 
   body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    margin: 0;
-    padding: 80px 16px 20px 16px;  /* 頂部為 Navbar 騰空 */
+    margin: 0;       
+    /* 調整 padding-top 以騰出 Navbar 空間，約 60px */
+    padding: 80px 16px 20px 16px; 
     background: #f5f5f5; 
+    width: 100%;
+    /* 🌟 新增：防止內容溢出導致的橫向捲動 (適用於所有尺寸) */
+    overflow-x: hidden;
   }
 
   /* 確保內容置中，並保留左右邊距以避免內容貼邊 */
   .main-container {
     max-width: 800px;
+    /* 移除頂部 margin，讓內容緊貼 body 的 padding-top */
     margin: 0 auto; 
-    padding: 0;
+    padding: 0; /* 左右邊距已移到 body 上 */
+    /* 🌟 調整：確保 main-container 在小螢幕上完全佔用空間，同時不溢出 */
+    width: calc(100% - 32px); /* 100% 減去左右 body padding 16px*2 */
   }
 
   h1 {
@@ -210,9 +200,9 @@
   
   label {
     font-size: 14px;
-    text-align: left;
+    text-align: left; /* 🌟 修正: 項目名稱文字靠左對齊，形成垂直線 */
     color: #333;
-    padding-left: 0;
+    padding-left: 0; /* 確保沒有額外的左邊距影響對齊 */
   }
   
   select, input, textarea {
@@ -275,10 +265,9 @@
   textarea#output {
     width: 100%;
     margin-top: 0;
-    min-height: 380px;           /* 電腦版預設就拉長 */
+    /* 🌟 調整：加長最小高度 (電腦版) */
+    min-height: 300px; 
     font-family: Menlo, Consolas, monospace; 
-    resize: none;                /* 高度由 JS 自動調整 */
-    overflow-y: hidden;          /* 由 JS 控制高度顯示全部 */
   }
   
   .warning {
@@ -294,10 +283,15 @@
       margin: 8px auto;
       padding: 0; 
       max-width: 100%;
+      /* 🌟 調整：在手機版確保 main-container 佔滿 body 寬度 */
+      width: 100%; 
     }
     
     body {
+        /* 手機版 body 左右 padding 改為 10px */
         padding: 170px 10px 20px 10px; 
+        /* 🌟 調整：確保 body 不會因為內容溢出而橫向捲動 */
+        overflow-x: hidden;
     }
 
     h1 {
@@ -315,7 +309,7 @@
       margin-bottom: 12px;
     }
     label {
-      text-align: left;
+      text-align: left; /* 手機版維持靠左對齊 */
       font-size: 13px;
       margin-bottom: 2px;
     }
@@ -341,7 +335,9 @@
       width: 70%;
     }
     textarea#output {
-      min-height: 320px;         /* 手機版也拉長一點 */
+      /* 🌟 調整：加長最小高度 (手機版) */
+      min-height: 200px;
+      font-size: 13px;
     }
   }
 </style>
@@ -360,9 +356,10 @@
             <a href="PCB Test Report.html" class="nav-item">電性測試報告</a>
         </div>
     </nav>
-
 <div class="main-container">
+  
   <div class="card">
+    
     <div class="logo-wrap">
       <img
         src="pic/JS_LOGO.png"
@@ -554,12 +551,15 @@
         <option>側邊鍍銅</option>
       </select>
     </div>
-
-    <div class="field-group">
-      <label for="specialAmount">訂單金額</label>
-      <input type="number" id="specialAmount" />
-    </div>
-
+  <div class="field-group">
+    <label for="specialAmount">訂單金額</label>
+    <input
+      type="text"
+      id="specialAmount"
+      /* 🌟 調整: 綁定 oninput 事件進行即時格式化 */
+      oninput="formatCurrency(this)"
+    />
+  </div>
     <div class="field-group">
       <label for="remark">備註</label>
       <textarea id="remark" placeholder="如有其他需求或注意事項，請於此欄詳細說明"></textarea>
@@ -577,7 +577,31 @@
   </div>
 </div>
 
-<script>
+ <script>
+  /* 🌟 新增函式: 處理金額輸入時的千分位格式化 (含小數點) */
+  function formatCurrency(input) {
+    // 1. 移除所有非數字和小數點的字元
+    let value = input.value.replace(/[^\d.]/g, ''); 
+
+    // 2. 處理多個小數點 (只保留第一個)
+    let parts = value.split('.');
+    if (parts.length > 2) {
+        // 如果有多個小數點，將第一個之後的視為整數部分
+        value = parts[0] + '.' + parts.slice(1).join('');
+        parts = value.split('.'); // 重新分割
+    }
+
+    // 3. 格式化為千分位
+    let integerPart = parts[0];
+    let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+
+    // 處理整數部分的千分位
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ','); 
+
+    // 4. 更新輸入框的值
+    input.value = integerPart + decimalPart;
+  }
+  
   function updateStates() {
     var layer        = document.getElementById("layers").value;
     var layersSel    = document.getElementById("layers");
@@ -750,97 +774,96 @@
     return v || "-";
   }
 
-  function adjustOutputHeight() {
-    var out = document.getElementById("output");
-    if (!out) return;
-    out.style.height = "auto";
-    out.style.height = out.scrollHeight + "px";
-  }
-
   function generateText() {
-    var now = new Date();
-    var timeStr =
-      now.getFullYear() + "/" +
-      String(now.getMonth() + 1).padStart(2, "0") + "/" +
-      String(now.getDate()).padStart(2, "0") + " " +
-      String(now.getHours()).padStart(2, "0") + ":" +
-      String(now.getMinutes()).padStart(2, "0");
+  var now = new Date();
+  var timeStr =
+    now.getFullYear() + "/" +
+    String(now.getMonth() + 1).padStart(2, "0") + "/" +
+    String(now.getDate()).padStart(2, "0") + " " +
+    String(now.getHours()).padStart(2, "0") + ":" +
+    String(now.getMinutes()).padStart(2, "0");
 
-    var partNo      = getValue("partNo");
-    var material    = getValue("material");
-    var layers      = getValue("layers");
-    var thickness   = getValue("thickness");
-    var innerCu     = getValue("innerCu");
-    var outerCu     = getValue("outerCu");
-    var solderMask  = getValue("solderMask");
-    var legendColor = getValue("legendColor");
-    var finish      = getValue("finish");
-    var goldFinger  = getValue("goldFinger");
-    var qtyVal      = getValue("qty");
-    var remark      = trim(document.getElementById("remark").value || "");
+  var partNo      = getValue("partNo");
+  var material    = getValue("material");
+  var layers      = getValue("layers");
+  var thickness   = getValue("thickness");
+  var innerCu     = getValue("innerCu");
+  var outerCu     = getValue("outerCu");
+  var solderMask  = getValue("solderMask");
+  var legendColor = getValue("legendColor");
+  var finish      = getValue("finish");
+  var goldFinger  = getValue("goldFinger");
+  var qtyVal      = getValue("qty");
+  var remark      = trim(document.getElementById("remark").value || "");
 
-    var specialAmountEl = document.getElementById("specialAmount");
-    var specialAmount = "";
-    if (specialAmountEl) {
-      specialAmount = trim(specialAmountEl.value || "");
-      if (specialAmount) {
-        specialAmount = Number(specialAmount).toLocaleString("en-US");
-      }
+  var specialAmountEl = document.getElementById("specialAmount");
+  var specialAmount = "";
+  if (specialAmountEl) {
+    /* 🌟 調整: 取值時先移除千分位符號 (,)，以確保數字轉換正確 */
+    var rawAmount = trim(specialAmountEl.value || "").replace(/,/g, ''); 
+    if (rawAmount) {
+      // 🌟 調整: 使用 toLocaleString 格式化為千分位，並允許小數
+      specialAmount = Number(rawAmount).toLocaleString("en-US", { 
+        minimumFractionDigits: 0, 
+        maximumFractionDigits: 2 // 最多保留兩位小數
+      });
     }
-    
-    var specialsIds = ["special1", "special2", "special3"];
-    var specials = [];
-    for (var i = 0; i < specialsIds.length; i++) {
-      var el = document.getElementById(specialsIds[i]);
-      if (!el) continue;
-      var v = trim(el.value || "");
-      if (v && v !== "-") specials.push(v);
-    }
-
-    var lines = [
-      "料號：" + partNo,
-      "板材：" + material,
-      "層別：" + layers,
-      "板厚：" + thickness
-    ];
-
-    if (layers !== "單面板" && layers !== "雙面板") {
-      lines.push("內層銅厚：" + innerCu);
-    }
-
-    lines.push(
-      "外層銅厚：" + outerCu,
-      "防焊顏色：" + solderMask,
-      "文字顏色：" + legendColor,
-      "表面處理：" + finish
-    );
-
-    if (goldFinger !== "-" && goldFinger !== "") {
-      lines.push("金(錫)手指：" + goldFinger);
-    }
-
-    lines.push("數量(出貨片)：" + qtyVal);
-
-    if (specials.length > 0) {
-      lines.push("特殊製程：" + specials.join("、"));
-    }
-
-    if (specialAmount) {
-      lines.push("訂單金額：" + specialAmount + "元");
-    }
-
-    var msg = lines.join("\n");
-    if (remark) {
-      msg += "\n\n備註：" + remark;
-    }
-
-    msg = timeStr + "\n" + msg;
-
-    var out = document.getElementById("output");
-    out.value = msg;
-    adjustOutputHeight();
+  }
+  
+  var specialsIds = ["special1", "special2", "special3"];
+  var specials = [];
+  for (var i = 0; i < specialsIds.length; i++) {
+    var el = document.getElementById(specialsIds[i]);
+    if (!el) continue;
+    var v = trim(el.value || "");
+    if (v && v !== "-") specials.push(v);
   }
 
+  var lines = [
+    "料號：" + partNo,
+    "板材：" + material,
+    "層別：" + layers,
+    "板厚：" + thickness
+  ];
+
+  if (layers !== "單面板" && layers !== "雙面板") {
+    lines.push("內層銅厚：" + innerCu);
+  }
+
+  lines.push(
+    "外層銅厚：" + outerCu,
+    "防焊顏色：" + solderMask,
+    "文字顏色：" + legendColor,
+    "表面處理：" + finish
+  );
+
+  if (goldFinger !== "-" && goldFinger !== "") {
+    lines.push("金(錫)手指：" + goldFinger);
+  }
+
+  lines.push("數量(出貨片)：" + qtyVal);
+
+  // 🔹 特殊製程 和 金額 分開顯示
+  
+  // 1. 如果有選特殊製程，印出特殊製程那一行
+  if (specials.length > 0) {
+    lines.push("特殊製程：" + specials.join("、"));
+  }
+
+  // 2. 如果有填金額，獨立印出金額那一行 
+  if (specialAmount) {
+    lines.push("訂單金額：" + specialAmount + "元");
+  }
+
+  var msg = lines.join("\n");
+  if (remark) {
+    msg += "\n\n備註：" + remark;
+  }
+
+  msg = timeStr + "\n" + msg
+
+  document.getElementById("output").value = msg;
+}
   function copyText() {
     var out = document.getElementById("output");
     if (!trim(out.value || "")) {
@@ -859,12 +882,10 @@
       alert("無法自動複製，請長按手動複製文字。");
     }
   }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    updateStates();
-    adjustOutputHeight();
-  });
+  document.addEventListener('DOMContentLoaded', updateStates);
+  updateStates();
 </script>
 
 </body>
+
 </html>
