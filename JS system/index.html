@@ -32,6 +32,18 @@
             margin-bottom: 60px;
             font-size: 2.5em;
             font-weight: 800;
+            /* 新增行高設定，讓兩行字不要擠在一起 */
+            line-height: 1.4; 
+        }
+
+        /* 新增：設定 h1 裡面的 span 為區塊元素，強制換行 */
+        h1 span {
+            display: block;
+        }
+
+        /* 選用：稍微調整第一行（公司名）跟第二行之間的距離 */
+        h1 span:first-child {
+            margin-bottom: 5px;
         }
 
         p.subtitle {
@@ -95,7 +107,10 @@
 <body>
 
     <div class="container">
-        <h1>駿鑫 工具管理系統</h1>
+        <h1>
+            <span>駿鑫</span>
+            <span>工具管理系統</span>
+        </h1>
 
         <div class="options-grid">
             
