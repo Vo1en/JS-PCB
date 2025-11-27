@@ -241,9 +241,6 @@
             z-index: 1;
         }
 
-        /* NEW: Reports Area (鈦金銀漸層) */
-        /* 為新的報告卡片定義顏色，例如：檢驗報告用藍色調，測試報告用綠色調 */
-        
         /* Inspection Report (檢驗報告：深藍寶石漸層) */
         .card-inspection::before {
             content: '';
@@ -271,6 +268,22 @@
         .card-test:hover .option-desc {
             color: #fff;
         }
+
+        /* NEW: Specification Document (製程規範：淺藍色調漸層) */
+        .card-spec::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            /* 文件/規範風格：清新的鈷藍漸層 */
+            background: linear-gradient(135deg, rgba(0, 123, 194, 0.9), rgba(0, 76, 122, 0.9));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 1;
+        }
+        .card-spec:hover .option-desc {
+            color: #fff;
+        }
+
 
         /* Hover 時讓漸層浮現 */
         .option-card:hover::before {
@@ -347,10 +360,7 @@
                     <div class="option-desc">PCB Order Info Generator</div>
                 </div>
             </a>
-
-            <!-- 刪除原有的 Reports.html 連結 -->
             
-            <!-- 新增 出貨檢驗報告 -->
             <a href="PCB Inspection Report.html" class="option-card card-inspection">
                 <div class="option-icon">🔬</div>
                 <div class="option-info">
@@ -359,12 +369,19 @@
                 </div>
             </a>
 
-            <!-- 新增 駿鑫 PCB 測試報告 -->
             <a href="PCB Test Report.html" class="option-card card-test">
                 <div class="option-icon">📋</div>
                 <div class="option-info">
                     <div class="option-title">電性測試報告</div>
                     <div class="option-desc">PCB Test Report</div>
+                </div>
+            </a>
+            
+            <a href="駿鑫_PCB製程能力與交期規範.pdf" class="option-card card-spec" target="_blank">
+                <div class="option-icon">📜</div>
+                <div class="option-info">
+                    <div class="option-title">製程能力與交期規範</div>
+                    <div class="option-desc">Process Capability & Lead Time</div>
                 </div>
             </a>
             
@@ -374,4 +391,3 @@
 </body>
 
 </html>
-
