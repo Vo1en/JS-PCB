@@ -22,6 +22,11 @@
       --active-color: #c2a878;
   }
 
+  /* 🌟 修正: 對 html 和 body 強制隱藏水平滾動條 */
+  html, body {
+      overflow-x: hidden; 
+  }
+
   .navbar {
       position: fixed;
       top: 0;
@@ -157,8 +162,7 @@
     /* 調整 padding-top 以騰出 Navbar 空間，約 60px */
     padding: 80px 16px 20px 16px; 
     background: #f5f5f5; 
-    width: 100vw; /* 🌟 新增: 強制寬度等於視窗寬度 */
-    overflow-x: hidden; /* 🌟 新增: 隱藏水平滾動條 */
+    width: 100%; /* 🌟 恢復為 100%，讓瀏覽器正常計算 */
   }
 
   /* 確保內容置中，並保留左右邊距以避免內容貼邊 */
@@ -276,7 +280,8 @@
     .main-container {
       margin: 8px auto;
       padding: 0; 
-      max-width: 100%;
+      /* 🌟 調整: 讓 max-width 在手機版時更具彈性，防止溢出 */
+      max-width: calc(100% - 20px); 
     }
     
     body {
