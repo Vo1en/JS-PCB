@@ -1,347 +1,798 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>駿鑫 PCB 系統入口</title>
+    <title>駿鑫 PCB 測試報告 - 互動表單</title>
     <style>
-        /* --- 引入字型 --- */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
+/* 出貨數量：數字 + 單位 固定貼在一起 */
+.info-value.ship-quantity {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;   /* 數字與「片」的位置距離 */
+}
 
-        /* --- 高級淺色金屬配色 (Light Beige & Gold) --- */
-        :root {
-            /* === 修正點：背景改為淺香檳暖色調 (Warm Beige) === */
-            --bg-gradient: linear-gradient(135deg, #fcfaf5 0%, #f0ebde 100%);
-            
-            /* 容器：亮色玻璃毛玻璃 */
-            --glass-bg: rgba(255, 255, 255, 0.9);
-            --glass-border: rgba(194, 168, 120, 0.5); /* 金色邊框更明顯 */
-            
-            /* 文字顏色 */
-            --text-main: #1f2937; /* 深藍灰 (高對比) */
-            --text-sub: #6b7280;  /* 柔和灰 */
-            
-            /* 金屬漸層 (模擬土金/玫瑰金反光) */
-            --gold-gradient: linear-gradient(135deg, #c2a878 0%, #e3d1a8 50%, #9e8b6b 100%);
-            --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-            
-            /* 卡片互動色 */
-            --card-hover-shadow: rgba(194, 168, 120, 0.4);
-        }
-
+        /* 全局設置與浮水印 */
         body {
-            font-family: 'Roboto', 'Noto Sans TC', "Microsoft JhengHei", Arial, sans-serif;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
             margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-            color: var(--text-main); /* 確保預設文字是深色的 */
-
-            /* === 修正點：疊加大理石紋理背景 (Subtle Marble Texture) - 增強可見度，匹配暖色底色 === */
-            background: 
-                /* Layer 1: Base soft grey gradient */
-                var(--bg-gradient),
-
-                /* Layer 2: Wide, soft, gold-tinted veins (Diagonal 1) */
-                repeating-linear-gradient(
-                    135deg,
-                    rgba(194, 168, 120, 0.3), /* Gold tint */
-                    rgba(194, 168, 120, 0.15) 4px,
-                    transparent 4px,
-                    transparent 500px
-                ), 
-                /* Layer 3: Wide, soft, grey vein lines (Diagonal 2) */
-                repeating-linear-gradient(
-                    -45deg,
-                    rgba(150, 150, 150, 0.25), 
-                    rgba(150, 150, 150, 0.12) 4px,
-                    transparent 4px,
-                    transparent 500px
-                ),
-                /* Layer 4 & 5: Soft, subtle radial gradients for cloud-like mottling - 改為暖灰調 */
-                radial-gradient(circle at 10% 80%, rgba(200, 190, 170, 0.3) 5%, transparent 60%), 
-                radial-gradient(circle at 70% 20%, rgba(200, 190, 170, 0.3) 5%, transparent 60%), 
-                
-                /* Fallback (The base gradient) */
-                var(--bg-gradient); 
-            
-            /* Define background size for the repeating linear gradients to create widely spaced veins */
-            background-size: 100% 100%, 1500px 1500px, 1500px 1500px, 100% 100%, 100% 100%, 100% 100%;
-            background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; 
+            padding: 20px;
+            position: relative;
+            background-color: #f4f4f4; /* 輕微的背景色 */
+            color: #333;
+            font-size: 18px; /* 內容字體放大至 18px */
         }
 
-        /* 背景裝飾光暈 - 讓它更淡 */
+        /* 浮水印樣式 (已更新為 JS_LOGO.png) */
         body::before {
             content: '';
-            position: absolute;
-            top: -20%;
-            left: -10%;
-            width: 60vw;
-            height: 60vw;
-            /* 淺色背景使用淡金色光暈 */
-            background: radial-gradient(circle, rgba(194, 168, 120, 0.15) 0%, rgba(0,0,0,0) 70%);
-            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* 浮水印圖片路徑已更新 */
+            background-image: url('JS_LOGO.png'); 
+            background-repeat: repeat;
+            background-position: center center;
+            /* 調整大小以適合作為浮水印重複平鋪 */
+            background-size: 300px; 
+            opacity: 0.1;
+            z-index: -1;
             pointer-events: none;
         }
 
         .container {
-            position: relative;
-            background-color: var(--glass-bg); /* 亮色毛玻璃 */
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            padding: 60px 40px;
-            border-radius: 20px;
-            box-shadow: 
-                0 15px 40px rgba(0, 0, 0, 0.15), /* 淺色背景使用柔和陰影 */
-                inset 0 0 0 1px var(--glass-border); /* 內嵌金屬邊框 */
-            text-align: center;
-            max-width: 900px;
-            width: 90%;
-            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px; /* 增加圓角 */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 增加陰影 */
+            position: relative; /* 用於定位動作按鈕 */
         }
 
-        h1 {
-            color: var(--text-main);
-            margin: 0 0 50px 0;
-            line-height: 1.3;
+        /* 動作按鈕 (列印/PDF) - 桌面版 */
+        .action-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
         }
-
-        /* 第一行：品牌名稱 (奢華金屬字) */
-        h1 span.brand {
-            display: block;
-            font-size: 2.8rem;
-            font-weight: 800;
-            /* 金屬流光效果 (不變) */
-            background: var(--gold-text-gradient);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-            animation: shine 5s linear infinite;
-        }
-
-        /* 第二行：系統名稱 (精緻霧面金) */
-        h1 span.system {
-            display: block;
-            font-size: 1.2rem;
-            color: #c2a878; /* 霧面金 */
-            font-weight: 400;
-            letter-spacing: 6px;
-            text-transform: uppercase;
-        }
-
-        /* 標題下方的裝飾線 (金屬髮絲紋感) */
-        h1::after {
-            content: '';
-            display: block;
-            width: 80px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #c2a878, transparent);
-            margin: 25px auto 0;
-            opacity: 0.8;
-        }
-
-        .options-grid {
+        .action-buttons button {
+            background: #3b82f6; /* 藍色背景 */
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1;
+            transition: background-color 0.2s, transform 0.1s;
             display: flex;
-            gap: 30px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 50px;
-        }
-
-        /* 卡片按鈕樣式 - 淺色金屬面板 (Light Neumorphism) */
-        .option-card {
-            display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            width: 260px;
-            height: 200px;
-            /* 調整為亮白色漸層 */
-            background: linear-gradient(145deg, #ffffff, #f0f4f8); 
-            border-radius: 15px;
-            box-shadow: 
-                5px 5px 15px rgba(0,0,0,0.1), /* 柔和淺色陰影 */
-                -2px -2px 4px rgba(255,255,255,1); /* 淺色背景上的高光 */
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .action-buttons button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        .action-buttons button span {
+            margin-right: 5px;
+        }
+        
+        /* 標頭樣式 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee; /* 增加分隔線 */
+        }
+
+        .logo-container img {
+            /* 調整最大寬度以符合 Logo 實際大小和佈局 */
+            max-width: 250px; 
+            height: auto;
+            margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .report-title {
+            font-size: 32px; 
+            font-weight: bold;
+            color: #000;
+            margin-top: 15px;
+            margin-bottom: 10px;
             position: relative;
-            overflow: hidden;
-            /* === 邊框維持上次修正結果 (2px 淺藍灰) === */
-            border: 2px solid #e2e8f0; 
-        }
-
-        .option-icon { 
-            font-size: 55px; 
-            margin-bottom: 15px; 
-            transition: transform 0.4s ease;
-            /* 圖示預設使用金屬漸層色 */
-            background: var(--gold-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-        }
-        
-        .option-title { 
-            font-size: 1.3rem; 
-            font-weight: 500; 
-            color: var(--text-main); /* 預設深色文字 */
-            margin-bottom: 5px;
-            transition: color 0.3s;
-            letter-spacing: 1px;
-        }
-        
-        .option-desc { 
-            font-size: 0.8rem; 
-            color: var(--text-sub); /* 預設灰色文字 */
-            font-family: 'Roboto', sans-serif;
-            font-weight: 300;
-            letter-spacing: 1px;
-            transition: color 0.3s;
-            text-transform: uppercase;
-        }
-
-        /* --- 互動特效 (Hover Effects) --- */
-
-        /* 通用 Hover 狀態 */
-        .option-card:hover {
-            transform: translateY(-8px);
-            /* Hover 時邊框變金，這個顏色與 2px 邊框搭配會非常醒目 */
-            border-color: #c2a878; 
-            box-shadow: 0 15px 35px var(--card-hover-shadow);
-        }
-
-        .option-card:hover .option-icon {
-            transform: scale(1.1);
-            -webkit-text-fill-color: #fff; /* Hover 時圖標變白 */
-        }
-
-        .option-card:hover .option-title {
-            color: #fff;
-        }
-        
-        .option-card:hover .option-desc {
-            color: #f7f7f7; /* 描述變亮 */
-        }
-
-        /* Order Detail (琥珀金漸層) */
-        .card-order::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            /* 星宇風格：沈穩的棕金漸層 */
-            background: linear-gradient(135deg, rgba(161, 142, 114, 0.9), rgba(105, 90, 66, 0.9));
-            opacity: 0;
-            transition: opacity 0.4s ease;
             z-index: 1;
         }
 
-        /* Inspection Report (鈦金銀漸層) */
-        .card-report::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            /* 鈦金屬銀色 */
-            background: linear-gradient(135deg, rgba(170, 179, 192, 0.9), rgba(126, 137, 150, 0.9));
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            z-index: 1;
+        /* 項目標題橫條改為淺藍色 */
+        .section-title-wrapper {
+            background-color: #e0f2fe; /* Light blue, similar to Tailwind blue-100 */
+            padding: 8px 15px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-radius: 4px; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .card-report:hover .option-desc {
-            color: #fff;
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0369a1; /* Darker blue text */
+            margin: 0; 
+            padding: 0;
         }
 
+        .info-item {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: baseline;
+        }
 
-        /* Hover 時讓漸層浮現 */
-        .option-card:hover::before {
-            opacity: 1;
+        .info-label {
+            width: 90px;
+            font-weight: normal;
+            color: #333;
+            flex-shrink: 0;
+        }
+
+        /* 螢幕顯示：輸入欄位樣式，新增邊框 */
+        .info-value input[type="text"],
+        .info-value input[type="number"],
+        .info-value input[type="date"],
+        .param-table input[type="text"],
+        .remarks textarea { 
+            font-size: inherit; /* 繼承 18px */
+            font-family: inherit;
+            background: #fff;
+            color: #333;
+            /* 預設最大寬度，讓非固定寬度的欄位可以佔據更多空間 */
+            max-width: 100%; 
+            
+            border: 1px solid #ccc; 
+            padding: 3px 5px;
+            border-radius: 4px; 
+            outline: none;
+            box-sizing: border-box; 
+            transition: border-color 0.2s;
+            /* 預設靠左對齊，解決測試料號的對齊問題 */
+            text-align: left;
+        }
+
+        /* 針對測試料號輸入框設定更大的固定寬度 */
+        .info-value.product-id input[type="text"] {
+            width: 350px; /* 測試料號寬度 */
+        }
+
+        /* 確保 focus 狀態清晰 */
+        .info-value input[type="text"]:focus,
+        .info-value input[type="number"]:focus,
+        .info-value input[type="date"]:focus,
+        .param-table input[type="text"]:focus,
+        .remarks textarea:focus {
+            border-color: #3b82f6; /* 藍色邊框 */
+            box-shadow: 0 0 0 1px #3b82f6;
         }
         
-        /* 確保內容在漸層之上 */
-        .option-card > * {
-            position: relative;
-            z-index: 2;
+        /* 調整結果輸入框寬度 */
+        .test-result-input {
+            width: 80px; 
+            text-align: center!important;
+            margin: 0 15px; 
         }
 
-        /* 進場動畫 */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        /* --- OPEN/SHORT 紅字警示樣式 (給 OPEN/SHORT > 0 時使用) --- */
+        .defect-alert {
+            color: #dc2626 !important; /* Tailwind red-600 */
+            font-weight: bold;
+        }
+        
+        .test-result-group {
+            display: flex;
+            align-items: baseline;
+            gap: 20px;
         }
 
-        /* 金屬流光動畫 */
-        @keyframes shine {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
+        .test-result {
+            margin-top: 15px;
+            margin-bottom: 20px;
+            font-weight: normal;
         }
 
-        /* 響應式調整 */
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+
+        .param-table th, .param-table td {
+            border: 1px solid #000;
+            padding: 8px 10px;
+            /* 1. 確保表格單元格垂直置中 */
+            vertical-align: middle; 
+            font-weight: normal;
+            color: #333;
+        }
+        
+        /* 表格第一欄 (測試項目名稱) 內容置中 */
+        .param-table tr td:nth-child(1) {
+            text-align: center; /* 水平置中 */
+            width: 30%;
+            white-space: nowrap;
+        }
+        
+        /* 表格第二欄 (規格值) 內容置中 */
+        .param-table tr td:nth-child(2) {
+            text-align: center; /* 水平置中 */
+        }
+
+        .param-table th {
+            background-color: #dbeafe; /* 淺藍色表頭 */
+            font-weight: bold;
+            white-space: nowrap;
+            color: #1e40af;
+        }
+
+        /* 規格值欄位內的輸入框置中 */
+        .param-table tr td:nth-child(2) input[type="text"] {
+            display: block; /* 讓 input 成為區塊元素才能置中 */
+            margin: 0 auto; /* 水平置中 */
+            text-align: center; /* 輸入文字置中 */
+            width: 80%; /* 確保 input 佔據足夠寬度 */
+
+        }
+        
+        /* === 讓出貨數量的數字靠左對齊 === */
+        .info-value.ship-quantity input {
+            /* 調整寬度為 85px */
+            width: 85px; 
+            margin-right: 5px; 
+            /* 原本是 text-align: right;，現改為 left */
+            text-align: left;
+        }
+
+        /* 備註欄位樣式 */
+        .remarks textarea {
+            height: 80px;
+            width: 100%; 
+            box-sizing: border-box;
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        /* 簽名區塊優化 */
+        .signature-section {
+            margin-top: 40px; 
+            padding-top: 20px;
+        }
+        .signature-group {
+            display: flex; 
+            justify-content: space-around; 
+            font-size: 14px; 
+            gap: 20px;
+        }
+        .signature-box {
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+            flex-grow: 1;
+            text-align: center; /* 確保內容居中 */
+            height: 100px; /* 確保盒子有足夠高度容納圖片 */
+        }
+        
+        /* 簽名圖片樣式 (已放大) */
+        .signature-image {
+            max-width: 100%;
+            max-height: 70px; /* 控制圖片最大高度: 從 50px 調整到 70px */
+            width: auto;
+            height: auto;
+            display: block;
+            margin: 5px auto 0; /* 讓圖片在 box 內居中 */
+        }
+        /* 移除虛線 */
+        .signature-box p {
+            display: none; 
+        }
+        
+        /* ================================================= */
+        /* 手機響應式優化 (Max-width: 600px) */
+        /* ================================================= */
         @media (max-width: 600px) {
+            /* 1. 全局和容器調整 */
+            body {
+                padding: 10px; /* 減少 body 邊距 */
+                font-size: 16px; /* 內容字體略小 */
+                padding-bottom: 70px; /* 為底部固定按鈕預留空間 */
+            }
             .container {
-                padding: 40px 20px;
-                width: 85%;
-                backdrop-filter: blur(20px);
+                padding: 15px; 
+                box-shadow: none; /* 移除容器陰影 */
+                border-radius: 0;
+            }
+            .report-title {
+                font-size: 24px; /* 標題縮小 */
             }
             
-            h1 span.brand { font-size: 2.2rem; }
-            h1 span.system { font-size: 0.9rem; letter-spacing: 3px; }
+            /* 2. 資訊項目的排版調整 */
+            .info-item {
+                flex-direction: column; /* 標籤和數值垂直堆疊 */
+                align-items: flex-start;
+                margin-bottom: 15px; /* 增加垂直間距 */
+            }
+            .info-label {
+                width: auto; /* 移除固定寬度 */
+                margin-bottom: 5px; /* 標籤與輸入框之間間距 */
+                font-size: 16px;
+            }
+            .info-value {
+                width: 100%; /* 數值容器佔滿寬度 */
+            }
+            .info-value input[type="text"],
+            .info-value input[type="number"],
+            .info-value input[type="date"] {
+                width: 100%; /* 輸入框佔滿寬度 */
+                max-width: none;
+            }
+            /* 測試料號輸入框佔滿寬度 */
+            .info-value.product-id input[type="text"] {
+                width: 100%; 
+            }
+            /* 出貨數量輸入框調整 */
+            .info-value.ship-quantity {
+                width: auto; 
+                display: flex;
+                align-items: center;
+            }
+            .info-value.ship-quantity input {
+                width: 60px; 
+                text-align: right;
+            }
             
-            .option-card {
+            /* 3. 測試結果群組垂直堆疊 */
+            .test-result-group {
+                display: block; 
+                gap: 0;
+            }
+            .test-result-group span {
+                display: block; /* 每個結果佔滿一行 */
+                margin-bottom: 8px; 
+            }
+            .test-result-input {
+                width: 60px; /* 輸入框保持適當寬度 */
+                margin-left: 10px;
+                margin-right: 0;
+            }
+
+            /* 4. 簽名區塊垂直堆疊 */
+            .signature-group {
+                flex-direction: column; 
+                gap: 15px; 
+            }
+            .signature-box {
+                border: 1px solid #ddd; /* 增加邊框區分簽名區 */
+                height: auto;
+            }
+            
+            /* 5. 動作按鈕固定在底部 (取代絕對定位) */
+            .action-buttons {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                top: auto;
+                padding: 10px;
+                background-color: white;
+                border-top: 1px solid #eee;
+                box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+                z-index: 100;
+            }
+            .action-buttons button {
                 width: 100%;
-                height: 140px;
-                flex-direction: row;
-                justify-content: flex-start;
-                padding-left: 30px;
-                /* 手機版使用全白底色 */
-                background: #ffffff;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+                justify-content: center;
+                padding: 12px;
+                font-size: 16px;
+            }
+
+            /* 6. 表格在手機上允許水平滾動 (如果內容太多) */
+            .param-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap; /* 防止表格內容換行 */
+            }
+        }
+
+        /* ================================================= */
+        /* 列印/PDF 樣式優化 */
+        /* ================================================= */
+
+        /* 3. A4 Page Settings and Margins */
+        @page {
+            size: A4;
+            margin: 15mm; /* Global margin for A4 print */
+        }
+
+        @media print {
+            /* 隱藏動作按鈕 */
+            .action-buttons {
+                display: none;
             }
             
-            .option-icon { margin-bottom: 0; margin-right: 25px; font-size: 36px; }
-            .option-info { text-align: left; }
-            .option-title { font-size: 1.1rem; }
-            .option-desc { font-size: 0.75rem; }
+            /* 3. 調整為單頁 A4 佈局 */
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #fff;
+            }
+            .container {
+                max-width: none;
+                width: 100%;
+                margin: 0;
+                padding: 0; /* 讓 @page margin 處理間距 */
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            /* 1. 列印/轉PDF不要顯示輸入欄的框 */
+            .info-value input,
+            .param-table input {
+                border: none !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+            
+            /* 專門為備註欄位保留邊框 */
+            .remarks textarea {
+                border: 1px solid #000 !important; /* 顯示黑色邊框 */
+                padding: 3px 5px !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                
+                /* 確保文字不會被邊框擠壓 */
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+
+            /* 新增：隱藏 placeholder 文本 */
+            .info-value input:empty::placeholder,
+            .remarks textarea:empty::placeholder {
+                color: transparent !important;
+            }
+            
+            /* 確保測試料號在列印時不被固定寬度限制 */
+            .info-value.product-id input[type="text"] {
+                width: auto !important;
+
+            }
+            /* 調整出貨數量的寬度 */
+            .info-value.ship-quantity input {
+                width: 85px !important;      /* 固定一個寬度就不會亂伸縮 */
+                margin-right: 0 !important;
+                text-align: center !important;
+                display: inline-block !important;
+            }
+            
+            /* 修正測試結果對齊問題 (2. SHORT 0 換行問題 and PASS shift) */
+            .test-result-group {
+                /* 讓整個 group 在列印時是行內元素，避免換行 */
+                display: inline !important; 
+                width: auto !important; 
+                white-space: normal !important; /* 允許換行，但單個 span 不換行 */
+                margin-left: 0 !important; /* 移除右移 */
+            }
+            .test-result-group > span {
+                /* 減少間距以節省空間 */
+                margin-right: 15px; 
+                display: inline-block;
+            }
+            
+            /* 確保紅字在列印時被保留 */
+            .defect-alert {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+
+            /* 測試項目名稱置中 (列印時) */
+            .param-table tr td:nth-child(1) {
+                text-align: center !important;
+                vertical-align: middle !important;
+            }
+
+            /* 規格值表格內容置中 (列印時) */
+            .param-table tr td:nth-child(2) {
+                text-align: center !important;
+            }
+            /* 確保 input 內的內容也置中 (列印時) */
+            .param-table tr td:nth-child(2) input[type="text"] {
+                text-align: center !important; 
+                width: auto !important; /* 讓它根據內容縮放 */
+            }
+
+            /* 修正簽名區塊樣式跑版 */
+            .signature-section > div {
+                display: flex !important;
+                justify-content: space-around !important;
+                gap: 20px !important;
+                /* 確保簽名區塊的線條和標題能被列印 */
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            .signature-box {
+                flex-grow: 1;
+                /* 移除邊框和內距，在列印時僅保留結構 */
+                border: none !important;
+                padding: 0 !important;
+            }
+            .signature-box h4 {
+                margin-bottom: 5px !important;
+            }
+            
+            /* 移除 P 標籤的虛線 */
+            .signature-box p {
+                display: none !important;
+            }
+
+            /* 確保背景色和顏色在列印時被保留 (對於表頭和橫條) */
+            .param-table th, .section-title-wrapper {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            /* 確保簽名圖片能被列印 */
+            .signature-image {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+                /* 確保圖片不被過度放大 (已調整) */
+                max-width: 100%;
+                max-height: 70px; /* 列印時的最大高度也調整為 70px */
+            }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- 標題區塊 -->
-        <h1>
-            <span class="brand">駿鑫</span>
-            <span class="system">工具管理系統</span>
-        </h1>
-
-        <div class="options-grid">
-            
-            <a href="PCB Order Info Generator.html" class="option-card card-order">
-                <div class="option-icon">📝</div>
-                <div class="option-info">
-                    <div class="option-title">PCB下單資訊產生器</div>
-                    <div class="option-desc">PCB Order Info Generator</div>
-                </div>
-            </a>
-
-            <a href="Inspection Report.html" class="option-card card-report">
-                <div class="option-icon">🔍</div>
-                <div class="option-info">
-                    <div class="option-title">出貨檢驗報告</div>
-                    <div class="option-desc">Inspection Report</div>
-                </div>
-            </a>
-
+        <!-- 動作按鈕 (在桌面和列印時會調整位置/隱藏) -->
+        <div class="action-buttons">
+            <button onclick="window.print()" title="列印 / 存為PDF">
+                <span>🖨️</span> 列印 / PDF
+            </button>
         </div>
+        
+        <header class="header">
+            <div class="logo-container">
+                <img src="JS_LOGO.png" 
+                     alt="JS PCB EST. 1995 Logo" 
+                     onerror="this.onerror=null; this.src='https://placehold.co/250x60/000/fff?text=JS+PCB+Logo+Error'">
+            </div>
+            <div class="report-title">駿鑫 PCB 測試報告</div>
+        </header>
+
+        <section class="basic-info">
+            <div class="info-item">
+                <span class="info-label">測試日期:</span>
+                <span class="info-value">
+                    <input type="date" id="testDate">
+                </span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">測試料號:</span>
+                <span class="info-value product-id"> 
+                    <input type="text" value="" placeholder="請輸入">
+                </span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">出貨數量:</span>
+                <span class="info-value ship-quantity">
+                    <input type="number" id="shipQuantity" value="" min="0" placeholder="請輸入"> 片
+                </span>
+            </div>
+            
+            <div class="info-item test-result">
+                <span class="info-label">測試結果:</span>
+                <!-- 測試結果群組在手機上會垂直堆疊 -->
+                <span class="info-value test-result-group">
+                    <span class="pass-result">PASS : <input type="text" id="passCount" class="test-result-input" value="0" min="0" readonly></span>
+                    <span class="open-result">OPEN : <input type="text" id="openCount" class="test-result-input" value="0" min="0" readonly></span>
+                    <span class="short-result">SHORT : <input type="text" id="shortCount" class="test-result-input" value="0" min="0" readonly></span>
+                </span>
+            </div>
+        </section>
+
+        <section class="test-parameters">
+            <div class="section-title-wrapper">
+                <h2 class="section-title">·測試參數及條件</h2>
+            </div>
+            <table class="param-table">
+                <tbody>
+                    <tr>
+                        <td>測試電壓:</td>
+                        <td>
+                            <input type="text" value="250 V" placeholder="請輸入測試電壓">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>測試電流:</td>
+                        <td>
+                            <input type="text" value="-" placeholder="請輸入電流值">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>通路阻抗:</td>
+                        <td>
+                            <input type="text" value="20 Ω" placeholder="請輸入通路阻抗">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>絕緣阻抗:</td>
+                        <td>
+                            <input type="text" value="100 MΩ" placeholder="請輸入絕緣阻抗">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="remarks">
+            <div class="section-title-wrapper">
+                <h2 class="section-title">·備註</h2>
+            </div>
+            <textarea placeholder="請在此處填寫任何額外的測試說明、環境條件或異常情況記錄。"></textarea>
+        </section>
+        
+        <section class="signature-section">
+            <div class="signature-group">
+                <div class="signature-box">
+                    <h4 style="margin-bottom: 5px; font-weight: bold;">測試人員</h4>
+                    <img src="reviewer.png" 
+                         alt="測試人員簽名" 
+                         class="signature-image"
+                         onerror="this.onerror=null; this.src='https://placehold.co/120x50/eee/333?text=Reviewer+Sign+Missing'">
+                </div>
+                <div class="signature-box">
+                    <h4 style="margin-bottom: 5px; font-weight: bold;">核准人員</h4>
+                    <img src="approver.png" 
+                         alt="核准人員簽名" 
+                         class="signature-image"
+                         onerror="this.onerror=null; this.src='https://placehold.co/120x50/eee/333?text=Approver+Sign+Missing'">
+                </div>
+            </div>
+        </section>
+
     </div>
+    
+    <script>
+        // 設定測試日期為今天
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            // 月份是 0-indexed，所以需要 +1
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); 
+            const dd = String(today.getDate()).padStart(2, '0');
+            const todayDateString = `${yyyy}-${mm}-${dd}`;
+            
+            const dateInput = document.getElementById('testDate');
+            if (dateInput) {
+                dateInput.value = todayDateString;
+            }
+            
+            // --- 邏輯區塊開始 ---
+            const shipQuantityInput = document.getElementById('shipQuantity');
+            const passCountInput = document.getElementById('passCount');
+            const openCountInput = document.getElementById('openCount');
+            const shortCountInput = document.getElementById('shortCount');
+
+            // 確保所有元素都存在
+            if (shipQuantityInput && passCountInput && openCountInput && shortCountInput) {
+                
+                // 函式：根據出貨數量更新測試結果
+                function updateTestResults() {
+                    // 獲取出貨數量，如果不是有效數字則視為 0
+                    const shipQuantity = parseInt(shipQuantityInput.value) || 0;
+
+                    // 1. PASS 數量 = 出貨數量
+                    let passCount = shipQuantity; // 初始設定為出貨數量
+
+                    // 初始化 OPEN/SHORT 數量
+                    let openCount = 0;
+                    let shortCount = 0;
+                    
+                    // 決定是否觸發不良率
+                    let shouldTriggerDefect = false;
+                    
+                    if (shipQuantity > 500) {
+                        // 數量 > 500，100% 觸發
+                        shouldTriggerDefect = true;
+                    } else if (shipQuantity > 0) {
+                        // 數量 <= 500 且 > 0，30% 機率觸發
+                        if (Math.random() < 0.30) {
+                            shouldTriggerDefect = true;
+                        }
+                    }
+                    
+                    // 如果觸發不良率，則計算 OPEN 和 SHORT 數量
+                    if (shouldTriggerDefect) { 
+                        
+                        // 隨機產生 0.1% 到 2.0% 之間，以 0.1% 為級距的小數
+                        const minStep = 1;  // 代表 0.1%
+                        const maxStep = 20; // 代表 2.0%
+                        const randomStep = Math.floor(Math.random() * (maxStep - minStep + 1)) + minStep;
+                        
+                        // 2. 將隨機整數轉換為不良率 (除以 1000)
+                        const randPercent = randomStep / 1000; 
+                        // randPercent 現在是 [0.001, 0.002, ..., 0.020] 之一
+
+                        // 計算不良品總數，並取整數
+                        let failCount = Math.floor(shipQuantity * randPercent); 
+                        
+                        // 確保不良品數量不會超過出貨數量
+                        if (failCount > shipQuantity) {
+                             failCount = shipQuantity;
+                        }
+
+                        // 將 failCount 隨機分配給 OPEN 和 SHORT
+                        const randomSplit = Math.random();
+                        
+                        if (failCount > 0) {
+                            if (randomSplit < 0.5) {
+                                openCount = Math.floor(failCount / 2);
+                                shortCount = failCount - openCount;
+                            } else {
+                                shortCount = Math.floor(failCount / 2);
+                                openCount = failCount - shortCount;
+                            }
+                            // 確保 failCount=1 時，至少有一個是 1 (處理邊界情況)
+                            if (openCount === 0 && shortCount === 0 && failCount > 0) {
+                                openCount = failCount; 
+                            }
+                        }
+                        
+                        // 更新 PASS 數量: PASS = 出貨數量 - 不良品總數
+                        passCount = shipQuantity - (openCount + shortCount); 
+
+                        // 確保 PASS 數量不為負
+                        if (passCount < 0) {
+                            passCount = 0;
+                        }
+                    }
+
+                    // 更新輸入框的值
+                    passCountInput.value = passCount;
+                    openCountInput.value = openCount;
+                    shortCountInput.value = shortCount;
+                    
+                    // --- OPEN/SHORT 紅字警示邏輯 ---
+                    
+                    // 移除舊的紅字 class
+                    openCountInput.classList.remove('defect-alert');
+                    shortCountInput.classList.remove('defect-alert');
+
+                    // 根據數值設定新的紅字 class
+                    if (openCount > 0) {
+                        openCountInput.classList.add('defect-alert');
+                    }
+                    if (shortCount > 0) {
+                        shortCountInput.classList.add('defect-alert');
+                    }
+                }
+
+                // 監聽出貨數量輸入框的 input 和 change 事件
+                shipQuantityInput.addEventListener('input', updateTestResults);
+                shipQuantityInput.addEventListener('change', updateTestResults);
+                
+                // 頁面載入時先執行一次，以確保預設值正確
+                updateTestResults();
+            }
+            // --- 邏輯區塊結束 ---
+        });
+    </script>
 
 </body>
 </html>
