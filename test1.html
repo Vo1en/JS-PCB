@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PCB規格產生器</title>
+<link rel="stylesheet" href="style.css">
  <style>
   /* ================================================= */
   /* === START: 來自 navbar.html 的 CSS 樣式 === */
@@ -149,12 +150,12 @@
     width: 60%;
     height: auto;
   }
-
-  /* === 新增的 CSS：解決手機版左右橫移 === */
+  
+  /* 為了防止橫移，新增這段 */
   html, body {
     overflow-x: hidden; 
   }
-  
+
   body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     margin: 0;       
@@ -263,7 +264,8 @@
   textarea#output {
     width: 100%;
     margin-top: 0;
-    min-height: 200px; 
+    /* 🚀 桌面版/一般版：增加高度至 300px */
+    min-height: 300px; 
     font-family: Menlo, Consolas, monospace; 
   }
   
@@ -328,7 +330,8 @@
       width: 70%;
     }
     textarea#output {
-      min-height: 120px;
+      /* 🚀 手機版：增加高度至 200px */
+      min-height: 200px;
       font-size: 13px;
     }
   }
@@ -543,13 +546,17 @@
         <option>側邊鍍銅</option>
       </select>
     </div>
-  <div class="field-group">
-    <label for="specialAmount">訂單金額</label>
-    <input
-      type="number"
-      id="specialAmount"
-    />
-  </div>
+    
+    <div class="field-group">
+      <label for="specialAmount">訂單金額</label>
+      <input
+        type="text"
+        id="specialAmount"
+        placeholder="例如: 10,000"
+        oninput="formatAmount(this)"
+      />
+    </div>
+    
     <div class="field-group">
       <label for="remark">備註</label>
       <textarea id="remark" placeholder="如有其他需求或注意事項，請於此欄詳細說明"></textarea>
@@ -568,6 +575,27 @@
 </div>
 
  <script>
+  // 🌟 新增函數：即時格式化訂單金額，加上千分位逗號
+  function formatAmount(input) {
+    // 移除所有非數字字符 (包括逗號)
+    var value = input.value.replace(/[^\d]/g, ''); 
+    
+    // 如果是空值，則清空輸入框
+    if (value === "") {
+        input.value = "";
+        return;
+    }
+
+    // 轉換為數字並使用 toLocaleString 格式化為千分位
+    var number = parseInt(value, 10);
+    if (!isNaN(number)) {
+        input.value = number.toLocaleString('en-US'); // 使用英文地區格式，即千分位逗號
+    } else {
+        // 如果轉換失敗 (理論上不會，因為上面已過濾非數字)，則清空
+        input.value = "";
+    }
+  }
+  
   function updateStates() {
     var layer        = document.getElementById("layers").value;
     var layersSel    = document.getElementById("layers");
@@ -765,8 +793,12 @@
   var specialAmountEl = document.getElementById("specialAmount");
   var specialAmount = "";
   if (specialAmountEl) {
-    specialAmount = trim(specialAmountEl.value || "");
+    // 🌟 修正：從輸入欄位中移除所有非數字字符，得到純數字
+    var rawAmount = specialAmountEl.value.replace(/[^\d]/g, '');
+    specialAmount = trim(rawAmount || "");
+    
     if (specialAmount) {
+      // 🌟 修正：使用純數字進行格式化
       specialAmount = Number(specialAmount).toLocaleString("en-US");
     }
   }
@@ -811,7 +843,7 @@
     lines.push("特殊製程：" + specials.join("、"));
   }
 
-  // 2. 如果有填金額，獨立印出金額那一行 (不再跟特殊製程合併)
+  // 2. 如果有填金額，獨立印出金額那一行 
   if (specialAmount) {
     lines.push("訂單金額：" + specialAmount + "元");
   }
@@ -850,4 +882,3 @@
 </body>
 
 </html>
-
