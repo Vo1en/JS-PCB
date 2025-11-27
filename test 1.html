@@ -157,7 +157,8 @@
     /* 調整 padding-top 以騰出 Navbar 空間，約 60px */
     padding: 80px 16px 20px 16px; 
     background: #f5f5f5; 
-    width: 100%;
+    width: 100vw; /* 🌟 新增: 強制寬度等於視窗寬度 */
+    overflow-x: hidden; /* 🌟 新增: 隱藏水平滾動條 */
   }
 
   /* 確保內容置中，並保留左右邊距以避免內容貼邊 */
@@ -846,5 +847,3 @@
 </body>
 
 </html>
-
-
