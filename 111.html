@@ -342,30 +342,35 @@
             .info-value.product-id input[type="text"] {
                 width: 100%; 
             }
-            /* 出貨數量輸入框調整 */
+            /* 出貨數量輸入框調整 (拉滿) */
             .info-value.ship-quantity {
-                width: auto; 
+                width: 100%; /* 讓容器佔滿全寬 */
                 display: flex;
                 align-items: center;
+                /* gap: 4px inherited from desktop style */
             }
             .info-value.ship-quantity input {
-                width: 60px; 
-                text-align: right;
+                flex-grow: 1; /* 讓輸入框填滿所有剩餘空間 */
+                width: auto; /* 移除固定寬度 */
+                text-align: left;
             }
             
-            /* 3. 測試結果群組垂直堆疊 */
+            /* 3. 測試結果群組垂直堆疊 (拉滿) */
             .test-result-group {
                 display: block; 
                 gap: 0;
             }
             .test-result-group span {
-                display: block; /* 每個結果佔滿一行 */
-                margin-bottom: 8px; 
+                display: flex; /* 改為 flex 讓內容和輸入框並排 */
+                align-items: center;
+                margin-bottom: 10px; /* 每個結果佔滿一行並增加間距 */
             }
             .test-result-input {
-                width: 60px; /* 輸入框保持適當寬度 */
+                flex-grow: 1; /* 讓輸入框填滿剩餘空間 */
+                width: auto; /* 移除固定寬度 */
                 margin-left: 10px;
                 margin-right: 0;
+                text-align: center!important; /* 確保內容依然置中 */
             }
 
             /* 4. 簽名區塊垂直堆疊 */
@@ -608,7 +613,7 @@
 
         <section class="test-parameters">
             <div class="section-title-wrapper">
-                <h2 class="section-title">·測試參數及條件</h2>
+                <h2 class="section-title">測試參數及條件</h2>
             </div>
             <table class="param-table">
                 <tbody>
@@ -642,7 +647,7 @@
 
         <section class="remarks">
             <div class="section-title-wrapper">
-                <h2 class="section-title">·備註</h2>
+                <h2 class="section-title">備註</h2>
             </div>
             <textarea placeholder="請在此處填寫任何額外的測試說明、環境條件或異常情況記錄。"></textarea>
         </section>
