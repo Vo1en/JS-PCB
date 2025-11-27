@@ -374,7 +374,7 @@
             
             /* 每個結果獨立佔用空間 */
             .test-result-item {
-                display: flex; /* 改為 flex 讓文字和輸入框並排 */
+                display: flex; 
                 flex-direction: column; /* 垂直堆疊標籤和欄位 */
                 align-items: flex-start;
                 margin-bottom: 10px; 
@@ -385,15 +385,15 @@
             .test-result-item .test-result-label {
                 font-weight: bold;
                 margin-bottom: 5px;
-                margin-right: 0; /* 移除桌面版 margin */
+                margin-right: 0; 
             }
             
             /* 手機版：輸入框拉滿 */
             .test-result-item .test-result-input {
                 width: 100%; 
-                flex-grow: 1; /* 確保填滿空間 */
+                flex-grow: 1; 
                 margin: 0;
-                text-align: left!important; /* 輸入文字靠左對齊 */
+                text-align: left!important; 
             }
 
             /* 4. 簽名區塊垂直堆疊 */
@@ -435,7 +435,7 @@
         }
 
         /* ================================================= */
-        /* 列印/PDF 樣式優化 */
+        /* 列印/PDF 樣式優化 (重點修正區) */
         /* ================================================= */
 
         /* 3. A4 Page Settings and Margins */
@@ -465,13 +465,24 @@
                 border-radius: 0;
             }
 
-            /* 1. 列印/轉PDF不要顯示輸入欄的框 */
+            /* 1. 列印/轉PDF不要顯示輸入欄的框，並移除日期選擇器UI */
             .info-value input,
             .param-table input {
                 border: none !important;
                 padding: 0 !important;
                 box-shadow: none !important;
                 background: transparent !important;
+                /* 強制移除任何系統或瀏覽器的 UI 樣式，解決日期下拉選單問題 */
+                -webkit-appearance: none !important; 
+                -moz-appearance: none !important;
+                appearance: none !important;
+            }
+            
+            /* 針對日期輸入框，確保移除日曆圖標 */
+            input[type="date"]::-webkit-inner-spin-button,
+            input[type="date"]::-webkit-calendar-picker-indicator {
+                display: none !important;
+                -webkit-appearance: none !important;
             }
             
             /* 專門為備註欄位保留邊框 */
@@ -505,41 +516,40 @@
                 display: inline-block !important;
             }
             
-            /* 修正測試結果對齊問題 (2. SHORT 0 換行問題 and PASS shift) */
+            /* 修正測試結果跑版問題：恢復水平排列 */
             .test-result-group {
-                /* 讓整個 group 在列印時是行內元素，避免換行 */
                 display: inline !important; 
                 width: auto !important; 
-                white-space: normal !important; /* 允許換行，但單個 span 不換行 */
-                margin-left: 0 !important; /* 移除右移 */
+                white-space: normal !important; 
+                margin-left: 0 !important; 
             }
             
-            /* 列印時的測試結果項目 */
+            /* 列印時的測試結果項目：確保水平間隔 */
             .test-result-item {
                 display: inline-block !important;
-                margin-right: 15px !important; /* 減少間距以節省空間 */
+                margin-right: 20px !important; 
                 width: auto !important;
                 flex-direction: row !important; /* 恢復水平排列 */
                 align-items: baseline !important;
             }
             
-            /* 列印時，PASS/OPEN/SHORT 恢復冒號和間距 */
-            .test-result-item .test-result-label::after {
-                content: " :";
-            }
+            /* 列印時，PASS/OPEN/SHORT 恢復冒號 */
             .test-result-item .test-result-label {
                 font-weight: normal !important;
                 margin-bottom: 0 !important;
                 display: inline !important;
+                margin-right: 5px !important;
+            }
+            .test-result-item .test-result-label::after {
+                content: " :"; /* 恢復冒號 for print */
             }
             
             /* 列印時，輸入框縮小並靠左對齊 */
             .test-result-item .test-result-input {
                 width: 80px !important; 
                 text-align: center!important;
-                margin: 0 15px !important;
+                margin: 0 5px !important; /* 調整間距 */
             }
-
 
             /* 確保紅字在列印時被保留 */
             .defect-alert {
@@ -650,15 +660,15 @@
                 <!-- 測試結果群組在手機上會垂直堆疊 -->
                 <span class="info-value test-result-group">
                     <span class="test-result-item pass-result">
-                        <span class="test-result-label">PASS :</span>
+                        <span class="test-result-label">PASS</span>
                         <input type="text" id="passCount" class="test-result-input" value="0" min="0" readonly>
                     </span>
                     <span class="test-result-item open-result">
-                        <span class="test-result-label">OPEN :</span>
+                        <span class="test-result-label">OPEN</span>
                         <input type="text" id="openCount" class="test-result-input" value="0" min="0" readonly>
                     </span>
                     <span class="test-result-item short-result">
-                        <span class="test-result-label">SHORT :</span>
+                        <span class="test-result-label">SHORT</span>
                         <input type="text" id="shortCount" class="test-result-input" value="0" min="0" readonly>
                     </span>
                 </span>
