@@ -202,6 +202,17 @@
             margin-bottom: 20px;
             font-weight: normal;
         }
+        
+        /* 桌面版 - 測試結果項目 */
+        .test-result-item {
+            display: inline-block;
+            margin-right: 20px;
+        }
+        .test-result-item .test-result-label {
+             /* 桌面版保留冒號 */
+            margin-right: 5px; 
+        }
+
 
         .param-table {
             width: 100%;
@@ -360,24 +371,29 @@
                 display: block; 
                 gap: 0;
             }
-            .test-result-group span {
-                display: flex; /* 改為 flex 讓內容和輸入框並排 */
-                align-items: center; /* 讓文字和輸入框在行內垂直置中 */
-                margin-bottom: 10px; /* 每個結果佔滿一行並增加間距 */
+            
+            /* 每個結果獨立佔用空間 */
+            .test-result-item {
+                display: flex; /* 改為 flex 讓文字和輸入框並排 */
+                flex-direction: column; /* 垂直堆疊標籤和欄位 */
+                align-items: flex-start;
+                margin-bottom: 10px; 
+                width: 100%;
             }
-            /* 調整文字 PASS/OPEN/SHORT 的對齊，確保文字靠左，輸入框拉伸 */
-            .test-result-group span input {
-                flex-grow: 1; /* 讓輸入框填滿剩餘空間 */
-                width: auto; 
-                margin-left: 10px;
-                margin-right: 0;
-                text-align: center!important; /* 確保內容依然置中 */
+            
+            /* 手機版：標籤單獨一行，移除冒號 */
+            .test-result-item .test-result-label {
+                font-weight: bold;
+                margin-bottom: 5px;
+                margin-right: 0; /* 移除桌面版 margin */
             }
-            /* 調整 .test-result-input 避免與上面的規則衝突導致對齊異常 */
-            .test-result-input {
-                width: auto; /* 重置為 auto */
-                margin: 0; /* 重置 margin */
-                text-align: center!important; 
+            
+            /* 手機版：輸入框拉滿 */
+            .test-result-item .test-result-input {
+                width: 100%; 
+                flex-grow: 1; /* 確保填滿空間 */
+                margin: 0;
+                text-align: left!important; /* 輸入文字靠左對齊 */
             }
 
             /* 4. 簽名區塊垂直堆疊 */
@@ -497,12 +513,34 @@
                 white-space: normal !important; /* 允許換行，但單個 span 不換行 */
                 margin-left: 0 !important; /* 移除右移 */
             }
-            .test-result-group > span {
-                /* 減少間距以節省空間 */
-                margin-right: 15px; 
-                display: inline-block;
+            
+            /* 列印時的測試結果項目 */
+            .test-result-item {
+                display: inline-block !important;
+                margin-right: 15px !important; /* 減少間距以節省空間 */
+                width: auto !important;
+                flex-direction: row !important; /* 恢復水平排列 */
+                align-items: baseline !important;
             }
             
+            /* 列印時，PASS/OPEN/SHORT 恢復冒號和間距 */
+            .test-result-item .test-result-label::after {
+                content: " :";
+            }
+            .test-result-item .test-result-label {
+                font-weight: normal !important;
+                margin-bottom: 0 !important;
+                display: inline !important;
+            }
+            
+            /* 列印時，輸入框縮小並靠左對齊 */
+            .test-result-item .test-result-input {
+                width: 80px !important; 
+                text-align: center!important;
+                margin: 0 15px !important;
+            }
+
+
             /* 確保紅字在列印時被保留 */
             .defect-alert {
                 -webkit-print-color-adjust: exact;
@@ -611,9 +649,18 @@
                 <span class="info-label">測試結果:</span>
                 <!-- 測試結果群組在手機上會垂直堆疊 -->
                 <span class="info-value test-result-group">
-                    <span class="pass-result">PASS : <input type="text" id="passCount" class="test-result-input" value="0" min="0" readonly></span>
-                    <span class="open-result">OPEN : <input type="text" id="openCount" class="test-result-input" value="0" min="0" readonly></span>
-                    <span class="short-result">SHORT : <input type="text" id="shortCount" class="test-result-input" value="0" min="0" readonly></span>
+                    <span class="test-result-item pass-result">
+                        <span class="test-result-label">PASS :</span>
+                        <input type="text" id="passCount" class="test-result-input" value="0" min="0" readonly>
+                    </span>
+                    <span class="test-result-item open-result">
+                        <span class="test-result-label">OPEN :</span>
+                        <input type="text" id="openCount" class="test-result-input" value="0" min="0" readonly>
+                    </span>
+                    <span class="test-result-item short-result">
+                        <span class="test-result-label">SHORT :</span>
+                        <input type="text" id="shortCount" class="test-result-input" value="0" min="0" readonly>
+                    </span>
                 </span>
             </div>
         </section>
