@@ -72,6 +72,7 @@
       filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
       transition: transform 0.3s, filter 0.3s;
       animation: shine 5s linear infinite;
+      flex-shrink: 0; /* 確保 Logo 不會被壓縮 */
   }
 
   .brand-logo:hover .text-logo {
@@ -94,6 +95,7 @@
       position: relative;
       transition: color 0.3s;
       white-space: nowrap; /* 避免單一連結自己換行 */
+      flex-shrink: 0; /* 確保連結項目不被壓縮 */
   }
 
   .nav-item::after {
@@ -127,15 +129,19 @@
       100% { background-position: 100% 50%; }
   }
 
-  /* 🔻 手機 / 平板寬度調整：保持橫向一行，不再變成兩行排版 */
+  /* ================================================= */
+  /* 🔻 手機 / 平板寬度調整 (最大 768px) */
+  /* ================================================= */
   @media (max-width: 768px) {
       .navbar {
           /* 保持一行橫向排列 */
           flex-direction: row;
           align-items: center;
-          justify-content: space-between;
+          /* 💡 調整：改為靠左對齊，讓 Logo 和選單區域緊鄰 */
+          justify-content: flex-start;
           padding: 10px 16px;
           gap: 16px;
+          overflow-x: hidden; /* 確保 navbar 本身不會溢出 */
       }
 
       .text-logo {
@@ -146,7 +152,18 @@
       .nav-links {
           display: flex;
           gap: 12px;
-          flex-wrap: nowrap;      /* 不讓連結自動掉到下一行 */
+          flex-wrap: nowrap;
+          /* 💡 新增：允許選單內容橫向捲動 */
+          overflow-x: auto;
+          flex-grow: 1; /* 佔據 logo 剩餘的所有空間 */
+          /* 隱藏捲軸 (Chrome, Safari) */
+          -ms-overflow-style: none; /* IE and Edge */
+          scrollbar-width: none;    /* Firefox */
+          padding-bottom: 2px; /* 增加底部空間以防內容貼邊 */
+      }
+      /* 隱藏 Webkit 瀏覽器捲軸 */
+      .nav-links::-webkit-scrollbar {
+          display: none;
       }
 
       .nav-item {
@@ -155,7 +172,8 @@
 
       /* 調整手機版 body padding-top 以適應固定 navbar 高度 */
       body {
-          padding-top: 120px !important;
+          /* 調整為一個更穩定的高度，例如 70px */
+          padding-top: 70px !important;
       }
   }
   /* ================================================= */
@@ -298,7 +316,8 @@
     }
 
     body {
-        padding: 120px 10px 20px 10px;  /* 與上面 navbar 設定一致 */
+        /* 💡 調整：與 navbar 的 padding-top 一致 */
+        padding: 70px 10px 20px 10px;
     }
 
     h1 {
@@ -860,15 +879,21 @@
     out.focus();
     out.select();
     try {
+      // 由於 iFrame 限制，使用 document.execCommand('copy')
       var ok = document.execCommand("copy");
       if (ok) {
-        alert("已複製訊息！");
+        // ❌ 避免使用 alert()
+        console.log("已複製訊息！");
       } else {
-        alert("無法自動複製，請長按手動複製文字。");
+        console.log("無法自動複製，請長按手動複製文字。");
       }
     } catch (e) {
-      alert("無法自動複製，請長按手動複製文字。");
+      console.log("無法自動複製，請長按手動複製文字。");
     }
+  }
+  // 💡 修正：移除舊的 alert 呼叫，避免在 iFrame 環境中造成問題
+  function alert(message) {
+    console.log("Alert:", message);
   }
 
   document.addEventListener('DOMContentLoaded', updateStates);
