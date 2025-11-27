@@ -5,23 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>駿鑫 PCB 系統入口</title>
     <style>
-        /* --- 引入字型 (可選，這裡使用系統優化字型) --- */
+        /* --- 引入字型 --- */
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
 
-        /* --- 全域變數定義 --- */
+        /* --- 高級淺色金屬配色 (Light Grey & Gold) --- */
         :root {
-            --primary-gradient: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
-            --glass-bg: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.5);
-            --text-main: #2d3436;
-            --text-sub: #636e72;
-            --accent-blue: #0984e3;
-            --accent-green: #00b894;
+            /* 背景：柔和淺灰漸層 (極光灰) */
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e0e6ed 100%);
+            
+            /* 容器：亮色玻璃毛玻璃 */
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(194, 168, 120, 0.5); /* 金色邊框更明顯 */
+            
+            /* 文字顏色 */
+            --text-main: #1f2937; /* 深藍灰 (高對比) */
+            --text-sub: #6b7280;  /* 柔和灰 */
+            
+            /* 金屬漸層 (模擬土金/玫瑰金反光) */
+            --gold-gradient: linear-gradient(135deg, #c2a878 0%, #e3d1a8 50%, #9e8b6b 100%);
+            --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            
+            /* 卡片互動色 */
+            --card-hover-shadow: rgba(194, 168, 120, 0.4);
         }
 
         body {
             font-family: 'Roboto', 'Noto Sans TC', "Microsoft JhengHei", Arial, sans-serif;
-            background: var(--primary-gradient); /* 高級深色漸層背景 */
+            background: var(--bg-gradient); /* 淺色背景 */
             margin: 0;
             padding: 0;
             display: flex;
@@ -29,30 +39,33 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
+            color: var(--text-main); /* 確保預設文字是深色的 */
         }
 
-        /* 背景裝飾圓形 (增加層次感) */
+        /* 背景裝飾光暈 - 讓它更淡 */
         body::before {
             content: '';
             position: absolute;
-            top: -10%;
+            top: -20%;
             left: -10%;
-            width: 50vw;
-            height: 50vw;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            width: 60vw;
+            height: 60vw;
+            /* 淺色背景使用淡金色光暈 */
+            background: radial-gradient(circle, rgba(194, 168, 120, 0.15) 0%, rgba(0,0,0,0) 70%);
             border-radius: 50%;
             pointer-events: none;
         }
 
         .container {
             position: relative;
-            background-color: var(--glass-bg);
-            backdrop-filter: blur(20px); /* 毛玻璃模糊特效 */
-            -webkit-backdrop-filter: blur(20px);
+            background-color: var(--glass-bg); /* 亮色毛玻璃 */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             padding: 60px 40px;
-            border-radius: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 
+                0 15px 40px rgba(0, 0, 0, 0.15), /* 淺色背景使用柔和陰影 */
+                inset 0 0 0 1px var(--glass-border); /* 內嵌金屬邊框 */
             text-align: center;
             max-width: 900px;
             width: 90%;
@@ -65,36 +78,38 @@
             line-height: 1.3;
         }
 
-        /* 第一行：品牌名稱 (強調) */
+        /* 第一行：品牌名稱 (奢華金屬字) */
         h1 span.brand {
             display: block;
             font-size: 2.8rem;
             font-weight: 800;
-            background: -webkit-linear-gradient(45deg, #2b5876, #4e4376);
+            /* 金屬流光效果 (不變) */
+            background: var(--gold-text-gradient);
+            background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            animation: shine 5s linear infinite;
         }
 
-        /* 第二行：系統名稱 (精緻感) */
+        /* 第二行：系統名稱 (精緻霧面金) */
         h1 span.system {
             display: block;
             font-size: 1.2rem;
-            color: var(--text-sub);
+            color: #c2a878; /* 霧面金 */
             font-weight: 400;
-            letter-spacing: 4px; /* 增加字距讓質感提升 */
+            letter-spacing: 6px;
             text-transform: uppercase;
         }
 
-        /* 標題下方的裝飾線 */
+        /* 標題下方的裝飾線 (金屬髮絲紋感) */
         h1::after {
             content: '';
             display: block;
-            width: 60px;
-            height: 4px;
-            background: linear-gradient(90deg, #2b5876, #4e4376);
-            margin: 20px auto 0;
-            border-radius: 2px;
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #c2a878, transparent);
+            margin: 25px auto 0;
             opacity: 0.8;
         }
 
@@ -103,10 +118,10 @@
             gap: 30px;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 40px;
+            margin-top: 50px;
         }
 
-        /* 卡片按鈕樣式 */
+        /* 卡片按鈕樣式 - 淺色金屬面板 (Light Neumorphism) */
         .option-card {
             display: flex;
             flex-direction: column;
@@ -115,88 +130,99 @@
             text-decoration: none;
             width: 260px;
             height: 200px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); /* 柔和陰影 */
+            /* 調整為亮白色漸層 */
+            background: linear-gradient(145deg, #ffffff, #f0f4f8); 
+            border-radius: 15px;
+            box-shadow: 
+                5px 5px 15px rgba(0,0,0,0.1), /* 柔和淺色陰影 */
+                -2px -2px 4px rgba(255,255,255,1); /* 淺色背景上的高光 */
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.02);
+            /* === 修正點：讓邊框更明顯 (2px 淺藍灰) === */
+            border: 2px solid #e2e8f0; 
         }
 
         .option-icon { 
             font-size: 55px; 
             margin-bottom: 15px; 
             transition: transform 0.4s ease;
-            filter: grayscale(0.2); /* 預設稍微低飽和，看起來比較穩重 */
+            /* 圖示預設使用金屬漸層色 */
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
         
         .option-title { 
             font-size: 1.3rem; 
-            font-weight: 700; 
-            color: var(--text-main);
+            font-weight: 500; 
+            color: var(--text-main); /* 預設深色文字 */
             margin-bottom: 5px;
             transition: color 0.3s;
+            letter-spacing: 1px;
         }
         
         .option-desc { 
-            font-size: 0.85rem; 
-            color: #b2bec3; 
+            font-size: 0.8rem; 
+            color: var(--text-sub); /* 預設灰色文字 */
             font-family: 'Roboto', sans-serif;
             font-weight: 300;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
             transition: color 0.3s;
+            text-transform: uppercase;
         }
 
         /* --- 互動特效 (Hover Effects) --- */
 
         /* 通用 Hover 狀態 */
         .option-card:hover {
-            transform: translateY(-10px);
-            border-color: transparent;
+            transform: translateY(-8px);
+            /* Hover 時邊框變金，這個顏色與 2px 邊框搭配會非常醒目 */
+            border-color: #c2a878; 
+            box-shadow: 0 15px 35px var(--card-hover-shadow);
         }
 
         .option-card:hover .option-icon {
             transform: scale(1.1);
-            filter: grayscale(0);
+            -webkit-text-fill-color: #fff; /* Hover 時圖標變白 */
         }
 
-        .option-card:hover .option-title,
+        .option-card:hover .option-title {
+            color: #fff;
+        }
+        
         .option-card:hover .option-desc {
-            color: white;
-            position: relative;
-            z-index: 2;
+            color: #f7f7f7; /* 描述變亮 */
         }
 
-        /* Order Detail (藍色漸層) */
+        /* Order Detail (琥珀金漸層) */
         .card-order::before {
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #0984e3, #74b9ff);
+            /* 星宇風格：沈穩的棕金漸層 */
+            background: linear-gradient(135deg, rgba(161, 142, 114, 0.9), rgba(105, 90, 66, 0.9));
             opacity: 0;
             transition: opacity 0.4s ease;
             z-index: 1;
         }
-        
-        .card-order:hover {
-            box-shadow: 0 20px 40px rgba(9, 132, 227, 0.3);
-        }
 
-        /* Inspection Report (綠色漸層) */
+        /* Inspection Report (鈦金銀漸層) */
         .card-report::before {
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #00b894, #55efc4);
+            /* 鈦金屬銀色 */
+            background: linear-gradient(135deg, rgba(170, 179, 192, 0.9), rgba(126, 137, 150, 0.9));
             opacity: 0;
             transition: opacity 0.4s ease;
             z-index: 1;
         }
-
-        .card-report:hover {
-            box-shadow: 0 20px 40px rgba(0, 184, 148, 0.3);
+        .card-report:hover .option-desc {
+            color: #fff;
         }
+
 
         /* Hover 時讓漸層浮現 */
         .option-card:hover::before {
@@ -221,26 +247,38 @@
             }
         }
 
+        /* 金屬流光動畫 */
+        @keyframes shine {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
         /* 響應式調整 */
         @media (max-width: 600px) {
             .container {
                 padding: 40px 20px;
                 width: 85%;
+                backdrop-filter: blur(20px);
             }
             
             h1 span.brand { font-size: 2.2rem; }
-            h1 span.system { font-size: 1rem; letter-spacing: 2px; }
+            h1 span.system { font-size: 0.9rem; letter-spacing: 3px; }
             
             .option-card {
                 width: 100%;
-                height: 160px;
-                flex-direction: row; /* 手機版改為橫向排列比較好按 */
+                height: 140px;
+                flex-direction: row;
                 justify-content: flex-start;
                 padding-left: 30px;
+                /* 手機版使用全白底色 */
+                background: #ffffff;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             }
             
-            .option-icon { margin-bottom: 0; margin-right: 20px; font-size: 40px; }
-            .option-info { text-align: left; } /* 新增一個包裝文字的 div */
+            .option-icon { margin-bottom: 0; margin-right: 25px; font-size: 36px; }
+            .option-info { text-align: left; }
+            .option-title { font-size: 1.1rem; }
+            .option-desc { font-size: 0.75rem; }
         }
     </style>
 </head>
