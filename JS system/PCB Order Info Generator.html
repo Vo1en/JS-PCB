@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PCB規格產生器</title>
-<link rel="stylesheet" href="style.css">
- <style>
+  <link rel="stylesheet" href="style.css">
+  <style>
   /* ================================================= */
   /* === START: 來自 navbar.html 的 CSS 樣式 === */
   /* ================================================= */
@@ -22,16 +22,21 @@
       --active-color: #c2a878;
   }
 
+  /* 全域 box-sizing，避免寬度超出造成左右滑動 */
+  *, *::before, *::after {
+      box-sizing: border-box;
+  }
+
   .navbar {
       position: fixed;
       top: 0;
       left: 0;
+      right: 0;
       width: 100%;
       display: flex;
       align-items: center;
-      padding: 10px 40px;
+      padding: 10px 16px;
       justify-content: flex-start;
-      gap: 50px;
       background-color: var(--glass-bg);
       backdrop-filter: blur(15px);
       -webkit-backdrop-filter: blur(15px);
@@ -45,11 +50,12 @@
       align-items: center;
       text-decoration: none;
       padding: 5px 0;
+      flex-shrink: 0;
   }
 
   .text-logo {
       font-family: 'Roboto', sans-serif;
-      font-size: 2.2rem;
+      font-size: 2rem;
       font-weight: 900;
       letter-spacing: -1px;
       background: var(--gold-text-gradient);
@@ -59,6 +65,7 @@
       filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
       transition: transform 0.3s, filter 0.3s;
       animation: shine 5s linear infinite;
+      white-space: nowrap;
   }
 
   .brand-logo:hover .text-logo {
@@ -69,17 +76,21 @@
 
   .nav-links {
       display: flex;
-      gap: 25px;
+      gap: 20px;
+      margin-left: 30px;
+      flex-wrap: nowrap;
   }
 
   .nav-item {
       text-decoration: none;
       color: var(--text-main);
       font-size: 1rem;
-      font-weight: 500;
+      /* 修改 1: 這裡從 500 改為 700 (Bold) */
+      font-weight: 700;
       padding: 5px 0;
       position: relative;
       transition: color 0.3s;
+      white-space: nowrap;
   }
 
   .nav-item::after {
@@ -113,12 +124,14 @@
       100% { background-position: 100% 50%; }
   }
 
+  /* 平板 / 手機：navbar 改成上下堆疊、置中 */
   @media (max-width: 768px) {
       .navbar {
           flex-direction: column;
-          align-items: flex-start;
-          padding: 15px 20px;
-          gap: 10px;
+          align-items: center;
+          padding: 8px 10px; /* 稍微減少 padding */
+          gap: 6px;
+          margin-left: 0;
       }
       .text-logo {
           font-size: 1.8rem;
@@ -126,15 +139,18 @@
       }
       .nav-links {
           width: 100%;
-          flex-wrap: wrap;
-          gap: 15px 15px;
+          justify-content: center;
+          flex-wrap: wrap; /* 允許換行 */
+          gap: 8px 12px;   /* 調整間距，讓內容更容易擠進去 */
+          margin-left: 0;  /* 確保沒有左邊距影響置中 */
       }
       .nav-item {
           font-size: 0.9rem;
       }
       /* 調整手機版 body padding-top 以適應展開的 navbar */
+      /* 修改: 減少上方留白，消除灰色空隙，調整為 105px 左右 (視導覽列實際高度) */
       body {
-          padding-top: 170px !important; 
+          padding-top: 105px !important; 
       }
   }
   /* ================================================= */
@@ -153,19 +169,18 @@
 
   body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    margin: 0;       
-    /* 調整 padding-top 以騰出 Navbar 空間，約 60px */
-    padding: 80px 16px 20px 16px; 
-    background: #f5f5f5; 
-    width: 100%;
+    margin: 0;
+    padding: 80px 16px 20px 16px;  /* 上方預留給 navbar */
+    background: #f5f5f5;
+    max-width: 100%;
+    overflow-x: hidden;            /* 關掉左右捲動 */
   }
 
   /* 確保內容置中，並保留左右邊距以避免內容貼邊 */
   .main-container {
     max-width: 800px;
-    /* 移除頂部 margin，讓內容緊貼 body 的 padding-top */
-    margin: 0 auto; 
-    padding: 0; /* 左右邊距已移到 body 上 */
+    margin: 0 auto;
+    padding: 0;
   }
 
   h1 {
@@ -173,6 +188,7 @@
     font-size: 22px;
     margin-top: 0; 
     margin-bottom: 20px; 
+    font-weight: 700; /* h1 也確保加粗 */
   }
   
   /* 強化卡片視覺效果 */
@@ -194,11 +210,19 @@
   
   label {
     font-size: 14px;
-    text-align: left; /* 🌟 修正: 項目名稱文字靠左對齊，形成垂直線 */
+    text-align: left;
     color: #333;
-    padding-left: 0; /* 確保沒有額外的左邊距影響對齊 */
+    padding-left: 0;
+    /* 修改 2: 新增這行，讓內容的項目名稱變粗 */
+    font-weight: 700; 
   }
   
+  /* 修改：讓 select 和 input 寬度統一，並處理 input-wrapper */
+  .select-container {
+    width: 100%;
+    position: relative;
+  }
+
   select, input, textarea {
     width: 100%;
     padding: 8px 10px; 
@@ -212,10 +236,41 @@
     background-color: #eee;
     color: #888;
   }
+
+  /* 自行輸入區塊的樣式 */
+  .custom-input-wrapper {
+    display: none; /* 預設隱藏 */
+    width: 100%;
+    gap: 8px;
+    align-items: center;
+  }
   
-  /* 備註欄位: 保持縮小高度 */
+  .custom-input-wrapper input {
+    flex-grow: 1;
+  }
+
+  .reset-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    padding: 0;
+    background: #9ca3af;
+    color: white;
+    border: none;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .reset-btn:hover {
+    background: #6b7280;
+  }
+  
   textarea#remark {
-    min-height: 80px; 
+    min-height: 90px; 
     resize: vertical;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
   }
@@ -236,6 +291,7 @@
     background: #2563eb;
     color: #fff;
     transition: background 0.2s; 
+    font-weight: 500; /* 按鈕也可以稍微加粗 */
   }
   button:hover {
     background: #1d4ed8;
@@ -244,23 +300,24 @@
     background: #6b7280;
   }
   
-  /* 輸出訊息區塊: 獨立排版，使其佔滿橫幅 */
+  /* 輸出訊息區塊 */
   .output-area {
     margin-top: 15px;
   }
 
-  /* 輸出欄位: 拉長高度並確保佔滿寬度 */
   .output-area label {
     text-align: left; 
     display: block;
     margin-bottom: 4px;
   }
 
+  /* 這裡拉高輸出欄位，讓內容一次多一點 */
   textarea#output {
     width: 100%;
     margin-top: 0;
-    min-height: 200px; 
+    min-height: 350px;  /* 桌機版預設高度加長 */
     font-family: Menlo, Consolas, monospace; 
+    line-height: 1.5;
   }
   
   .warning {
@@ -273,14 +330,14 @@
   /* 🔻 手機版樣式 */
   @media (max-width: 600px) {
     .main-container {
-      margin: 8px auto;
+      margin: 0 auto; /* 修改: 取消上方 margin，消除間距 */
       padding: 0; 
       max-width: 100%;
     }
     
     body {
-        /* 手機版 body 左右 padding 改為 10px */
-        padding: 170px 10px 20px 10px; 
+      padding: 105px 10px 20px 10px; /* 修改: 手機版 body padding 同步減少 */
+      overflow-x: hidden;
     }
 
     h1 {
@@ -298,7 +355,7 @@
       margin-bottom: 12px;
     }
     label {
-      text-align: left; /* 手機版維持靠左對齊 */
+      text-align: left;
       font-size: 13px;
       margin-bottom: 2px;
     }
@@ -324,7 +381,7 @@
       width: 70%;
     }
     textarea#output {
-      min-height: 120px;
+      min-height: 300px;  /* 手機版也比原本更高一點 */
       font-size: 13px;
     }
   }
@@ -333,26 +390,22 @@
 <body>
 
 <nav class="navbar">
-        <a href="index.html" class="brand-logo">
-            <span class="text-logo">JS PCB</span>
-        </a>
+  <a href="index.html" class="brand-logo">
+    <span class="text-logo">JS PCB</span>
+  </a>
 
-        <div class="nav-links">
-            <a href="index.html" class="nav-item">首頁</a>
-            <a href="PCB Order Info Generator.html" class="nav-item current">PCB規格產生器</a>
-            <a href="PCB Inspection Report.html" class="nav-item">出貨檢驗報告</a>
-            <a href="PCB Test Report.html" class="nav-item">電性測試報告</a>
-        </div>
-    </nav>
+  <div class="nav-links">
+    <a href="index.html" class="nav-item">首頁</a>
+    <a href="PCB Order Info Generator.html" class="nav-item current">PCB規格產生器</a>
+    <a href="PCB Inspection Report.html" class="nav-item">出貨檢驗報告</a>
+    <a href="PCB Test Report.html" class="nav-item">電性測試報告</a>
+  </div>
+</nav>
+
 <div class="main-container">
-  
   <div class="card">
-    
     <div class="logo-wrap">
-      <img
-        src="pic/JS_LOGO.png"
-        alt="JS PCB Logo"
-      >
+      <img src="pic/JS_LOGO.png" alt="JS PCB Logo" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x100?text=JS+PCB';">
     </div>
     <h1>PCB 規格產生器</h1>
     
@@ -363,12 +416,19 @@
 
     <div class="field-group">
       <label for="material">板材</label>
-      <select id="material" onchange="updateStates()">
-        <option>-</option>
-        <option selected>FR-4</option>
-        <option>FR-1</option>
-        <option>鋁基板</option>
-      </select>
+      <div class="select-container">
+        <select id="material" onchange="onSelectChange(this)">
+          <option>-</option>
+          <option selected>FR-4</option>
+          <option>FR-1</option>
+          <option>鋁基板</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="material_custom_div" class="custom-input-wrapper">
+          <input type="text" id="material_custom" placeholder="請自行輸入板材" />
+          <button type="button" class="reset-btn" onclick="resetSelect('material')" title="切換回選單">×</button>
+        </div>
+      </div>
       <div id="materialWarning" class="warning" style="display:none;">
         FR-1 交期較長，建議以 FR-4 製作
       </div>
@@ -376,32 +436,46 @@
 
     <div class="field-group">
       <label for="layers">層別</label>
-      <select id="layers" onchange="updateStates()">
-        <option>-</option>
-        <option>單面板</option>
-        <option selected>雙面板</option>
-        <option>四層板</option>
-        <option>六層板</option>
-        <option>八層板</option>
-        <option>十層板</option>
-      </select>
+      <div class="select-container">
+        <select id="layers" onchange="onSelectChange(this)">
+          <option>-</option>
+          <option>單面板</option>
+          <option selected>雙面板</option>
+          <option>四層板</option>
+          <option>六層板</option>
+          <option>八層板</option>
+          <option>十層板</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="layers_custom_div" class="custom-input-wrapper">
+          <input type="text" id="layers_custom" placeholder="請自行輸入層別" />
+          <button type="button" class="reset-btn" onclick="resetSelect('layers')" title="切換回選單">×</button>
+        </div>
+      </div>
     </div>
 
     <div class="field-group">
       <label for="thickness">板厚</label>
-      <select id="thickness" onchange="updateStates()">
-        <option>-</option>
-        <option>0.4mm</option>
-        <option>0.6mm</option>
-        <option>0.8mm</option>
-        <option>1.0mm</option>
-        <option>1.2mm</option>
-        <option selected>1.6mm</option>
-        <option>2.0mm</option>
-        <option>2.4mm</option>
-        <option>3.0mm</option>
-        <option>3.2mm</option>
-      </select>
+      <div class="select-container">
+        <select id="thickness" onchange="onSelectChange(this)">
+          <option>-</option>
+          <option>0.4mm</option>
+          <option>0.6mm</option>
+          <option>0.8mm</option>
+          <option>1.0mm</option>
+          <option>1.2mm</option>
+          <option selected>1.6mm</option>
+          <option>2.0mm</option>
+          <option>2.4mm</option>
+          <option>3.0mm</option>
+          <option>3.2mm</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="thickness_custom_div" class="custom-input-wrapper">
+          <input type="text" id="thickness_custom" placeholder="請自行輸入板厚" />
+          <button type="button" class="reset-btn" onclick="resetSelect('thickness')" title="切換回選單">×</button>
+        </div>
+      </div>
       <div id="thicknessWarning" class="warning" style="display:none;">
         板厚 0.4mm 太薄，無法進行 V-Cut。若需拼板，建議採用郵票孔設計。
       </div>
@@ -409,12 +483,19 @@
 
     <div class="field-group">
       <label for="innerCu">內層銅厚</label>
-      <select id="innerCu">
-        <option>-</option>
-        <option>0.5oz</option>
-        <option>1oz</option>
-        <option>2oz</option>
-      </select>
+      <div class="select-container">
+        <select id="innerCu" onchange="checkCustom(this)">
+          <option>-</option>
+          <option>0.5oz</option>
+          <option>1oz</option>
+          <option>2oz</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="innerCu_custom_div" class="custom-input-wrapper">
+          <input type="text" id="innerCu_custom" placeholder="請自行輸入內層銅厚" />
+          <button type="button" class="reset-btn" onclick="resetSelect('innerCu')" title="切換回選單">×</button>
+        </div>
+      </div>
       <div id="innerCuWarning" class="warning" style="display:none;">
         單面板、雙面板不支援內層銅厚
       </div>
@@ -422,52 +503,80 @@
 
     <div class="field-group">
       <label for="outerCu">外層銅厚</label>
-      <select id="outerCu">
-        <option>-</option>
-        <option selected>1oz</option>
-        <option>2oz</option>
-        <option>3oz</option>
-      </select>
+      <div class="select-container">
+        <select id="outerCu" onchange="checkCustom(this)">
+          <option>-</option>
+          <option selected>1oz</option>
+          <option>2oz</option>
+          <option>3oz</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="outerCu_custom_div" class="custom-input-wrapper">
+          <input type="text" id="outerCu_custom" placeholder="請自行輸入外層銅厚" />
+          <button type="button" class="reset-btn" onclick="resetSelect('outerCu')" title="切換回選單">×</button>
+        </div>
+      </div>
     </div>
 
     <div class="field-group">
       <label for="solderMask">防焊顏色</label>
-      <select id="solderMask">
-        <option>-</option>
-        <option value="綠色" selected>🟢 綠色</option>
-        <option value="藍色">🔵 藍色</option>
-        <option value="黑色">⚫ 黑色</option>
-        <option value="白色">⚪ 白色</option>
-        <option value="紅色">🔴 紅色</option>
-        <option value="黃色">🟡 黃色</option>
-        <option value="無"> 無</option>
-      </select>
+      <div class="select-container">
+        <select id="solderMask" onchange="checkCustom(this)">
+          <option>-</option>
+          <option value="綠色" selected>🟢 綠色</option>
+          <option value="藍色">🔵 藍色</option>
+          <option value="黑色">⚫ 黑色</option>
+          <option value="白色">⚪ 白色</option>
+          <option value="紅色">🔴 紅色</option>
+          <option value="黃色">🟡 黃色</option>
+          <option value="無"> 無</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="solderMask_custom_div" class="custom-input-wrapper">
+          <input type="text" id="solderMask_custom" placeholder="請自行輸入防焊顏色" />
+          <button type="button" class="reset-btn" onclick="resetSelect('solderMask')" title="切換回選單">×</button>
+        </div>
+      </div>
     </div>
 
     <div class="field-group">
       <label for="legendColor">文字顏色</label>
-      <select id="legendColor">
-        <option>-</option>
-        <option value="白字" selected>⚪ 白字</option>
-        <option value="黑字">⚫ 黑字</option>
-        <option value="無文字">無文字</option>
-      </select>
+      <div class="select-container">
+        <select id="legendColor" onchange="checkCustom(this)">
+          <option>-</option>
+          <option value="白字" selected>⚪ 白字</option>
+          <option value="黑字">⚫ 黑字</option>
+          <option value="無文字">無文字</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="legendColor_custom_div" class="custom-input-wrapper">
+          <input type="text" id="legendColor_custom" placeholder="請自行輸入文字顏色" />
+          <button type="button" class="reset-btn" onclick="resetSelect('legendColor')" title="切換回選單">×</button>
+        </div>
+      </div>
     </div>
 
     <div class="field-group">
       <label for="finish">表面處理</label>
-      <select id="finish">
-        <option value="-">-</option>
-        <option value="有鉛噴錫">有鉛噴錫</option>
-        <option value="無鉛噴錫" selected>無鉛噴錫</option>
-        <option value="化金 1u">化金 1u</option>
-        <option value="化金 2u">化金 2u</option>
-        <option value="化金 3u">化金 3u</option>
-        <option value="硬金 3u">硬金 3u</option>
-        <option value="硬金 5u">硬金 5u</option>
-        <option value="OSP">OSP</option>
-        <option value="裸銅">裸銅</option>
-      </select>
+      <div class="select-container">
+        <select id="finish" onchange="checkCustom(this)">
+          <option value="-">-</option>
+          <option value="有鉛噴錫">有鉛噴錫</option>
+          <option value="無鉛噴錫" selected>無鉛噴錫</option>
+          <option value="化金 1u">化金 1u</option>
+          <option value="化金 2u">化金 2u</option>
+          <option value="化金 3u">化金 3u</option>
+          <option value="硬金 3u">硬金 3u</option>
+          <option value="硬金 5u">硬金 5u</option>
+          <option value="OSP">OSP</option>
+          <option value="裸銅">裸銅</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="finish_custom_div" class="custom-input-wrapper">
+          <input type="text" id="finish_custom" placeholder="請自行輸入表面處理" />
+          <button type="button" class="reset-btn" onclick="resetSelect('finish')" title="切換回選單">×</button>
+        </div>
+      </div>
       <div id="finishWarning" class="warning" style="display:none;">
         六層板以上，統一製做化金 2u 表面處理
       </div>
@@ -475,42 +584,63 @@
 
     <div class="field-group">
       <label for="goldFinger">金(錫)手指</label>
-      <select id="goldFinger">
-        <option>-</option>
-        <option>斜邊30°</option>
-        <option>斜邊45°</option>
-      </select>
+      <div class="select-container">
+        <select id="goldFinger" onchange="checkCustom(this)">
+          <option>-</option>
+          <option>斜邊30°</option>
+          <option>斜邊45°</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="goldFinger_custom_div" class="custom-input-wrapper">
+          <input type="text" id="goldFinger_custom" placeholder="請自行輸入金(錫)手指" />
+          <button type="button" class="reset-btn" onclick="resetSelect('goldFinger')" title="切換回選單">×</button>
+        </div>
+      </div>
     </div>
 
     <div class="field-group">
       <label for="qty">數量(出貨片)</label>
-      <select id="qty">
-        <option>-</option>
-        <option selected>5</option>
-        <option>10</option>
-        <option>15</option>
-        <option>20</option>
-        <option>25</option>
-        <option>30</option>
-        <option>50</option>
-        <option>75</option>
-        <option>100</option>
-        <option>125</option>
-        <option>150</option>
-        <option>200</option>
-      </select>
+      <div class="select-container">
+        <select id="qty" onchange="checkCustom(this)">
+          <option>-</option>
+          <option selected>5</option>
+          <option>10</option>
+          <option>15</option>
+          <option>20</option>
+          <option>25</option>
+          <option>30</option>
+          <option>50</option>
+          <option>75</option>
+          <option>100</option>
+          <option>125</option>
+          <option>150</option>
+          <option>200</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="qty_custom_div" class="custom-input-wrapper">
+          <input type="text" id="qty_custom" placeholder="請自行輸入數量" />
+          <button type="button" class="reset-btn" onclick="resetSelect('qty')" title="切換回選單">×</button>
+        </div>
+      </div>
     </div>
 
     <div class="field-group">
       <label for="special1">特殊製程#1</label>
-      <select id="special1">
-        <option>-</option>
-        <option>半孔</option>
-        <option>塞孔</option>
-        <option>樹脂塞孔</option>
-        <option>BGA</option>
-        <option>側邊鍍銅</option>
-      </select>
+      <div class="select-container">
+        <select id="special1" onchange="checkCustom(this)">
+          <option>-</option>
+          <option>半孔</option>
+          <option>塞孔</option>
+          <option>樹脂塞孔</option>
+          <option>BGA</option>
+          <option>側邊鍍銅</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="special1_custom_div" class="custom-input-wrapper">
+          <input type="text" id="special1_custom" placeholder="請自行輸入特殊製程" />
+          <button type="button" class="reset-btn" onclick="resetSelect('special1')" title="切換回選單">×</button>
+        </div>
+      </div>
       <div id="special1Warning" class="warning" style="display:none;">
         六層板以上，統一製作樹脂塞孔製程
       </div>
@@ -518,34 +648,47 @@
 
     <div class="field-group">
       <label for="special2">特殊製程#2</label>
-      <select id="special2">
-        <option>-</option>
-        <option>半孔</option>
-        <option>塞孔</option>
-        <option>樹脂塞孔</option>
-        <option>BGA</option>
-        <option>側邊鍍銅</option>
-      </select>
+      <div class="select-container">
+        <select id="special2" onchange="checkCustom(this)">
+          <option>-</option>
+          <option>半孔</option>
+          <option>塞孔</option>
+          <option>樹脂塞孔</option>
+          <option>BGA</option>
+          <option>側邊鍍銅</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="special2_custom_div" class="custom-input-wrapper">
+          <input type="text" id="special2_custom" placeholder="請自行輸入特殊製程" />
+          <button type="button" class="reset-btn" onclick="resetSelect('special2')" title="切換回選單">×</button>
+        </div>
+      </div>
     </div>
 
     <div class="field-group">
       <label for="special3">特殊製程#3</label>
-      <select id="special3">
-        <option>-</option>
-        <option>半孔</option>
-        <option>塞孔</option>
-        <option>樹脂塞孔</option>
-        <option>BGA</option>
-        <option>側邊鍍銅</option>
-      </select>
+      <div class="select-container">
+        <select id="special3" onchange="checkCustom(this)">
+          <option>-</option>
+          <option>半孔</option>
+          <option>塞孔</option>
+          <option>樹脂塞孔</option>
+          <option>BGA</option>
+          <option>側邊鍍銅</option>
+          <option value="custom">自行輸入</option>
+        </select>
+        <div id="special3_custom_div" class="custom-input-wrapper">
+          <input type="text" id="special3_custom" placeholder="請自行輸入特殊製程" />
+          <button type="button" class="reset-btn" onclick="resetSelect('special3')" title="切換回選單">×</button>
+        </div>
+      </div>
     </div>
-  <div class="field-group">
-    <label for="specialAmount">訂單金額</label>
-    <input
-      type="number"
-      id="specialAmount"
-    />
-  </div>
+
+    <div class="field-group">
+      <label for="specialAmount">訂單金額</label>
+      <input type="text" id="specialAmount" inputmode="numeric" oninput="formatNumber(this)" placeholder="請輸入金額" />
+    </div>
+
     <div class="field-group">
       <label for="remark">備註</label>
       <textarea id="remark" placeholder="如有其他需求或注意事項，請於此欄詳細說明"></textarea>
@@ -563,8 +706,64 @@
   </div>
 </div>
 
- <script>
+<script>
+  // 修改 #1: 新增格式化數字的函式
+  function formatNumber(input) {
+    // 移除非數字的字元
+    var value = input.value.replace(/\D/g, "");
+    // 如果有值，則加上千分位逗號
+    if (value) {
+      input.value = Number(value).toLocaleString("en-US");
+    } else {
+      input.value = "";
+    }
+  }
+
+  // --- 新增: 自行輸入相關邏輯 ---
+
+  // 當選單改變時，檢查是否選擇了 "custom"
+  function checkCustom(selectEl) {
+    if (selectEl.value === 'custom') {
+      var customDivId = selectEl.id + '_custom_div';
+      var customDiv = document.getElementById(customDivId);
+      var customInput = document.getElementById(selectEl.id + '_custom');
+      if (customDiv) {
+        selectEl.style.display = 'none'; // 隱藏選單
+        customDiv.style.display = 'flex'; // 顯示輸入框組
+        if(customInput) customInput.focus();
+      }
+    }
+  }
+
+  // 重置回選單模式
+  function resetSelect(selectId) {
+    var selectEl = document.getElementById(selectId);
+    var customDiv = document.getElementById(selectId + '_custom_div');
+    if (selectEl && customDiv) {
+      customDiv.style.display = 'none';
+      selectEl.style.display = 'block';
+      selectEl.value = '-'; // 重置為預設值，或第一項
+      
+      // 因為重置了值，需要重新檢查連動狀態 (例如 material 或 layers 影響警告)
+      if (selectEl.onchange) {
+        // 手動觸發 onchange 事件以更新狀態 (如果是 onSelectChange 綁定)
+        onSelectChange(selectEl);
+      } else {
+         updateStates();
+      }
+    }
+  }
+
+  // 統一處理 onchange，先檢查 custom，再更新狀態
+  function onSelectChange(el) {
+    checkCustom(el);
+    updateStates();
+  }
+
   function updateStates() {
+    // 若為 custom，原本的 value 取得可能會變成 "custom"，這時候邏輯需小心
+    // 但通常來說，如果是 custom，我們就讓它通過 (不觸發特定警告或禁用)，這符合「自行輸入」的彈性
+
     var layer        = document.getElementById("layers").value;
     var layersSel    = document.getElementById("layers");
     var innerSelect  = document.getElementById("innerCu");
@@ -596,6 +795,8 @@
       }
     }
 
+    // 先全部啟用，再根據邏輯禁用
+    // 注意：如果目前是 custom 模式 (hidden)，這些 disabled 操作不影響輸入框，只影響背後的 select (已隱藏)
     for (i = 0; i < thicknessSel.options.length; i++) {
       thicknessSel.options[i].disabled = false;
     }
@@ -613,14 +814,15 @@
     finishSelect.disabled = false;
     finishWarn.style.display = "none";
 
+    // FR-1 特殊邏輯
     if (materialSel.value === "FR-1") {
       for (i = 0; i < layersSel.options.length; i++) {
         opt = layersSel.options[i];
-        if (opt.value !== "-" && opt.value !== "單面板") {
+        if (opt.value !== "-" && opt.value !== "單面板" && opt.value !== "custom") {
           opt.disabled = true;
         }
       }
-      if (layersSel.value !== "單面板") {
+      if (layersSel.value !== "單面板" && layersSel.value !== "custom") {
         layersSel.value = "單面板";
         layer = "單面板";
       }
@@ -629,13 +831,18 @@
         opt = thicknessSel.options[i];
         opt.disabled = (opt.value !== "1.6mm");
       }
-      thicknessSel.value = "1.6mm";
+      // 如果不是 custom 才強制切換
+      if (thicknessSel.value !== "custom") {
+        thicknessSel.value = "1.6mm";
+      }
 
       for (i = 0; i < outerCuSel.options.length; i++) {
         opt = outerCuSel.options[i];
         opt.disabled = (opt.value !== "1oz");
       }
-      outerCuSel.value = "1oz";
+      if (outerCuSel.value !== "custom") {
+        outerCuSel.value = "1oz";
+      }
 
       goldFingerSel.value = "-";
       goldFingerSel.disabled = true;
@@ -656,10 +863,14 @@
       return;
     }
 
+    // 內層銅厚邏輯
+    // 如果 layer 是 custom，條件都不符合，走 else 路徑 (啟用)，這是合理的
     if (layer === "單面板" || layer === "雙面板") {
       innerSelect.disabled = true;
       innerSelect.value = "-";
       innerWarn.style.display = "block";
+      // 如果 user 在單面板切換成 custom 輸入內層銅厚，會被這裡 disable 擋住嗎？
+      // 不會，因為 disabled 是針對 select。custom input 是獨立的 input 欄位。
     } else if (
       layer === "四層板" ||
       layer === "六層板" ||
@@ -668,14 +879,16 @@
     ) {
       innerSelect.disabled = false;
       innerWarn.style.display = "none";
-      if (innerSelect.value === "-" || innerSelect.value === "") {
+      if ((innerSelect.value === "-" || innerSelect.value === "") && innerSelect.value !== "custom") {
         innerSelect.value = "0.5oz";
       }
     } else {
+      // custom 或其他
       innerSelect.disabled = false;
       innerWarn.style.display = "none";
     }
 
+    // 板厚邏輯
     if (
       layer === "四層板" ||
       layer === "六層板" ||
@@ -696,7 +909,7 @@
     }
 
     var currentThicknessOpt = thicknessSel.options[thicknessSel.selectedIndex];
-    if (currentThicknessOpt && currentThicknessOpt.disabled) {
+    if (currentThicknessOpt && currentThicknessOpt.disabled && thicknessSel.value !== "custom") {
       thicknessSel.value = "1.6mm";
     }
 
@@ -712,16 +925,23 @@
       thicknessWarn.style.display = "none";
     }
 
+    // 表面處理邏輯
     if (layer === "六層板" || layer === "八層板" || layer === "十層板") {
-      finishSelect.value = "化金 2u";
-      finishSelect.disabled = true;
-      finishWarn.style.display = "block";
+      // 只有在非 custom 情況下強制鎖定
+      if (finishSelect.value !== "custom") {
+        finishSelect.value = "化金 2u";
+        finishSelect.disabled = true;
+        finishWarn.style.display = "block";
+      }
     }
 
+    // 特殊製程邏輯
     if (layer === "六層板" || layer === "八層板" || layer === "十層板") {
-      special1Sel.value = "樹脂塞孔";
-      special1Sel.disabled = true;
-      special1Warn.style.display = "block";
+      if (special1Sel.value !== "custom") {
+        special1Sel.value = "樹脂塞孔";
+        special1Sel.disabled = true;
+        special1Warn.style.display = "block";
+      }
     }
   }
 
@@ -729,98 +949,108 @@
     return str.replace(/^\s+|\s+$/g, "");
   }
 
+  // 修改: getValue 支援讀取 Custom Input
   function getValue(id) {
     var el = document.getElementById(id);
     if (!el) return "-";
+    
+    // 如果是 select 且值為 custom，則讀取對應的 input
+    if (el.tagName === 'SELECT' && el.value === 'custom') {
+      var customInput = document.getElementById(id + '_custom');
+      if (customInput) {
+        var val = trim(customInput.value);
+        return val || ""; // 自行輸入如果不填，就回傳空字串或視為空白
+      }
+    }
+    
     var v = trim(el.value);
     return v || "-";
   }
 
   function generateText() {
-  var now = new Date();
-  var timeStr =
-    now.getFullYear() + "/" +
-    String(now.getMonth() + 1).padStart(2, "0") + "/" +
-    String(now.getDate()).padStart(2, "0") + " " +
-    String(now.getHours()).padStart(2, "0") + ":" +
-    String(now.getMinutes()).padStart(2, "0");
+    var now = new Date();
+    var timeStr =
+      now.getFullYear() + "/" +
+      String(now.getMonth() + 1).padStart(2, "0") + "/" +
+      String(now.getDate()).padStart(2, "0") + " " +
+      String(now.getHours()).padStart(2, "0") + ":" +
+      String(now.getMinutes()).padStart(2, "0");
 
-  var partNo      = getValue("partNo");
-  var material    = getValue("material");
-  var layers      = getValue("layers");
-  var thickness   = getValue("thickness");
-  var innerCu     = getValue("innerCu");
-  var outerCu     = getValue("outerCu");
-  var solderMask  = getValue("solderMask");
-  var legendColor = getValue("legendColor");
-  var finish      = getValue("finish");
-  var goldFinger  = getValue("goldFinger");
-  var qtyVal      = getValue("qty");
-  var remark      = trim(document.getElementById("remark").value || "");
+    var partNo      = getValue("partNo");
+    var material    = getValue("material");
+    var layers      = getValue("layers");
+    var thickness   = getValue("thickness");
+    var innerCu     = getValue("innerCu");
+    var outerCu     = getValue("outerCu");
+    var solderMask  = getValue("solderMask");
+    var legendColor = getValue("legendColor");
+    var finish      = getValue("finish");
+    var goldFinger  = getValue("goldFinger");
+    var qtyVal      = getValue("qty");
+    var remark      = trim(document.getElementById("remark").value || "");
 
-  var specialAmountEl = document.getElementById("specialAmount");
-  var specialAmount = "";
-  if (specialAmountEl) {
-    specialAmount = trim(specialAmountEl.value || "");
-    if (specialAmount) {
-      specialAmount = Number(specialAmount).toLocaleString("en-US");
+    var specialAmountEl = document.getElementById("specialAmount");
+    var specialAmount = "";
+    if (specialAmountEl) {
+      // 修改 #1: 取得輸入值後，先移除逗號以便後續處理（雖然這裡只是顯示，但保持數值乾淨是好習慣）
+      var rawVal = trim(specialAmountEl.value || "");
+      // 如果已經格式化過，直接使用該字串，或者先移除逗號再重新格式化確認
+      var cleanVal = rawVal.replace(/,/g, ""); 
+      
+      if (cleanVal) {
+        specialAmount = Number(cleanVal).toLocaleString("en-US");
+      }
     }
-  }
-  
-  var specialsIds = ["special1", "special2", "special3"];
-  var specials = [];
-  for (var i = 0; i < specialsIds.length; i++) {
-    var el = document.getElementById(specialsIds[i]);
-    if (!el) continue;
-    var v = trim(el.value || "");
-    if (v && v !== "-") specials.push(v);
-  }
+    
+    var specialsIds = ["special1", "special2", "special3"];
+    var specials = [];
+    for (var i = 0; i < specialsIds.length; i++) {
+      var v = getValue(specialsIds[i]); // 使用更新後的 getValue
+      if (v && v !== "-") specials.push(v);
+    }
 
-  var lines = [
-    "料號：" + partNo,
-    "板材：" + material,
-    "層別：" + layers,
-    "板厚：" + thickness
-  ];
+    var lines = [
+      "料號：" + partNo,
+      "板材：" + material,
+      "層別：" + layers,
+      "板厚：" + thickness
+    ];
 
-  if (layers !== "單面板" && layers !== "雙面板") {
-    lines.push("內層銅厚：" + innerCu);
-  }
+    if (layers !== "單面板" && layers !== "雙面板") {
+      lines.push("內層銅厚：" + innerCu);
+    }
 
-  lines.push(
-    "外層銅厚：" + outerCu,
-    "防焊顏色：" + solderMask,
-    "文字顏色：" + legendColor,
-    "表面處理：" + finish
-  );
+    lines.push(
+      "外層銅厚：" + outerCu,
+      "防焊顏色：" + solderMask,
+      "文字顏色：" + legendColor,
+      "表面處理：" + finish
+    );
 
-  if (goldFinger !== "-" && goldFinger !== "") {
-    lines.push("金(錫)手指：" + goldFinger);
-  }
+    if (goldFinger !== "-" && goldFinger !== "") {
+      lines.push("金(錫)手指：" + goldFinger);
+    }
 
-  lines.push("數量(出貨片)：" + qtyVal);
+    lines.push("數量(出貨片)：" + qtyVal);
 
-  // 🔹 修正後的邏輯：特殊製程 和 金額 分開顯示
-  
-  // 1. 如果有選特殊製程，印出特殊製程那一行
-  if (specials.length > 0) {
-    lines.push("特殊製程：" + specials.join("、"));
-  }
+    if (specials.length > 0) {
+      lines.push("特殊製程：" + specials.join("、"));
+    }
 
-  // 2. 如果有填金額，獨立印出金額那一行 (不再跟特殊製程合併)
-  if (specialAmount) {
-    lines.push("訂單金額：" + specialAmount + "元");
-  }
+    if (specialAmount) {
+      lines.push("訂單金額：" + specialAmount + "元");
+    }
 
-  var msg = lines.join("\n");
-  if (remark) {
-    msg += "\n\n備註：" + remark;
+    var msg = lines.join("\n");
+    if (remark) {
+      msg += "\n\n備註：" + remark;
+    }
+
+    msg = timeStr + "\n" + msg;
+
+    document.getElementById("output").value = msg;
   }
 
-  msg = timeStr + "\n" + msg
-
-  document.getElementById("output").value = msg;
-}
   function copyText() {
     var out = document.getElementById("output");
     if (!trim(out.value || "")) {
@@ -839,11 +1069,11 @@
       alert("無法自動複製，請長按手動複製文字。");
     }
   }
+
   document.addEventListener('DOMContentLoaded', updateStates);
   updateStates();
 </script>
 
 </body>
-
 </html>
 
