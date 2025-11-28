@@ -20,7 +20,7 @@
             --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
             --active-color: #c2a878;
         }
-        
+
         /* 全域 box-sizing */
         *, *::before, *::after {
             box-sizing: border-box;
@@ -49,7 +49,7 @@
             align-items: center;
             text-decoration: none;
             padding: 5px 0;
-            flex-shrink: 0; /* 防止 logo 被擠壓 */
+            flex-shrink: 0;
         }
 
         .text-logo {
@@ -64,7 +64,7 @@
             filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
             transition: transform 0.3s, filter 0.3s;
             animation: shine 5s linear infinite;
-            white-space: nowrap; /* 防止文字換行 */
+            white-space: nowrap;
         }
 
         .brand-logo:hover .text-logo {
@@ -76,7 +76,7 @@
         .nav-links {
             display: flex;
             gap: 25px;
-            flex-wrap: nowrap; /* 電腦版不換行 */
+            flex-wrap: nowrap;
         }
 
         .nav-item {
@@ -105,7 +105,7 @@
         .nav-item:hover {
             color: var(--active-color);
         }
-        
+
         .nav-item.current {
             color: var(--active-color);
         }
@@ -124,7 +124,7 @@
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
-                align-items: center; /* 置中對齊 */
+                align-items: center;
                 padding: 10px 10px;
                 gap: 5px;
             }
@@ -135,7 +135,7 @@
             .nav-links {
                 width: 100%;
                 justify-content: center;
-                flex-wrap: wrap; /* 允許換行 */
+                flex-wrap: wrap;
                 gap: 8px 15px;
             }
             .nav-item {
@@ -455,7 +455,7 @@
         /* === 手機版響應式優化 (Mobile Optimization) === */
         /* ================================================= */
         @media screen and (max-width: 600px) {
-            /* 修正間距 #1: 將 padding-top 改為 112px，消除灰色間距 */
+            /* 修正 #1: 將 padding-top 調整為 112px，消除頂部灰色間距 */
             body {
                 padding-top: 112px !important; 
             }
@@ -576,6 +576,7 @@
                 box-sizing: border-box;
             }
             
+            /* 通用樣式：這裡讓一般輸入框在手機版變寬 */
             .page-container .editable,
             .page-container .editable-nominal {
                 width: 100% !important;
@@ -587,6 +588,33 @@
                 padding: 4px; 
             }
             
+            /* 修正 #2: 表格特殊處理 */
+            /* 針對「檢驗數據」表格，覆蓋掉上面的 display: block 與 100% 寬度設定 */
+            #inspection-data-table .editable-nominal {
+                display: inline-block !important; /* 改回並排 */
+                width: 50px !important; /* 縮小寬度 */
+                min-width: 50px !important;
+                margin-top: 0 !important;
+                min-height: auto !important;
+                line-height: normal !important;
+            }
+            
+            #inspection-data-table .tolerance-display {
+                white-space: nowrap !important; /* 確保誤差文字不換行 */
+            }
+
+            /* 強制第二欄(規格)使用 Flex 排列，確保內容水平置中且不換行 */
+            #inspection-data-table td:nth-child(2) {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: center !important;
+                white-space: nowrap !important;
+                border: 1px solid #000 !important;
+                padding: 4px !important;
+                min-width: 150px; /* 給予足夠寬度防止擠壓 */
+            }
+
             #qty-input {
                 width: 100% !important; 
                 text-align: left !important;
@@ -624,26 +652,6 @@
                 text-align: center;
                 padding: 10px 0; 
                 min-height: 30px;
-            }
-
-            /* 修正 #2: 讓第二欄(規格欄)強制水平排列，防止跑版 */
-            #inspection-data-table td:nth-child(2) {
-                display: flex !important;
-                flex-direction: row !important; /* 強制水平 */
-                align-items: center !important;
-                justify-content: center !important;
-                white-space: nowrap !important;
-                border: 1px solid #000 !important; /* 確保邊框存在 */
-                min-width: 150px; /* 給予足夠寬度 */
-                padding: 4px !important;
-            }
-            
-            /* 微調輸入框樣式，配合 flex 排列 */
-            #inspection-data-table td:nth-child(2) .editable-nominal {
-                display: inline-block !important;
-                width: 50px !important;
-                min-width: 50px !important;
-                margin-right: 4px !important;
             }
 
             .footer-section {
