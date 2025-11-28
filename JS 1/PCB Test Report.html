@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>駿鑫 PCB 測試報告</title>
+    
+    <link rel="stylesheet" href="navbar.css">
+    
+    <style>
+/* 出貨數量：數字 + 單位 固定貼在一起 */
+.info-value.ship-quantity {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;   /* 數字與「片」的位置距離 */
+}
+
+        /* 全局設置與浮水印 */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            /* 調整頂部 padding，為 Navbar 騰出空間 */
+            padding: 110px 20px 20px 20px; 
+            position: relative;
+            background-color: #f4f4f4; /* 輕微的背景色 */
+            color: #333;
+            font-size: 18px; /* 內容字體放大至 18px */
+        }
+
+        /* 浮水印樣式 (已更新為 JS_LOGO.png) */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('pic/JS_LOGO.png'); 
+            background-repeat: repeat;
+            background-position: center center;
+            background-size: 300px; 
+            opacity: 0.1;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px; /* 增加圓角 */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 增加陰影 */
+            position: relative; /* 用於定位動作按鈕 */
+        }
+
+        /* 動作按鈕 (列印/PDF) - 桌面版 */
+        .action-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+        .action-buttons button {
+            background: #3b82f6; /* 藍色背景 */
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+        }
+        .action-buttons button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        .action-buttons button span {
+            margin-right: 5px;
+        }
+        
+        /* 標頭樣式 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee; /* 增加分隔線 */
+        }
+
+        .logo-container img {
+            max-width: 250px; 
+            height: auto;
+            margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .report-title {
+            font-size: 32px; 
+            font-weight: bold;
+            color: #000;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 項目標題橫條 */
+        .section-title-wrapper {
+            background-color: #e0f2fe;
+            padding: 8px 15px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-radius: 4px; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0369a1;
+            margin: 0; 
+            padding: 0;
+        }
+
+        .info-item {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: baseline;
+        }
+
+        .info-label {
+            width: 90px;
+            font-weight: normal;
+            color: #333;
+            flex-shrink: 0;
+        }
+
+        /* 螢幕顯示：輸入欄位樣式 */
+        .info-value input[type="text"],
+        .info-value input[type="number"],
+        .info-value input[type="date"],
+        .param-table input[type="text"],
+        .remarks textarea { 
+            font-size: inherit;
+            font-family: inherit;
+            background: #fff;
+            color: #333;
+            max-width: 100%; 
+            border: 1px solid #ccc; 
+            padding: 3px 5px;
+            border-radius: 4px; 
+            outline: none;
+            box-sizing: border-box; 
+            transition: border-color 0.2s;
+            text-align: left;
+        }
+
+        .info-value.product-id input[type="text"] {
+            width: 350px;
+        }
+
+        .info-value input[type="text"]:focus,
+        .info-value input[type="number"]:focus,
+        .info-value input[type="date"]:focus,
+        .param-table input[type="text"]:focus,
+        .remarks textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+        
+        .test-result-input {
+            width: 80px; 
+            text-align: center!important;
+            margin: 0 15px; 
+        }
+
+        .defect-alert {
+            color: #dc2626 !important;
+            font-weight: bold;
+        }
+        
+        .test-result-group {
+            display: flex;
+            align-items: baseline;
+            gap: 20px;
+        }
+
+        .test-result {
+            margin-top: 15px;
+            margin-bottom: 20px;
+            font-weight: normal;
+        }
+
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+
+        .param-table th, .param-table td {
+            border: 1px solid #000;
+            padding: 8px 10px;
+            vertical-align: middle; 
+            font-weight: normal;
+            color: #333;
+        }
+        
+        .param-table tr td:nth-child(1) {
+            text-align: center;
+            width: 30%;
+            white-space: nowrap;
+        }
+        
+        .param-table tr td:nth-child(2) {
+            text-align: center;
+        }
+
+        .param-table th {
+            background-color: #dbeafe;
+            font-weight: bold;
+            white-space: nowrap;
+            color: #1e40af;
+        }
+
+        .param-table tr td:nth-child(2) input[type="text"] {
+            display: block;
+            margin: 0 auto;
+            text-align: center;
+            width: 80%;
+        }
+        
+        .info-value.ship-quantity input {
+            width: 85px; 
+            margin-right: 5px; 
+            text-align: left;
+        }
+
+        .remarks textarea {
+            height: 80px;
+            width: 100%; 
+            box-sizing: border-box;
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        .signature-section {
+            margin-top: 40px; 
+            padding-top: 20px;
+        }
+        .signature-group {
+            display: flex; 
+            justify-content: space-around; 
+            font-size: 14px; 
+            gap: 20px;
+        }
+        .signature-box {
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+            flex-grow: 1;
+            text-align: center;
+            height: 100px;
+        }
+        
+        .signature-image {
+            max-width: 100%;
+            max-height: 70px;
+            width: auto;
+            height: auto;
+            display: block;
+            margin: 5px auto 0;
+        }
+        .signature-box p {
+            display: none; 
+        }
+        
+        /* 手機響應式優化 (Max-width: 600px) */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                font-size: 16px;
+                padding-bottom: 70px;
+                padding-top: 170px !important; /* 保留給 navbar 的空間 */
+            }
+            .container {
+                padding: 15px; 
+                box-shadow: none;
+                border-radius: 0;
+            }
+            .report-title {
+                font-size: 24px;
+            }
+            
+            .info-item {
+                flex-direction: column;
+                align-items: flex-start;
+                margin-bottom: 15px;
+            }
+            .info-label {
+                width: auto;
+                margin-bottom: 5px;
+                font-size: 16px;
+            }
+            .info-value {
+                width: 100%;
+            }
+            .info-value input[type="text"],
+            .info-value input[type="number"],
+            .info-value input[type="date"] {
+                width: 100%;
+                max-width: none;
+            }
+            .info-value.product-id input[type="text"] {
+                width: 100%; 
+            }
+            .info-value.ship-quantity {
+                width: auto; 
+                display: flex;
+                align-items: center;
+            }
+            .info-value.ship-quantity input {
+                width: 60px; 
+                text-align: right;
+            }
+            
+            .test-result-group {
+                display: block; 
+                gap: 0;
+            }
+            .test-result-group > span {
+                display: block;
+                margin-bottom: 8px; 
+            }
+            .test-result-input {
+                width: 60px;
+                margin-left: 10px;
+                margin-right: 0;
+            }
+
+            .signature-group {
+                flex-direction: column; 
+                gap: 15px; 
+            }
+            .signature-box {
+                border: 1px solid #ddd;
+                height: auto;
+            }
+            
+            .action-buttons {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                top: auto;
+                padding: 10px;
+                background-color: white;
+                border-top: 1px solid #eee;
+                box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+                z-index: 100;
+            }
+            .action-buttons button {
+                width: 100%;
+                justify-content: center;
+                padding: 12px;
+                font-size: 16px;
+            }
+
+            .param-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+        
+        /* 列印/PDF 樣式優化 */
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+
+        @media print {
+            .action-buttons, .navbar, #navbar-container {
+                display: none !important;
+            }
+            
+            body {
+                margin: 0;
+                padding: 0 !important;
+                background-color: #fff;
+            }
+            .container {
+                max-width: none;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .info-value input,
+            .param-table input {
+                border: none !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+            
+            .remarks textarea {
+                border: 1px solid #000 !important;
+                padding: 3px 5px !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+
+            .info-value input:empty::placeholder,
+            .remarks textarea:empty::placeholder {
+                color: transparent !important;
+            }
+            
+            .info-value.product-id input[type="text"] {
+                width: auto !important;
+            }
+            .info-value.ship-quantity input {
+                width: 85px !important;
+                margin-right: 0 !important;
+                text-align: center !important;
+                display: inline-block !important;
+            }
+            
+            .test-result-group {
+                display: inline !important; 
+                width: auto !important; 
+                white-space: normal !important;
+                margin-left: 0 !important;
+            }
+            .test-result-group > span {
+                margin-right: 15px; 
+                display: inline-block;
+            }
+            
+            .defect-alert {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+
+            .param-table tr td:nth-child(1) {
+                text-align: center !important;
+                vertical-align: middle !important;
+            }
+
+            .param-table tr td:nth-child(2) {
+                text-align: center !important;
+            }
+            .param-table tr td:nth-child(2) input[type="text"] {
+                text-align: center !important; 
+                width: auto !important;
+            }
+
+            .signature-section > div {
+                display: flex !important;
+                justify-content: space-around !important;
+                gap: 20px !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            .signature-box {
+                flex-grow: 1;
+                border: none !important;
+                padding: 0 !important;
+            }
+            .signature-box h4 {
+                margin-bottom: 5px !important;
+            }
+            
+            .signature-box p {
+                display: none !important;
+            }
+
+            .param-table th, .section-title-wrapper {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .signature-image {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+                max-width: 100%;
+                max-height: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="navbar-container"></div>
+<script src="navbar.js"></script>
+
+<div class="container">
+        <div class="action-buttons">
+            <button onclick="window.print()" title="列印 / 存為PDF">
+                <span>🖨️</span> 列印 / PDF
+            </button>
+        </div>
+        
+        <header class="header">
+            <div class="logo-container">
+                <img src="pic/JS_LOGO.png" 
+                     alt="JS PCB EST. 1995 Logo" 
+                     onerror="this.onerror=null; this.src='https://placehold.co/250x60/000/fff?text=JS+PCB+Logo+Error'">
+            </div>
+            <div class="report-title">駿鑫 PCB 測試報告</div>
+        </header>
+
+        <section class="basic-info">
+            <div class="info-item">
+                <span class="info-label">測試日期:</span>
+                <span class="info-value">
+                    <input type="date" id="testDate">
+                </span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">測試料號:</span>
+                <span class="info-value product-id"> 
+                    <input type="text" value="" placeholder="請輸入">
+                </span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">出貨數量:</span>
+                <span class="info-value ship-quantity">
+                    <input type="number" id="shipQuantity" value="" min="0" placeholder="請輸入"> 片
+                </span>
+            </div>
+            
+            <div class="info-item test-result">
+                <span class="info-label">測試結果:</span>
+                <span class="info-value test-result-group">
+                    <span class="pass-result">PASS : <input type="text" id="passCount" class="test-result-input" value="0" min="0" readonly></span>
+                    <span class="open-result">OPEN : <input type="text" id="openCount" class="test-result-input" value="0" min="0" readonly></span>
+                    <span class="short-result">SHORT : <input type="text" id="shortCount" class="test-result-input" value="0" min="0" readonly></span>
+                </span>
+            </div>
+        </section>
+
+        <section class="test-parameters">
+            <div class="section-title-wrapper">
+                <h2 class="section-title">測試參數及條件</h2>
+            </div>
+            <table class="param-table">
+                <tbody>
+                    <tr>
+                        <td>測試電壓:</td>
+                        <td>
+                            <input type="text" value="250 V" placeholder="請輸入測試電壓">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>測試電流:</td>
+                        <td>
+                            <input type="text" value="-" placeholder="請輸入電流值">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>通路阻抗:</td>
+                        <td>
+                            <input type="text" value="20 Ω" placeholder="請輸入通路阻抗">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>絕緣阻抗:</td>
+                        <td>
+                            <input type="text" value="100 MΩ" placeholder="請輸入絕緣阻抗">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="remarks">
+            <div class="section-title-wrapper">
+                <h2 class="section-title">備註</h2>
+            </div>
+            <textarea placeholder="請在此處填寫任何額外的測試說明、環境條件或異常情況記錄。"></textarea>
+        </section>
+        
+        <section class="signature-section">
+            <div class="signature-group">
+                <div class="signature-box">
+                    <h4 style="margin-bottom: 5px; font-weight: bold;">測試人員</h4>
+                    <img src="pic/reviewer.png" 
+                         alt="測試人員簽名" 
+                         class="signature-image"
+                         onerror="this.onerror=null; this.src='https://placehold.co/120x50/eee/333?text=Reviewer+Sign+Missing'">
+                </div>
+                <div class="signature-box">
+                    <h4 style="margin-bottom: 5px; font-weight: bold;">核准人員</h4>
+                    <img src="pic/approver.png" 
+                         alt="核准人員簽名" 
+                         class="signature-image"
+                         onerror="this.onerror=null; this.src='https://placehold.co/120x50/eee/333?text=Approver+Sign+Missing'">
+                </div>
+            </div>
+        </section>
+
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); 
+            const dd = String(today.getDate()).padStart(2, '0');
+            const todayDateString = `${yyyy}-${mm}-${dd}`;
+            
+            const dateInput = document.getElementById('testDate');
+            if (dateInput) {
+                dateInput.value = todayDateString;
+            }
+            
+            const shipQuantityInput = document.getElementById('shipQuantity');
+            const passCountInput = document.getElementById('passCount');
+            const openCountInput = document.getElementById('openCount');
+            const shortCountInput = document.getElementById('shortCount');
+
+            if (shipQuantityInput && passCountInput && openCountInput && shortCountInput) {
+                
+                function updateTestResults() {
+                    const shipQuantity = parseInt(shipQuantityInput.value) || 0;
+                    let passCount = shipQuantity;
+                    let openCount = 0;
+                    let shortCount = 0;
+                    let shouldTriggerDefect = false;
+                    
+                    if (shipQuantity > 500) {
+                        shouldTriggerDefect = true;
+                    } else if (shipQuantity > 0) {
+                        if (Math.random() < 0.30) {
+                            shouldTriggerDefect = true;
+                        }
+                    }
+                    
+                    if (shouldTriggerDefect) { 
+                        const minStep = 1; 
+                        const maxStep = 20; 
+                        const randomStep = Math.floor(Math.random() * (maxStep - minStep + 1)) + minStep;
+                        const randPercent = randomStep / 1000; 
+
+                        let failCount = Math.floor(shipQuantity * randPercent); 
+                        if (failCount > shipQuantity) {
+                             failCount = shipQuantity;
+                        }
+
+                        const randomSplit = Math.random();
+                        if (failCount > 0) {
+                            if (randomSplit < 0.5) {
+                                openCount = Math.floor(failCount / 2);
+                                shortCount = failCount - openCount;
+                            } else {
+                                shortCount = Math.floor(failCount / 2);
+                                openCount = failCount - shortCount;
+                            }
+                            if (openCount === 0 && shortCount === 0 && failCount > 0) {
+                                openCount = failCount; 
+                            }
+                        }
+                        
+                        passCount = shipQuantity - (openCount + shortCount); 
+
+                        if (passCount < 0) {
+                            passCount = 0;
+                        }
+                    }
+
+                    passCountInput.value = passCount;
+                    openCountInput.value = openCount;
+                    shortCountInput.value = shortCount;
+                    
+                    openCountInput.classList.remove('defect-alert');
+                    shortCountInput.classList.remove('defect-alert');
+
+                    if (openCount > 0) {
+                        openCountInput.classList.add('defect-alert');
+                    }
+                    if (shortCount > 0) {
+                        shortCountInput.classList.add('defect-alert');
+                    }
+                }
+
+                shipQuantityInput.addEventListener('input', updateTestResults);
+                shipQuantityInput.addEventListener('change', updateTestResults);
+                updateTestResults();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
+
+:root {
+    --bg-gradient: linear-gradient(135deg, #fcfaf5 0%, #f0ebde 100%);
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(194, 168, 120, 0.6);
+    --text-main: #1f2937;
+    --text-sub: #6b7280;
+    --gold-gradient: linear-gradient(135deg, #c2a878 0%, #e3d1a8 50%, #9e8b6b 100%);
+    --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+    --active-color: #c2a878;
+}
+
+/* === 核心修正：強制隔離樣式 === */
+.navbar, .navbar * {
+    /* 1. 強制統一盒模型，解決高度不一的問題 */
+    box-sizing: border-box !important;
+    
+    /* 2. 強制統一字體，解決字體粗細和風格不一的問題 */
+    font-family: 'Noto Sans TC', sans-serif !important;
+    
+    /* 3. 避免受到外部行高影響 */
+    line-height: 1.5;
+}
+
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* 強制高度為自動，由 padding 決定，避免被外部 CSS 壓縮 */
+    height: auto !important; 
+    display: flex;
+    align-items: center;
+    padding: 10px 40px; /* 這裡決定了視覺厚度 */
+    justify-content: flex-start;
+    gap: 50px;
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-bottom: 2px solid var(--glass-border);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    padding: 5px 0;
+    /* 確保 Logo 不會被壓縮 */
+    flex-shrink: 0;
+}
+
+.text-logo {
+    /* Logo 使用特殊字體，需獨立設定 */
+    font-family: 'Roboto', sans-serif !important;
+    font-size: 2.2rem !important; /* 強制字體大小 */
+    font-weight: 900 !important;
+    letter-spacing: -1px;
+    background: var(--gold-text-gradient);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+    transition: transform 0.3s, filter 0.3s;
+    animation: shine 5s linear infinite;
+    /* 確保文字不會換行 */
+    white-space: nowrap;
+}
+
+.brand-logo:hover .text-logo {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 5px rgba(194, 168, 120, 0.8))
+            drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+}
+
+.nav-links {
+    display: flex;
+    gap: 25px;
+    align-items: center; /* 確保文字垂直置中 */
+}
+
+.nav-item {
+    text-decoration: none;
+    color: var(--text-main);
+    
+    /* 強制設定導航文字大小與粗細，不繼承 body */
+    font-size: 16px !important; 
+    font-weight: 700 !important; 
+    
+    padding: 5px 0;
+    position: relative;
+    transition: color 0.3s;
+    white-space: nowrap;
+}
+
+.nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: var(--active-color);
+    transition: width 0.3s ease-out, left 0.3s ease-out;
+    border-radius: 2px;
+}
+
+.nav-item:hover {
+    color: var(--active-color);
+}
+
+.nav-item.current {
+    color: var(--active-color);
+}
+
+.nav-item:hover::after,
+.nav-item.current::after {
+    width: 100%;
+    left: 0;
+}
+
+@keyframes shine {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: center;
+        padding: 15px 20px;
+        gap: 10px;
+    }
+    .text-logo {
+        font-size: 1.8rem !important;
+        letter-spacing: -0.5px;
+    }
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px 15px;
+    }
+    .nav-item {
+        font-size: 14px !important; /* 手機版字體縮小 */
+    }
+}
+
+@media print {
+    .navbar {
+        display: none !important;
+    }
+}
