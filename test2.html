@@ -130,6 +130,7 @@
           align-items: center;
           padding: 12px 10px;
           gap: 6px;
+          margin-left: 0;
       }
       .text-logo {
           font-size: 1.8rem;
@@ -225,10 +226,8 @@
     color: #888;
   }
   
-  /* 備註欄位: 保持縮小高度 */
-  /* 修改 #2: 將 min-height 從 80px 增加為 320px (放大4倍) */
   textarea#remark {
-    min-height: 100px; 
+    min-height: 90px; 
     resize: vertical;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
   }
@@ -272,7 +271,7 @@
   textarea#output {
     width: 100%;
     margin-top: 0;
-    min-height: 300px;  /* 桌機版預設高度加長 */
+    min-height: 350px;  /* 桌機版預設高度加長 */
     font-family: Menlo, Consolas, monospace; 
     line-height: 1.5;
   }
@@ -338,7 +337,7 @@
       width: 70%;
     }
     textarea#output {
-      min-height: 200px;  /* 手機版也比原本更高一點 */
+      min-height: 300px;  /* 手機版也比原本更高一點 */
       font-size: 13px;
     }
   }
