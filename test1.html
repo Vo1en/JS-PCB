@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PCB 出貨檢驗報告</title>
     <style>
+        /* ================================================= */
+        /* === START: 來自 navbar.html 的 CSS 樣式 === */
+        /* ================================================= */
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
 
         :root {
@@ -17,23 +20,22 @@
             --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
             --active-color: #c2a878;
         }
-
+        
         /* 全域 box-sizing */
         *, *::before, *::after {
             box-sizing: border-box;
         }
 
-        /* ==================== 導覽列 (Navbar) 樣式 ==================== */
         .navbar {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
             width: 100%;
             display: flex;
             align-items: center;
-            padding: 10px 16px;
+            padding: 10px 40px;
             justify-content: flex-start;
+            gap: 50px;
             background-color: var(--glass-bg);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
@@ -47,12 +49,12 @@
             align-items: center;
             text-decoration: none;
             padding: 5px 0;
-            flex-shrink: 0;
+            flex-shrink: 0; /* 防止 logo 被擠壓 */
         }
 
         .text-logo {
             font-family: 'Roboto', sans-serif;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 900;
             letter-spacing: -1px;
             background: var(--gold-text-gradient);
@@ -62,7 +64,7 @@
             filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
             transition: transform 0.3s, filter 0.3s;
             animation: shine 5s linear infinite;
-            white-space: nowrap;
+            white-space: nowrap; /* 防止文字換行 */
         }
 
         .brand-logo:hover .text-logo {
@@ -73,8 +75,7 @@
 
         .nav-links {
             display: flex;
-            gap: 20px;
-            margin-left: 30px;
+            gap: 25px;
             flex-wrap: nowrap; /* 電腦版不換行 */
         }
 
@@ -120,14 +121,12 @@
             100% { background-position: 100% 50%; }
         }
 
-        /* ==================== 手機/平板 導覽列優化 ==================== */
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
-                align-items: center;
+                align-items: center; /* 置中對齊 */
                 padding: 10px 10px;
-                gap: 5px; /* 減少 Logo 與連結的間距 */
-                margin-left: 0;
+                gap: 5px;
             }
             .text-logo {
                 font-size: 1.8rem;
@@ -135,32 +134,33 @@
             }
             .nav-links {
                 width: 100%;
-                margin-left: 0;
-                justify-content: center; /* 讓連結置中 */
-                flex-wrap: wrap;         /* 允許換行，解決超出螢幕問題 */
-                gap: 8px 12px;           /* 調整間距：上下8px，左右12px */
+                justify-content: center;
+                flex-wrap: wrap; /* 允許換行 */
+                gap: 8px 15px;
             }
             .nav-item {
-                font-size: 0.9rem;      /* 稍微縮小字體 */
-                padding: 4px 2px;
+                font-size: 0.9rem;
             }
         }
+        /* ================================================= */
+        /* === END: 來自 navbar.html 的 CSS 樣式 === */
+        /* ================================================= */
 
-        /* ==================== 主要內容樣式 ==================== */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
+
         body {
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #f0f0f0;
             margin: 0;
-            /* 電腦版上方留白 */
-            padding-top: 80px; 
+            padding: 0;
             color: #333;
             width: 100%;
+            padding-top: 80px; /* 電腦版上方留白 */
         }
 
         .page-container {
-            width: 210mm; /* A4 width */
+            width: 210mm; /* A4 width standard */
             background-color: white;
-            /* margin-top 設為 0，消除電腦版灰色間距 */
             margin: 0 auto 20px auto; 
             padding: 15mm; 
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -422,19 +422,9 @@
         #inspection-data-table tbody td:first-child {
             text-align: center; 
         }
-        
-        /* === 修正重點：強制第二欄(規格)不換行並置中 === */
         #inspection-data-table td:nth-child(2) {
-             white-space: nowrap !important; /* 強制不換行 */
+             white-space: nowrap; 
              padding: 4px 6px; 
-             /* 使用 flex 讓輸入框和誤差值排在同一行 */
-             display: flex;
-             align-items: center;
-             justify-content: center;
-             border-right: 1px solid #000; /* flex 可能會蓋掉 border，需補回 */
-             border-left: 1px solid #000;
-             height: 100%; /* 確保高度填滿 */
-             min-height: 33px; /* 避免 flex 導致高度塌陷 */
         }
         
         #inspection-data-table th:nth-child(n+3):nth-child(-n+7),
@@ -465,18 +455,18 @@
         /* === 手機版響應式優化 (Mobile Optimization) === */
         /* ================================================= */
         @media screen and (max-width: 600px) {
-            /* 修正間距 #1: 縮小 padding-top 消除灰色間距 (原 130px -> 112px) */
+            /* 修正間距 #1: 將 padding-top 改為 112px，消除灰色間距 */
             body {
-                padding-top: 112px !important;
+                padding-top: 112px !important; 
             }
 
-            /* 修正間距 #2: 消除手機版上方多餘邊距，margin 設為 0 */
             .page-container {
                 width: 100%;
                 padding: 12px;
                 padding-bottom: 20px; 
                 box-shadow: none;
-                margin: 0 !important;      /* 重要：將外距歸零 */
+                margin: 0 !important; 
+                margin-top: 0 !important; 
             }
             
             /* Header Adjustments for Mobile */
@@ -636,22 +626,24 @@
                 min-height: 30px;
             }
 
-            /* 手機版針對表格第二欄(規格)的特別調整 */
+            /* 修正 #2: 讓第二欄(規格欄)強制水平排列，防止跑版 */
             #inspection-data-table td:nth-child(2) {
                 display: flex !important;
-                flex-direction: row !important; /* 強制水平排列 */
-                justify-content: center !important;
+                flex-direction: row !important; /* 強制水平 */
                 align-items: center !important;
+                justify-content: center !important;
                 white-space: nowrap !important;
-                width: auto !important; /* 讓內容決定寬度 */
-                min-width: 120px; /* 確保有足夠寬度顯示 */
+                border: 1px solid #000 !important; /* 確保邊框存在 */
+                min-width: 150px; /* 給予足夠寬度 */
+                padding: 4px !important;
             }
-            /* 讓輸入框不要在手機版變 100% 寬，保持小巧 */
+            
+            /* 微調輸入框樣式，配合 flex 排列 */
             #inspection-data-table td:nth-child(2) .editable-nominal {
-                width: 50px !important; 
-                min-width: 50px !important;
                 display: inline-block !important;
-                margin: 0 5px 0 0 !important; /* 右邊留點空隙 */
+                width: 50px !important;
+                min-width: 50px !important;
+                margin-right: 4px !important;
             }
 
             .footer-section {
@@ -745,28 +737,28 @@
                 overflow-x: visible;
             }
             
-            /* 列印時要取消 flex，改回預設表格顯示，以免格線跑掉 */
+            /* 列印時恢復預設表格顯示 */
             #inspection-data-table td:nth-child(2) {
                 display: table-cell !important;
                 white-space: nowrap !important;
+                border: 1px solid #000 !important;
             }
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
-      <a href="index.html" class="brand-logo">
-        <span class="text-logo">JS PCB</span>
-      </a>
+        <a href="index.html" class="brand-logo">
+            <span class="text-logo">JS PCB</span>
+        </a>
 
-      <div class="nav-links">
-        <a href="index.html" class="nav-item">首頁</a>
-        <a href="PCB Order Info Generator.html" class="nav-item">PCB規格產生器</a>
-        <a href="PCB Inspection Report.html" class="nav-item current">出貨檢驗報告</a>
-        <a href="PCB Test Report.html" class="nav-item">電性測試報告</a>
-      </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-item">首頁</a>
+            <a href="PCB Order Info Generator.html" class="nav-item">PCB規格產生器</a>
+            <a href="PCB Inspection Report.html" class="nav-item current">出貨檢驗報告</a>
+            <a href="PCB Test Report.html" class="nav-item">電性測試報告</a>
+        </div>
     </nav>
-
     <div class="page-container" contenteditable="false">
         
         <div class="action-buttons">
@@ -954,7 +946,7 @@
                 </thead>
                 <tbody>
                     <tr data-item="length">
-                        <td>長度 (mm)</td>
+                        <td>成品長度 (mm)</td>
                         <td>
                             <span contenteditable="true" class="editable-nominal" id="spec-length-nominal" oninput="populateAllInspectionData()"></span> 
                             <span class="tolerance-display" id="tol-display-length"> &plusmn; <span class="spec-tolerance" data-tolerance="0.2">0.2</span>mm</span>
@@ -967,7 +959,7 @@
                         <td class="center-text judgment-field"></td> 
                     </tr>
                     <tr data-item="width">
-                        <td>寬度 (mm)</td>
+                        <td>成品寬度 (mm)</td>
                         <td>
                             <span contenteditable="true" class="editable-nominal" id="spec-width-nominal" oninput="populateAllInspectionData()"></span> 
                             <span class="tolerance-display" id="tol-display-width"> &plusmn; <span class="spec-tolerance" data-tolerance="0.2">0.2</span>mm</span>
