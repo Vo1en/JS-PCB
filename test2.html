@@ -145,8 +145,9 @@
           font-size: 0.9rem;
       }
       /* 調整手機版 body padding-top 以適應展開的 navbar */
+      /* 修改 #3: 減少上方留白，從 170px 改為 130px，消除導覽列下方的灰色空隙 */
       body {
-          padding-top: 170px !important; 
+          padding-top: 130px !important; 
       }
   }
   /* ================================================= */
@@ -225,8 +226,9 @@
   }
   
   /* 備註欄位: 保持縮小高度 */
+  /* 修改 #2: 將 min-height 從 80px 增加為 320px (放大4倍) */
   textarea#remark {
-    min-height: 80px; 
+    min-height: 320px; 
     resize: vertical;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
   }
@@ -291,7 +293,7 @@
     }
     
     body {
-      padding: 170px 10px 20px 10px; 
+      padding: 130px 10px 20px 10px; /* 手機版也同步調整 padding */
       overflow-x: hidden;
     }
 
@@ -550,7 +552,7 @@
 
     <div class="field-group">
       <label for="specialAmount">訂單金額</label>
-      <input type="number" id="specialAmount" />
+      <input type="text" id="specialAmount" inputmode="numeric" oninput="formatNumber(this)" placeholder="請輸入金額" />
     </div>
 
     <div class="field-group">
@@ -571,6 +573,18 @@
 </div>
 
 <script>
+  // 修改 #1: 新增格式化數字的函式
+  function formatNumber(input) {
+    // 移除非數字的字元
+    var value = input.value.replace(/\D/g, "");
+    // 如果有值，則加上千分位逗號
+    if (value) {
+      input.value = Number(value).toLocaleString("en-US");
+    } else {
+      input.value = "";
+    }
+  }
+
   function updateStates() {
     var layer        = document.getElementById("layers").value;
     var layersSel    = document.getElementById("layers");
@@ -768,9 +782,13 @@
     var specialAmountEl = document.getElementById("specialAmount");
     var specialAmount = "";
     if (specialAmountEl) {
-      specialAmount = trim(specialAmountEl.value || "");
-      if (specialAmount) {
-        specialAmount = Number(specialAmount).toLocaleString("en-US");
+      // 修改 #1: 取得輸入值後，先移除逗號以便後續處理（雖然這裡只是顯示，但保持數值乾淨是好習慣）
+      var rawVal = trim(specialAmountEl.value || "");
+      // 如果已經格式化過，直接使用該字串，或者先移除逗號再重新格式化確認
+      var cleanVal = rawVal.replace(/,/g, ""); 
+      
+      if (cleanVal) {
+        specialAmount = Number(cleanVal).toLocaleString("en-US");
       }
     }
     
