@@ -146,7 +146,6 @@
         .page-container {
             width: 210mm; /* A4 width standard */
             background-color: white;
-            /* 調整 margin-top 以避免被 navbar 遮擋 (原 20px + 約 60px navbar 高度) */
             margin: 80px auto 20px auto; 
             padding: 15mm; 
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -181,6 +180,13 @@
             font-size: 24px;
             font-weight: bold;
             color: #2c3e50;
+        }
+
+        /* 新增：地址與電話的專用樣式 */
+        .company-details-line {
+            font-size: 12px; 
+            color: #666;
+            margin-top: 2px;
         }
 
         .report-title {
@@ -263,7 +269,7 @@
             border: 1px dashed #ccc;
             background-color: #f7f7f7;
             text-align: right;
-            width: 100px; 
+            width: 110px; /* 稍微加寬預設寬度 */
         }
         .date-container {
              margin-top: 10px;
@@ -423,12 +429,10 @@
             page-break-before: avoid; 
         }
         
-        /* 樣式：合格時的綠色 */
         .decision-qualified-active {
             color: green;
             font-weight: bold;
         }
-        /* 樣式：未完成時的灰色 */
         .decision-inactive {
             color: #999;
         }
@@ -448,6 +452,27 @@
             
             body {
                 padding-top: 160px; 
+            }
+
+            /* Header Adjustments for Mobile */
+            header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .company-info {
+                align-items: center; /* 讓公司名稱和地址在手機版置中 */
+                margin-bottom: 10px;
+            }
+            .header-right {
+                align-items: center;
+                width: 100%;
+            }
+            /* 1. 修正：檢驗日期輸入框寬度調整 */
+            #inspectionDate {
+                width: 150px !important; /* 強制加寬，避免字被遮住 */
+                min-width: 140px;
+                text-align: center;
             }
 
             .action-buttons {
@@ -704,7 +729,8 @@
         <header contenteditable="false">
             <div class="company-info">
                 <div class="company-name" contenteditable="true">駿鑫實業有限公司</div>
-                <div style="font-size: 12px; color: #666;" contenteditable="true">新北市五股區成泰路二段197巷31號 TEL: 02-2291-1252 #26</div>
+                <div class="company-details-line" contenteditable="true">新北市五股區成泰路二段197巷31號</div>
+                <div class="company-details-line" contenteditable="true">TEL: 02-2291-1252 #26</div>
             </div>
              <div class="header-right">
                 <div class="date-container">
@@ -1017,7 +1043,7 @@
                 selectElement.style.display = 'inline-block';
                 inputElement.value = ''; 
             }
-            checkCompletion(); // 檢查狀態
+            checkCompletion(); 
         }
         
         function revertToSelect(inputElement, containerId) {
@@ -1031,7 +1057,7 @@
                     selectElement.selectedIndex = 0; 
                 }
             }
-            checkCompletion(); // 檢查狀態
+            checkCompletion(); 
         }
 
         function toggleDateCodeInput(selectElement) {
@@ -1047,7 +1073,7 @@
                 selectElement.style.display = 'inline-block';
                 inputElement.value = '';
             }
-            checkCompletion(); // 檢查狀態
+            checkCompletion(); 
         }
 
         function revertToDateCodeSelect(inputElement) {
@@ -1057,7 +1083,7 @@
                 selectElement.style.display = 'inline-block';
                 selectElement.value = 'none';
             }
-            checkCompletion(); // 檢查狀態
+            checkCompletion(); 
         }
         
         function handlePlaceholderFocus(el) {
@@ -1091,7 +1117,7 @@
             } else {
                  el.classList.remove('placeholder-text');
             }
-            checkCompletion(); // 檢查狀態
+            checkCompletion(); 
         }
 
         function enforceNumericalInput(el) {
@@ -1107,14 +1133,12 @@
             if (el.textContent !== value) {
                 el.textContent = value;
             }
-            checkCompletion(); // 檢查狀態
+            checkCompletion(); 
         }
 
-        // === 新增：自動檢查填寫完成度並更新合格狀態 ===
         function checkCompletion() {
             let allFilled = true;
 
-            // 必填文字欄位
             const requiredTextIds = ['customer-name', 'customer-part'];
             requiredTextIds.forEach(id => {
                 const el = document.getElementById(id);
@@ -1126,7 +1150,6 @@
                 }
             });
 
-            // 必填數字欄位
             const requiredNumberIds = ['qty-input', 'dim-length-input', 'dim-width-input', 'pnl-x', 'pnl-y'];
             requiredNumberIds.forEach(id => {
                 const el = document.getElementById(id);
@@ -1139,7 +1162,6 @@
                 }
             });
 
-            // 週期檢查 (如果有選有週期，則必須輸入)
             const dateCodeSelect = document.getElementById('date-code-select');
             const dateCodeInput = document.getElementById('date-code-input');
             if (dateCodeSelect.value === 'has') {
@@ -1148,19 +1170,15 @@
                 }
             }
 
-            // 更新 UI
             const okSpan = document.getElementById('decision-ok');
             const ngSpan = document.getElementById('decision-ng');
 
             if (allFilled) {
-                // 打勾且變綠色
                 okSpan.innerHTML = '&#9745; 合格';
                 okSpan.classList.add('decision-qualified-active');
                 okSpan.classList.remove('decision-inactive');
-                // NG 保持原樣
                 ngSpan.innerHTML = '&#9744; 不合格';
             } else {
-                // 恢復未打勾灰色
                 okSpan.innerHTML = '&#9744; 合格';
                 okSpan.classList.remove('decision-qualified-active');
                 okSpan.classList.add('decision-inactive');
@@ -1211,7 +1229,6 @@
                 }
             });
             
-            // 加入週期檢查的 Validation 提示
             const dateCodeSelect = document.getElementById('date-code-select');
             const dateCodeInput = document.getElementById('date-code-input');
             if (dateCodeSelect.value === 'has') {
@@ -1289,33 +1306,24 @@
             return { nominal, tolerance, decimals };
         }
 
-        // === 修改重點：隨機數據生成邏輯 ===
         function generateRandomData(nominal, tolerance, decimals, rowIndex) {
             let val;
             
-            // === 邏輯修改：長寬生成邏輯 (Row 0 & 1) ===
-            // 規則：
-            // 1. 規格雖為 +-0.2，但控制在 +-0.11 以內
-            // 2. 0.08 (假設為0.8的修正) 以內要佔 60%
-            // 3. 只有 15% 機率生成負公差
             if (rowIndex === 0 || rowIndex === 1) {
-                const maxDeviation = 0.11;     // 最大允許偏差
-                const tightLimit = 0.08;       // 60% 分佈的界線
-                const negativeChance = 0.15;   // 15% 負公差
-                const tightDistributionChance = 0.60; // 60% 機率
+                const maxDeviation = 0.11;     
+                const tightLimit = 0.08;       
+                const negativeChance = 0.15;   
+                const tightDistributionChance = 0.60; 
                 
                 let deviation;
                 const isTight = Math.random() < tightDistributionChance;
                 
                 if (isTight) {
-                    // 生成 0 ~ 0.08 之間的偏差
                     deviation = Math.random() * tightLimit;
                 } else {
-                    // 生成 0.08 ~ 0.11 之間的偏差
                     deviation = Math.random() * (maxDeviation - tightLimit) + tightLimit;
                 }
                 
-                // 決定正負
                 const isNegative = Math.random() < negativeChance;
                 
                 if (isNegative) {
@@ -1324,13 +1332,8 @@
                     val = nominal + deviation;
                 }
                 
-                return val.toFixed(2); // 長寬通常小數點後兩位
+                return val.toFixed(2); 
             } 
-            // === 邏輯修改：孔徑生成邏輯 (Row 2+) ===
-            // 規則：
-            // 1. 規格 +-0.05
-            // 2. 控制在 +0.03 以內
-            // 3. 不要走負公差 (即 range: nominal ~ nominal + 0.03)
             else if (rowIndex >= 2) {
                 const min = nominal;
                 const max = nominal + 0.03;
@@ -1339,7 +1342,6 @@
                 return val.toFixed(decimals);
             }
             
-            // Fallback (理論上不執行到這)
             const min = nominal - tolerance;
             const max = nominal + tolerance;
             val = Math.random() * (max - min) + min;
@@ -1421,7 +1423,7 @@
             }
             
             populateAllInspectionData();
-            checkCompletion(); // 檢查狀態
+            checkCompletion(); 
         }
 
         function populateAllInspectionData() {
@@ -1452,11 +1454,9 @@
             document.getElementById('spec-hole3-nominal')?.addEventListener('input', populateAllInspectionData);
             document.getElementById('spec-hole4-nominal')?.addEventListener('input', populateAllInspectionData);
             
-            // 監聽所有輸入變更以即時更新合格狀態
             document.querySelector('.page-container').addEventListener('input', checkCompletion);
             document.querySelectorAll('select').forEach(sel => sel.addEventListener('change', checkCompletion));
 
-            // 手機版輸入優化
             const editables = document.querySelectorAll('[contenteditable="true"]');
             editables.forEach(el => {
                 el.addEventListener('click', (e) => {
@@ -1467,7 +1467,7 @@
                 }, {passive: true});
             });
             
-            checkCompletion(); // 初始化時檢查一次
+            checkCompletion(); 
         });
         
         function showModal(message) {
