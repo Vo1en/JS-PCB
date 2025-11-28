@@ -2,7 +2,7 @@
 
 :root {
     --bg-gradient: linear-gradient(135deg, #fcfaf5 0%, #f0ebde 100%);
-    --glass-bg: rgba(255, 255, 255, 0.95); /* 稍微增加不透明度 */
+    --glass-bg: rgba(255, 255, 255, 0.95);
     --glass-border: rgba(194, 168, 120, 0.6);
     --text-main: #1f2937;
     --text-sub: #6b7280;
@@ -26,7 +26,11 @@
     height: auto !important; 
     display: flex;
     align-items: center;
-    justify-content: space-between; /* 改為兩端對齊 */
+    
+    /* 電腦版：靠左對齊 */
+    justify-content: flex-start; 
+    gap: 50px; 
+    
     padding: 10px 40px;
     background-color: var(--glass-bg);
     backdrop-filter: blur(15px);
@@ -42,7 +46,7 @@
     text-decoration: none;
     padding: 5px 0;
     flex-shrink: 0;
-    z-index: 1002; /* 確保 Logo 在最上層 */
+    z-index: 1002;
 }
 
 .text-logo {
@@ -60,20 +64,29 @@
     white-space: nowrap;
 }
 
-/* === 漢堡選單按鈕 (電腦版隱藏) === */
+/* === 漢堡選單按鈕 === */
 .hamburger {
-    display: none;
+    display: none; /* 電腦版隱藏 */
     cursor: pointer;
     font-size: 1.8rem;
     color: var(--text-main);
     user-select: none;
-    z-index: 1002; /* 確保按鈕在最上層 */
+    z-index: 1002;
+    padding: 5px; 
 }
 
 .nav-links {
     display: flex;
     gap: 25px;
     align-items: center;
+    position: static;
+    background-color: transparent;
+    box-shadow: none;
+    border-bottom: none;
+    flex-direction: row;
+    width: auto;
+    max-height: none;
+    overflow: visible;
 }
 
 .nav-item {
@@ -85,6 +98,9 @@
     position: relative;
     transition: color 0.3s;
     white-space: nowrap;
+    border-bottom: none;
+    width: auto;
+    text-align: left;
 }
 
 .nav-item::after {
@@ -113,47 +129,52 @@
     100% { background-position: 100% 50%; }
 }
 
-/* === 手機版響應式樣式 (關鍵修改) === */
+/* === 手機版響應式樣式 (修改重點) === */
 @media (max-width: 768px) {
     .navbar {
         padding: 15px 20px;
+        /* 修改 1: 讓內容置中 (這裡是為了 Logo) */
+        justify-content: center; 
+        gap: 0;
+        position: fixed; /* 確保定位參考點正確 */
     }
     
     .text-logo {
         font-size: 1.8rem !important;
     }
 
-    /* 顯示漢堡按鈕 */
+    /* 修改 2: 漢堡選單絕對定位到左邊 */
     .hamburger {
         display: block;
+        position: absolute; /* 脫離排版流 */
+        left: 20px;         /* 固定在左側 */
+        top: 50%;           /* 垂直置中 */
+        transform: translateY(-50%);
     }
 
-    /* 隱藏原本的連結，並改為絕對定位的下拉選單 */
+    /* 下拉選單樣式 */
     .nav-links {
         position: absolute;
-        top: 100%; /* 接在 navbar 下方 */
+        top: 100%;
         left: 0;
         width: 100%;
-        background-color: #fff; /* 不透明背景 */
+        background-color: #fff;
         border-bottom: 2px solid var(--glass-border);
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         
-        flex-direction: column; /* 垂直排列 */
+        flex-direction: column;
         align-items: center;
-        gap: 0; /* 移除間距，改用 padding */
+        gap: 0;
         
-        /* 展開動畫相關 */
         max-height: 0;
         overflow: hidden;
         transition: max-height 0.3s ease-in-out;
     }
 
-    /* 當加上 .active class 時展開選單 */
     .nav-links.active {
-        max-height: 300px; /* 足夠放下所有連結的高度 */
+        max-height: 300px;
     }
 
-    /* 手機版連結樣式優化 */
     .nav-item {
         width: 100%;
         text-align: center;
@@ -166,13 +187,12 @@
         border-bottom: none;
     }
 
-    /* 手機版移除底部線條動畫，改用背景色強調 */
     .nav-item::after {
         display: none;
     }
     
     .nav-item:hover, .nav-item.current {
-        background-color: #fcfaf5; /* 輕微背景色變化 */
+        background-color: #fcfaf5;
     }
 }
 
