@@ -85,7 +85,8 @@
       text-decoration: none;
       color: var(--text-main);
       font-size: 1rem;
-      font-weight: 500;
+      /* 修改 1: 這裡從 500 改為 700 (Bold) */
+      font-weight: 700;
       padding: 5px 0;
       position: relative;
       transition: color 0.3s;
@@ -187,6 +188,7 @@
     font-size: 22px;
     margin-top: 0; 
     margin-bottom: 20px; 
+    font-weight: 700; /* h1 也確保加粗 */
   }
   
   /* 強化卡片視覺效果 */
@@ -211,6 +213,8 @@
     text-align: left;
     color: #333;
     padding-left: 0;
+    /* 修改 2: 新增這行，讓內容的項目名稱變粗 */
+    font-weight: 700; 
   }
   
   /* 修改：讓 select 和 input 寬度統一，並處理 input-wrapper */
@@ -287,6 +291,7 @@
     background: #2563eb;
     color: #fff;
     transition: background 0.2s; 
+    font-weight: 500; /* 按鈕也可以稍微加粗 */
   }
   button:hover {
     background: #1d4ed8;
@@ -409,7 +414,6 @@
       <input type="text" id="partNo" placeholder="請輸入料號" />
     </div>
 
-    <!-- 板材 -->
     <div class="field-group">
       <label for="material">板材</label>
       <div class="select-container">
@@ -430,7 +434,6 @@
       </div>
     </div>
 
-    <!-- 層別 -->
     <div class="field-group">
       <label for="layers">層別</label>
       <div class="select-container">
@@ -451,7 +454,6 @@
       </div>
     </div>
 
-    <!-- 板厚 -->
     <div class="field-group">
       <label for="thickness">板厚</label>
       <div class="select-container">
@@ -479,7 +481,6 @@
       </div>
     </div>
 
-    <!-- 內層銅厚 -->
     <div class="field-group">
       <label for="innerCu">內層銅厚</label>
       <div class="select-container">
@@ -500,7 +501,6 @@
       </div>
     </div>
 
-    <!-- 外層銅厚 -->
     <div class="field-group">
       <label for="outerCu">外層銅厚</label>
       <div class="select-container">
@@ -518,7 +518,6 @@
       </div>
     </div>
 
-    <!-- 防焊顏色 -->
     <div class="field-group">
       <label for="solderMask">防焊顏色</label>
       <div class="select-container">
@@ -540,7 +539,6 @@
       </div>
     </div>
 
-    <!-- 文字顏色 -->
     <div class="field-group">
       <label for="legendColor">文字顏色</label>
       <div class="select-container">
@@ -558,7 +556,6 @@
       </div>
     </div>
 
-    <!-- 表面處理 -->
     <div class="field-group">
       <label for="finish">表面處理</label>
       <div class="select-container">
@@ -585,7 +582,6 @@
       </div>
     </div>
 
-    <!-- 金(錫)手指 -->
     <div class="field-group">
       <label for="goldFinger">金(錫)手指</label>
       <div class="select-container">
@@ -602,7 +598,6 @@
       </div>
     </div>
 
-    <!-- 數量 -->
     <div class="field-group">
       <label for="qty">數量(出貨片)</label>
       <div class="select-container">
@@ -629,7 +624,6 @@
       </div>
     </div>
 
-    <!-- 特殊製程 #1 -->
     <div class="field-group">
       <label for="special1">特殊製程#1</label>
       <div class="select-container">
@@ -652,7 +646,6 @@
       </div>
     </div>
 
-    <!-- 特殊製程 #2 -->
     <div class="field-group">
       <label for="special2">特殊製程#2</label>
       <div class="select-container">
@@ -672,7 +665,6 @@
       </div>
     </div>
 
-    <!-- 特殊製程 #3 -->
     <div class="field-group">
       <label for="special3">特殊製程#3</label>
       <div class="select-container">
