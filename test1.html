@@ -6,7 +6,7 @@
     <title>PCB 出貨檢驗報告</title>
     <style>
         /* ================================================= */
-        /* === START: 來自 navbar.html 的 CSS 樣式 === */
+        /* === START: 來自 test2.html 的 Navbar CSS 樣式 (已移植) === */
         /* ================================================= */
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
 
@@ -21,16 +21,21 @@
             --active-color: #c2a878;
         }
 
+        /* 全域 box-sizing */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         .navbar {
             position: fixed;
             top: 0;
             left: 0;
+            right: 0;
             width: 100%;
             display: flex;
             align-items: center;
-            padding: 10px 40px;
+            padding: 10px 16px;
             justify-content: flex-start;
-            gap: 50px;
             background-color: var(--glass-bg);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
@@ -44,11 +49,12 @@
             align-items: center;
             text-decoration: none;
             padding: 5px 0;
+            flex-shrink: 0;
         }
 
         .text-logo {
             font-family: 'Roboto', sans-serif;
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 900;
             letter-spacing: -1px;
             background: var(--gold-text-gradient);
@@ -58,6 +64,7 @@
             filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
             transition: transform 0.3s, filter 0.3s;
             animation: shine 5s linear infinite;
+            white-space: nowrap;
         }
 
         .brand-logo:hover .text-logo {
@@ -68,7 +75,9 @@
 
         .nav-links {
             display: flex;
-            gap: 25px;
+            gap: 20px;
+            margin-left: 30px;
+            flex-wrap: nowrap;
         }
 
         .nav-item {
@@ -79,6 +88,7 @@
             padding: 5px 0;
             position: relative;
             transition: color 0.3s;
+            white-space: nowrap;
         }
 
         .nav-item::after {
@@ -96,6 +106,10 @@
         .nav-item:hover {
             color: var(--active-color);
         }
+        
+        .nav-item.current {
+            color: var(--active-color);
+        }
 
         .nav-item:hover::after,
         .nav-item.current::after {
@@ -108,12 +122,14 @@
             100% { background-position: 100% 50%; }
         }
 
+        /* 平板 / 手機：navbar 改成上下堆疊、置中 */
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
-                align-items: flex-start;
-                padding: 15px 20px;
-                gap: 10px;
+                align-items: center;
+                padding: 12px 10px;
+                gap: 6px;
+                margin-left: 0;
             }
             .text-logo {
                 font-size: 1.8rem;
@@ -121,24 +137,28 @@
             }
             .nav-links {
                 width: 100%;
+                justify-content: center;
                 flex-wrap: wrap;
-                gap: 15px 15px;
+                gap: 12px 16px;
             }
             .nav-item {
                 font-size: 0.9rem;
+            }
+            /* 調整手機版 body padding-top 以適應展開的 navbar (與 test2 一致) */
+            body {
+                padding-top: 130px !important; 
             }
         }
         /* ================================================= */
         /* === END: 來自 navbar.html 的 CSS 樣式 === */
         /* ================================================= */
 
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
-
         body {
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #f0f0f0;
             margin: 0;
-            padding: 0;
+            /* 修正間距：電腦版預留 80px 給 header */
+            padding-top: 80px; 
             color: #333;
             width: 100%;
         }
@@ -146,7 +166,8 @@
         .page-container {
             width: 210mm; /* A4 width standard */
             background-color: white;
-            margin: 80px auto 20px auto; 
+            /* 修正間距：移除原本的 margin-top: 80px，改為 20px 或 0，避免與 padding-top 疊加造成巨大空隙 */
+            margin: 20px auto; 
             padding: 15mm; 
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             box-sizing: border-box;
@@ -450,10 +471,9 @@
                 margin-top: 0 !important; 
             }
             
-            body {
-                padding-top: 160px; 
-            }
-
+            /* 注意：這裡的 padding-top 已由上方 768px 的 media query (來自 test2) 覆蓋為 130px */
+            /* 如果需要針對更小螢幕微調可寫在這裡，但原則上保持 130px */
+            
             /* Header Adjustments for Mobile */
             header {
                 flex-direction: column;
@@ -628,7 +648,7 @@
         @media print {
             body {
                 background-color: white;
-                padding: 0;
+                padding: 0 !important; /* 列印時移除上方留白 */
                 font-size: 12pt; 
             }
             .page-container {
@@ -706,19 +726,20 @@
     </style>
 </head>
 <body>
-<nav class="navbar">
-        <a href="index.html" class="brand-logo">
-            <span class="text-logo">JS PCB</span>
-        </a>
+    <nav class="navbar">
+      <a href="index.html" class="brand-logo">
+        <span class="text-logo">JS PCB</span>
+      </a>
 
-        <div class="nav-links">
-            <a href="index.html" class="nav-item">首頁</a>
-            <a href="PCB Order Info Generator.html" class="nav-item">PCB規格產生器</a>
-            <a href="PCB Inspection Report.html" class="nav-item current">出貨檢驗報告</a>
-            <a href="PCB Test Report.html" class="nav-item">電性測試報告</a>
-        </div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-item">首頁</a>
+        <a href="PCB Order Info Generator.html" class="nav-item">PCB規格產生器</a>
+        <a href="PCB Inspection Report.html" class="nav-item current">出貨檢驗報告</a>
+        <a href="PCB Test Report.html" class="nav-item">電性測試報告</a>
+      </div>
     </nav>
-<div class="page-container" contenteditable="false">
+
+    <div class="page-container" contenteditable="false">
         
         <div class="action-buttons">
             <button onclick="prepareForPrint()" title="列印 / 存為PDF">
@@ -905,7 +926,7 @@
                 </thead>
                 <tbody>
                     <tr data-item="length">
-                        <td>成品長度 (mm)</td>
+                        <td>長度 (mm)</td>
                         <td>
                             <span contenteditable="true" class="editable-nominal" id="spec-length-nominal" oninput="populateAllInspectionData()"></span> 
                             <span class="tolerance-display" id="tol-display-length"> &plusmn; <span class="spec-tolerance" data-tolerance="0.2">0.2</span>mm</span>
@@ -918,7 +939,7 @@
                         <td class="center-text judgment-field"></td> 
                     </tr>
                     <tr data-item="width">
-                        <td>成品寬度 (mm)</td>
+                        <td>寬度 (mm)</td>
                         <td>
                             <span contenteditable="true" class="editable-nominal" id="spec-width-nominal" oninput="populateAllInspectionData()"></span> 
                             <span class="tolerance-display" id="tol-display-width"> &plusmn; <span class="spec-tolerance" data-tolerance="0.2">0.2</span>mm</span>
