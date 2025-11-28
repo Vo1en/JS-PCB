@@ -160,8 +160,8 @@
         .page-container {
             width: 210mm; /* A4 width */
             background-color: white;
-            /* 電腦版邊距 */
-            margin: 20px auto; 
+            /* 修改：margin-top 設為 0，消除電腦版灰色間距 */
+            margin: 0 auto 20px auto; 
             padding: 15mm; 
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             box-sizing: border-box;
@@ -460,14 +460,13 @@
                 padding-top: 130px !important;
             }
 
-            /* 修正間距 #2: 消除紙張上方多餘邊距 */
+            /* 修正間距 #2: 消除手機版上方多餘邊距，margin 設為 0 */
             .page-container {
                 width: 100%;
                 padding: 12px;
                 padding-bottom: 20px; 
                 box-shadow: none;
                 margin: 0 !important;      /* 重要：將外距歸零 */
-                margin-top: 5px !important; /* 留一點點縫隙美觀，若要完全無縫可改 0 */
             }
             
             /* Header Adjustments for Mobile */
@@ -921,7 +920,7 @@
                 </thead>
                 <tbody>
                     <tr data-item="length">
-                        <td>成品長度 (mm)</td>
+                        <td>長度 (mm)</td>
                         <td>
                             <span contenteditable="true" class="editable-nominal" id="spec-length-nominal" oninput="populateAllInspectionData()"></span> 
                             <span class="tolerance-display" id="tol-display-length"> &plusmn; <span class="spec-tolerance" data-tolerance="0.2">0.2</span>mm</span>
@@ -934,7 +933,7 @@
                         <td class="center-text judgment-field"></td> 
                     </tr>
                     <tr data-item="width">
-                        <td>成品寬度 (mm)</td>
+                        <td>寬度 (mm)</td>
                         <td>
                             <span contenteditable="true" class="editable-nominal" id="spec-width-nominal" oninput="populateAllInspectionData()"></span> 
                             <span class="tolerance-display" id="tol-display-width"> &plusmn; <span class="spec-tolerance" data-tolerance="0.2">0.2</span>mm</span>
