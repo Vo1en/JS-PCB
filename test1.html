@@ -212,11 +212,13 @@
         }
 
         /* Table Styles */
+        /* 修正 #2: 加入 table-layout: fixed，防止切換輸入框時欄位跳動 */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 12px; 
             font-size: 13px;
+            table-layout: fixed; /* 固定佈局 */
         }
 
         th, td {
@@ -224,14 +226,21 @@
             padding: 6px; 
             text-align: left;
             color: black;
+            overflow: hidden; /* 防止內容撐開表格 */
         }
 
+        /* 明確定義欄位寬度，確保不會跑版 */
         th {
             background-color: #e0f2fe; 
             font-weight: bold;
-            width: 15%;
+            width: 15%; /* 標題欄寬度固定 */
             white-space: nowrap;
             color: #333; 
+        }
+
+        /* 內容欄位寬度 */
+        td {
+             width: 35%; /* 剩餘空間平均分配 (100% - 15%*2) / 2 = 35% */
         }
         
         .section-header {
@@ -427,6 +436,7 @@
              padding: 4px 6px; 
         }
         
+        /* 檢驗數據表格的特例寬度 */
         #inspection-data-table th:nth-child(n+3):nth-child(-n+7),
         #inspection-data-table td:nth-child(n+3):nth-child(-n+7) {
             width: 8% !important; 
@@ -435,6 +445,10 @@
         }
         #inspection-data-table th:nth-child(1) {
             width: 15% !important; 
+        }
+        #inspection-data-table th:nth-child(2),
+        #inspection-data-table td:nth-child(2) {
+             width: auto; /* 規格欄位寬度自動 */
         }
         
         .final-decision-box {
@@ -455,7 +469,7 @@
         /* === 手機版響應式優化 (Mobile Optimization) === */
         /* ================================================= */
         @media screen and (max-width: 600px) {
-            /* 修正 #1: 將 padding-top 調整為 112px，消除頂部灰色間距 */
+            /* 修正 #1: 調整上方留白為 112px */
             body {
                 padding-top: 112px !important; 
             }
@@ -519,10 +533,12 @@
                 font-size: 24px;
             }
 
+            /* 手機版：取消 table 固定佈局，改用 block 堆疊顯示 */
             table:not(#inspection-data-table) {
                 display: block;
                 width: 100%;
                 border: none;
+                table-layout: auto !important; /* 取消固定寬度 */
             }
             
             table:not(#inspection-data-table) tbody {
@@ -588,11 +604,11 @@
                 padding: 4px; 
             }
             
-            /* 修正 #2: 表格特殊處理 */
-            /* 針對「檢驗數據」表格，覆蓋掉上面的 display: block 與 100% 寬度設定 */
+            /* 修正 #1: 針對「檢驗數據表格」的特殊處理 */
+            /* 強制將輸入框改回 inline-block 並限制寬度，解決跑版問題 */
             #inspection-data-table .editable-nominal {
-                display: inline-block !important; /* 改回並排 */
-                width: 50px !important; /* 縮小寬度 */
+                display: inline-block !important; /* 強制並排 */
+                width: 50px !important; /* 限制寬度 */
                 min-width: 50px !important;
                 margin-top: 0 !important;
                 min-height: auto !important;
@@ -600,10 +616,10 @@
             }
             
             #inspection-data-table .tolerance-display {
-                white-space: nowrap !important; /* 確保誤差文字不換行 */
+                white-space: nowrap !important;
             }
 
-            /* 強制第二欄(規格)使用 Flex 排列，確保內容水平置中且不換行 */
+            /* 針對規格欄位 (第二欄) 使用 Flex 排列，確保水平置中不換行 */
             #inspection-data-table td:nth-child(2) {
                 display: flex !important;
                 flex-direction: row !important;
@@ -612,7 +628,7 @@
                 white-space: nowrap !important;
                 border: 1px solid #000 !important;
                 padding: 4px !important;
-                min-width: 150px; /* 給予足夠寬度防止擠壓 */
+                min-width: 150px; 
             }
 
             #qty-input {
@@ -1397,6 +1413,15 @@
             return val.toFixed(decimals);
         }
 
+        function populateAllInspectionData() {
+            populateRowData(0, 'spec-length-nominal');
+            populateRowData(1, 'spec-width-nominal');
+            populateRowData(2, 'spec-hole1-nominal');
+            populateRowData(3, 'spec-hole2-nominal');
+            populateRowData(4, 'spec-hole3-nominal');
+            populateRowData(5, 'spec-hole4-nominal');
+        }
+
         function populateRowData(rowIndex, nominalId) {
             const parsed = parseSpec(nominalId);
             
@@ -1433,48 +1458,6 @@
             }
         }
 
-        function checkJudgement(dataEl) {
-            const row = dataEl.closest('tr');
-            
-            const data1 = row.cells[2].querySelector('span.editable').textContent.trim();
-            const data2 = row.cells[3].querySelector('span.editable').textContent.trim();
-            const data3 = row.cells[4].querySelector('span.editable').textContent.trim();
-            const data4 = row.cells[5].querySelector('span.editable').textContent.trim();
-            const data5 = row.cells[6].querySelector('span.editable').textContent.trim();
-
-            const judgementCell = row.cells[7];
-            
-            if (data1 === '' && data2 === '' && data3 === '' && data4 === '' && data5 === '') {
-                judgementCell.textContent = '';
-            } else if (judgementCell.textContent.trim() === '') {
-                judgementCell.textContent = 'OK';
-            }
-        }
-
-        function updateSpecs() {
-            const lengthInput = document.getElementById('dim-length-input');
-            const widthInput = document.getElementById('dim-width-input');
-            const lengthNominal = document.getElementById('spec-length-nominal');
-            const widthNominal = document.getElementById('spec-width-nominal');
-
-            const lengthVal = lengthInput ? lengthInput.textContent.trim() : '';
-            const widthVal = widthInput ? widthInput.textContent.trim() : '';
-
-            if (lengthNominal && lengthVal && lengthVal !== '請輸入') {
-                lengthNominal.textContent = lengthVal;
-            } else if (lengthNominal) {
-                lengthNominal.textContent = '';
-            }
-            if (widthNominal && widthVal && widthVal !== '請輸入') {
-                widthNominal.textContent = widthVal;
-            } else if (widthNominal) {
-                widthNominal.textContent = '';
-            }
-            
-            populateAllInspectionData();
-            checkCompletion(); 
-        }
-        
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('select').forEach(select => {
                 const inputId = select.id ? select.id.replace('-select', '-other-input') : '';
@@ -1537,5 +1520,4 @@
 
     </script>
 </body>
-
 </html>
