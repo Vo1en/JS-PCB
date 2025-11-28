@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         <div class="nav-links" id="nav-links">
             <a href="index.html" class="nav-item">首頁</a>
-            <a href="PCB Order Info Generator.html" class="nav-item">PCB規格產生器</a>
+            <a href="PCB Order Info Generator.html" class="nav-item">規格產生器</a>
             <a href="PCB Inspection Report.html" class="nav-item">出貨檢驗報告</a>
             <a href="PCB Test Report.html" class="nav-item">電性測試報告</a>
         </div>

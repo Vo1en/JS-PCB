@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PCB規格產生器</title>
+  <title>駿鑫 規格產生器</title>
   
   <link rel="stylesheet" href="navbar.css">
   <link rel="stylesheet" href="style.css">
@@ -12,6 +12,24 @@
   /* 全域 box-sizing */
   *, *::before, *::after {
       box-sizing: border-box;
+  }
+
+  /* === JS PCB 浮水印樣式 === */
+  body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      /* 請確認您的圖片路徑是否正確，通常是在 pic 資料夾內 */
+      background-image: url('pic/JS_LOGO.png'); 
+      background-repeat: repeat;       /* 讓圖片重複平鋪 */
+      background-position: center center;
+      background-size: 300px;          /* 控制浮水印 Logo 的大小 */
+      opacity: 0.1;                    /* 透明度 (0.1 代表很淡) */
+      z-index: -1;                     /* 確保在最底層，不會擋到內容 */
+      pointer-events: none;            /* 讓滑鼠可以穿透，不影響操作 */
   }
 
   /* 保留原本針對此頁面的樣式微調 */
@@ -28,14 +46,14 @@
   body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     margin: 0;
-    /* 上方預留給 navbar */
+    /* 上方預留給 navbar - 已修正為 0 (由 main-container 推開) */
     padding: 0px 16px 20px 16px;  
-    background: #f5f5f5;
+    background: #f9f9f9;
     max-width: 100%;
     overflow-x: hidden;
   }
 
-.main-container {
+  .main-container {
     width: 210mm; /* 強制 A4 寬度 */
     margin: 110px auto 20px auto; /* 配合導覽列高度 */
     padding: 0;
@@ -194,7 +212,7 @@
       font-size: 18px;
       margin-bottom: 12px;
     }
-  .card {
+    .card {
       border-radius: 0;
       padding: 15px; /* 手機版內距縮小 */
       box-shadow: none;
@@ -238,9 +256,7 @@
   
   /* 針對此頁面的 navbar 手機版修正 */
   @media (max-width: 768px) {
-      /* 由於 navbar.css 已經設定好高度，這裡只要確保 body padding 足夠即可
-         原本代碼為 padding-top: 105px !important; 已保留在上方
-      */
+      /* 由於 navbar.css 已經設定好高度，這裡只要確保 body padding 足夠即可 */
   }
 </style>
 </head>
