@@ -128,7 +128,7 @@
       .navbar {
           flex-direction: column;
           align-items: center;
-          padding: 12px 10px;
+          padding: 8px 10px; /* 稍微減少 padding */
           gap: 6px;
           margin-left: 0;
       }
@@ -139,16 +139,17 @@
       .nav-links {
           width: 100%;
           justify-content: center;
-          flex-wrap: wrap;
-          gap: 12px 16px;
+          flex-wrap: wrap; /* 允許換行 */
+          gap: 8px 12px;   /* 調整間距，讓內容更容易擠進去 */
+          margin-left: 0;  /* 確保沒有左邊距影響置中 */
       }
       .nav-item {
           font-size: 0.9rem;
       }
       /* 調整手機版 body padding-top 以適應展開的 navbar */
-      /* 修改 #3: 減少上方留白，從 170px 改為 130px，消除導覽列下方的灰色空隙 */
+      /* 修改: 減少上方留白，消除灰色空隙，調整為 105px 左右 (視導覽列實際高度) */
       body {
-          padding-top: 130px !important; 
+          padding-top: 105px !important; 
       }
   }
   /* ================================================= */
@@ -286,13 +287,13 @@
   /* 🔻 手機版樣式 */
   @media (max-width: 600px) {
     .main-container {
-      margin: 8px auto;
+      margin: 0 auto; /* 修改: 取消上方 margin，消除間距 */
       padding: 0; 
       max-width: 100%;
     }
     
     body {
-      padding: 130px 10px 20px 10px; /* 手機版也同步調整 padding */
+      padding: 105px 10px 20px 10px; /* 修改: 手機版 body padding 同步減少 */
       overflow-x: hidden;
     }
 
@@ -361,7 +362,7 @@
 <div class="main-container">
   <div class="card">
     <div class="logo-wrap">
-      <img src="pic/JS_LOGO.png" alt="JS PCB Logo">
+      <img src="pic/JS_LOGO.png" alt="JS PCB Logo" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x100?text=JS+PCB';">
     </div>
     <h1>PCB 規格產生器</h1>
     
@@ -385,7 +386,7 @@
 
     <div class="field-group">
       <label for="layers">層別</label>
-      <select id="layers" onchange="updateStates">
+      <select id="layers" onchange="updateStates()">
         <option>-</option>
         <option>單面板</option>
         <option selected>雙面板</option>
