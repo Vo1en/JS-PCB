@@ -160,7 +160,7 @@
         .page-container {
             width: 210mm; /* A4 width */
             background-color: white;
-            /* 修改：margin-top 設為 0，消除電腦版灰色間距 */
+            /* margin-top 設為 0，消除電腦版灰色間距 */
             margin: 0 auto 20px auto; 
             padding: 15mm; 
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -422,9 +422,19 @@
         #inspection-data-table tbody td:first-child {
             text-align: center; 
         }
+        
+        /* === 修正重點：強制第二欄(規格)不換行並置中 === */
         #inspection-data-table td:nth-child(2) {
-             white-space: nowrap; 
+             white-space: nowrap !important; /* 強制不換行 */
              padding: 4px 6px; 
+             /* 使用 flex 讓輸入框和誤差值排在同一行 */
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             border-right: 1px solid #000; /* flex 可能會蓋掉 border，需補回 */
+             border-left: 1px solid #000;
+             height: 100%; /* 確保高度填滿 */
+             min-height: 33px; /* 避免 flex 導致高度塌陷 */
         }
         
         #inspection-data-table th:nth-child(n+3):nth-child(-n+7),
@@ -455,9 +465,9 @@
         /* === 手機版響應式優化 (Mobile Optimization) === */
         /* ================================================= */
         @media screen and (max-width: 600px) {
-            /* 修正間距 #1: 強制設定 130px */
+            /* 修正間距 #1: 縮小 padding-top 消除灰色間距 (原 130px -> 112px) */
             body {
-                padding-top: 130px !important;
+                padding-top: 112px !important;
             }
 
             /* 修正間距 #2: 消除手機版上方多餘邊距，margin 設為 0 */
@@ -626,6 +636,24 @@
                 min-height: 30px;
             }
 
+            /* 手機版針對表格第二欄(規格)的特別調整 */
+            #inspection-data-table td:nth-child(2) {
+                display: flex !important;
+                flex-direction: row !important; /* 強制水平排列 */
+                justify-content: center !important;
+                align-items: center !important;
+                white-space: nowrap !important;
+                width: auto !important; /* 讓內容決定寬度 */
+                min-width: 120px; /* 確保有足夠寬度顯示 */
+            }
+            /* 讓輸入框不要在手機版變 100% 寬，保持小巧 */
+            #inspection-data-table td:nth-child(2) .editable-nominal {
+                width: 50px !important; 
+                min-width: 50px !important;
+                display: inline-block !important;
+                margin: 0 5px 0 0 !important; /* 右邊留點空隙 */
+            }
+
             .footer-section {
                 flex-direction: column;
                 gap: 20px;
@@ -715,6 +743,12 @@
             
             #inspection-data-table-wrapper {
                 overflow-x: visible;
+            }
+            
+            /* 列印時要取消 flex，改回預設表格顯示，以免格線跑掉 */
+            #inspection-data-table td:nth-child(2) {
+                display: table-cell !important;
+                white-space: nowrap !important;
             }
         }
     </style>
