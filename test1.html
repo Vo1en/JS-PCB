@@ -207,18 +207,16 @@
         }
 
         th {
-            /* 項目 (th) 背景色更改為淺藍色 (與 TEST.html 表頭相似) */
-            background-color: #e0f2fe; /* Light blue, similar to Tailwind blue-100 */
+            background-color: #e0f2fe; 
             font-weight: bold;
             width: 15%;
             white-space: nowrap;
-            color: #333; /* 調整：表格標題文字改為深灰色 */
+            color: #333; 
         }
         
         .section-header {
-            /* 區塊標題橫條背景色更改為淺藍色 (與 TEST.html 橫條相似) */
-            background-color: #dbeafe; /* Slightly deeper light blue */
-            color: #000; /* 調整：區塊標題文字改為黑色 */
+            background-color: #dbeafe; 
+            color: #000; 
             padding: 4px 10px; 
             font-weight: bold;
             margin-top: 0px; 
@@ -271,7 +269,6 @@
              margin-top: 10px;
         }
 
-        /* 動作按鈕 (列印/PDF) - 桌面版 */
         .action-buttons {
             position: absolute;
             top: 20px; 
@@ -319,7 +316,6 @@
             width: 80px; 
             text-align: center; 
         }
-        
         .page-container > div:nth-child(4) + table .editable:not(#qty-input) {
             width: 95%; 
             min-width: 180px; 
@@ -426,13 +422,15 @@
             margin-top: 25px; 
             page-break-before: avoid; 
         }
-
-        /* 判定合格的樣式 */
-        .qualified-active {
-            color: #008000; /* 綠色 */
+        
+        /* 樣式：合格時的綠色 */
+        .decision-qualified-active {
+            color: green;
+            font-weight: bold;
         }
-        .qualified-inactive {
-            color: #999; /* 灰色 */
+        /* 樣式：未完成時的灰色 */
+        .decision-inactive {
+            color: #999;
         }
 
         /* ================================================= */
@@ -452,39 +450,6 @@
                 padding-top: 160px; 
             }
 
-            .no-print {
-                flex-direction: column;
-                align-items: flex-start !important;
-                padding: 12px 15px !important;
-                gap: 10px;
-            }
-            .no-print span {
-                margin-right: 0 !important;
-                margin-bottom: 5px;
-            }
-            .nav-btn {
-                display: block;
-                width: 100%;
-                text-align: center;
-                margin-right: 0;
-                margin-bottom: 5px;
-                box-sizing: border-box;
-            }
-            
-            header {
-                flex-direction: column;
-                align-items: center; 
-                text-align: center;
-            }
-            .company-info {
-                align-items: center;
-                margin-bottom: 10px;
-            }
-            .header-right {
-                align-items: center;
-                width: 100%;
-            }
-            
             .action-buttons {
                 position: fixed;
                 bottom: 0;
@@ -668,13 +633,6 @@
                 color: #333 !important; 
             }
             
-            /* 確保綠色勾選在列印時顯示顏色 */
-            .qualified-active {
-                -webkit-print-color-adjust: exact;
-                color-adjust: exact;
-                color: #008000 !important;
-            }
-
             select {
                 -webkit-appearance: none;
                 -moz-appearance: none;
@@ -1016,8 +974,8 @@
 
         <div style="margin-top: 25px; border: 2px solid #000; text-align: center; background-color: #f9f9f9;" class="final-decision-box">
             <strong style="font-size: 16px;">最終判定: </strong>
-            <span id="final-qualified" class="qualified-inactive" style="font-size: 20px; font-weight: bold; margin-left: 20px;">&#9744; 合格</span>
-            <span style="font-size: 20px; color: #999; margin-left: 20px;">&#9744; 不合格</span>
+            <span id="decision-ok" class="decision-inactive" style="font-size: 20px; margin-left: 20px;">&#9744; 合格</span>
+            <span id="decision-ng" class="decision-inactive" style="font-size: 20px; margin-left: 20px;">&#9744; 不合格</span>
         </div>
 
 <div class="footer-section" contenteditable="false">
@@ -1059,6 +1017,7 @@
                 selectElement.style.display = 'inline-block';
                 inputElement.value = ''; 
             }
+            checkCompletion(); // 檢查狀態
         }
         
         function revertToSelect(inputElement, containerId) {
@@ -1072,6 +1031,7 @@
                     selectElement.selectedIndex = 0; 
                 }
             }
+            checkCompletion(); // 檢查狀態
         }
 
         function toggleDateCodeInput(selectElement) {
@@ -1087,6 +1047,7 @@
                 selectElement.style.display = 'inline-block';
                 inputElement.value = '';
             }
+            checkCompletion(); // 檢查狀態
         }
 
         function revertToDateCodeSelect(inputElement) {
@@ -1096,6 +1057,7 @@
                 selectElement.style.display = 'inline-block';
                 selectElement.value = 'none';
             }
+            checkCompletion(); // 檢查狀態
         }
         
         function handlePlaceholderFocus(el) {
@@ -1129,7 +1091,7 @@
             } else {
                  el.classList.remove('placeholder-text');
             }
-            updateFinalDecisionStatus(); // Trigger check on blur
+            checkCompletion(); // 檢查狀態
         }
 
         function enforceNumericalInput(el) {
@@ -1145,7 +1107,65 @@
             if (el.textContent !== value) {
                 el.textContent = value;
             }
-            updateFinalDecisionStatus(); // Trigger check on input
+            checkCompletion(); // 檢查狀態
+        }
+
+        // === 新增：自動檢查填寫完成度並更新合格狀態 ===
+        function checkCompletion() {
+            let allFilled = true;
+
+            // 必填文字欄位
+            const requiredTextIds = ['customer-name', 'customer-part'];
+            requiredTextIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const value = el.textContent.trim();
+                    if (value === '請輸入' || value === '') {
+                        allFilled = false;
+                    }
+                }
+            });
+
+            // 必填數字欄位
+            const requiredNumberIds = ['qty-input', 'dim-length-input', 'dim-width-input', 'pnl-x', 'pnl-y'];
+            requiredNumberIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const value = el.textContent.trim();
+                    const numValue = parseFloat(value);
+                    if (value === '請輸入' || value === '' || !isFinite(numValue)) { 
+                        allFilled = false;
+                    }
+                }
+            });
+
+            // 週期檢查 (如果有選有週期，則必須輸入)
+            const dateCodeSelect = document.getElementById('date-code-select');
+            const dateCodeInput = document.getElementById('date-code-input');
+            if (dateCodeSelect.value === 'has') {
+                if (dateCodeInput.value.trim() === '' || dateCodeInput.value.trim() === '請輸入週期碼') {
+                    allFilled = false;
+                }
+            }
+
+            // 更新 UI
+            const okSpan = document.getElementById('decision-ok');
+            const ngSpan = document.getElementById('decision-ng');
+
+            if (allFilled) {
+                // 打勾且變綠色
+                okSpan.innerHTML = '&#9745; 合格';
+                okSpan.classList.add('decision-qualified-active');
+                okSpan.classList.remove('decision-inactive');
+                // NG 保持原樣
+                ngSpan.innerHTML = '&#9744; 不合格';
+            } else {
+                // 恢復未打勾灰色
+                okSpan.innerHTML = '&#9744; 合格';
+                okSpan.classList.remove('decision-qualified-active');
+                okSpan.classList.add('decision-inactive');
+                ngSpan.innerHTML = '&#9744; 不合格';
+            }
         }
 
         function prepareForPrint() {
@@ -1190,6 +1210,17 @@
                     }
                 }
             });
+            
+            // 加入週期檢查的 Validation 提示
+            const dateCodeSelect = document.getElementById('date-code-select');
+            const dateCodeInput = document.getElementById('date-code-input');
+            if (dateCodeSelect.value === 'has') {
+                if (dateCodeInput.value.trim() === '' || dateCodeInput.value.trim() === '請輸入週期碼') {
+                     dateCodeInput.classList.add('missing');
+                     allFilled = false;
+                     missingFields.push('週期代碼');
+                }
+            }
             
             if (allFilled) {
                 const inspectionRowsHidden = hideEmptyInspectionRows();
@@ -1258,52 +1289,61 @@
             return { nominal, tolerance, decimals };
         }
 
+        // === 修改重點：隨機數據生成邏輯 ===
         function generateRandomData(nominal, tolerance, decimals, rowIndex) {
-            let min, max, value;
+            let val;
             
-            // 邏輯修改：針對長度與寬度 (Row 0 & 1)
-            // 需求：規格+-0.2，但實際數值控制在0.15內，且0.1以內的要佔至少60%
+            // === 邏輯修改：長寬生成邏輯 (Row 0 & 1) ===
+            // 規則：
+            // 1. 規格雖為 +-0.2，但控制在 +-0.11 以內
+            // 2. 0.08 (假設為0.8的修正) 以內要佔 60%
+            // 3. 只有 15% 機率生成負公差
             if (rowIndex === 0 || rowIndex === 1) {
-                const innerLimit = 0.1; // 60% 機率範圍
-                const outerLimit = 0.15; // 最大範圍
-
-                if (Math.random() < 0.60) { 
-                    // 60% 機率：生成 +-0.1 內的數值
-                    min = nominal - innerLimit;
-                    max = nominal + innerLimit;
-                    value = Math.random() * (max - min) + min;
-                } else { 
-                    // 40% 機率：生成 0.1~0.15 或 -0.15~-0.1 之間的數值
-                    const isPositive = Math.random() >= 0.5;
-                    if (isPositive) {
-                         // +0.1 到 +0.15
-                         min = nominal + innerLimit;
-                         max = nominal + outerLimit;
-                    } else {
-                         // -0.15 到 -0.1
-                         min = nominal - outerLimit;
-                         max = nominal - innerLimit;
-                    }
-                    value = Math.random() * (max - min) + min;
-                }
-                return value.toFixed(2); 
-            } 
-            else if (rowIndex >= 2) {
-                // 邏輯修改：針對孔徑 (Row 2+)
-                // 需求：規格+-0.05，但實際生成的數值，控制在0.03以內
-                const strictTolerance = 0.03; 
+                const maxDeviation = 0.11;     // 最大允許偏差
+                const tightLimit = 0.08;       // 60% 分佈的界線
+                const negativeChance = 0.15;   // 15% 負公差
+                const tightDistributionChance = 0.60; // 60% 機率
                 
-                min = nominal - strictTolerance; 
-                max = nominal + strictTolerance;
-                value = Math.random() * (max - min) + min;
-                return value.toFixed(decimals);
+                let deviation;
+                const isTight = Math.random() < tightDistributionChance;
+                
+                if (isTight) {
+                    // 生成 0 ~ 0.08 之間的偏差
+                    deviation = Math.random() * tightLimit;
+                } else {
+                    // 生成 0.08 ~ 0.11 之間的偏差
+                    deviation = Math.random() * (maxDeviation - tightLimit) + tightLimit;
+                }
+                
+                // 決定正負
+                const isNegative = Math.random() < negativeChance;
+                
+                if (isNegative) {
+                    val = nominal - deviation;
+                } else {
+                    val = nominal + deviation;
+                }
+                
+                return val.toFixed(2); // 長寬通常小數點後兩位
+            } 
+            // === 邏輯修改：孔徑生成邏輯 (Row 2+) ===
+            // 規則：
+            // 1. 規格 +-0.05
+            // 2. 控制在 +0.03 以內
+            // 3. 不要走負公差 (即 range: nominal ~ nominal + 0.03)
+            else if (rowIndex >= 2) {
+                const min = nominal;
+                const max = nominal + 0.03;
+                
+                val = Math.random() * (max - min) + min;
+                return val.toFixed(decimals);
             }
             
-            // Fallback (理論上不會執行到這裡)
-            min = nominal - tolerance;
-            max = nominal + tolerance;
-            value = Math.random() * (max - min) + min;
-            return value.toFixed(decimals);
+            // Fallback (理論上不執行到這)
+            const min = nominal - tolerance;
+            const max = nominal + tolerance;
+            val = Math.random() * (max - min) + min;
+            return val.toFixed(decimals);
         }
 
         function populateRowData(rowIndex, nominalId) {
@@ -1381,7 +1421,7 @@
             }
             
             populateAllInspectionData();
-            updateFinalDecisionStatus(); // Also check status
+            checkCompletion(); // 檢查狀態
         }
 
         function populateAllInspectionData() {
@@ -1391,46 +1431,6 @@
             populateRowData(3, 'spec-hole2-nominal');
             populateRowData(4, 'spec-hole3-nominal');
             populateRowData(5, 'spec-hole4-nominal');
-        }
-
-        // 新增函數：檢查所有必填欄位並更新合格狀態
-        function updateFinalDecisionStatus() {
-            const requiredTextIds = ['customer-name', 'customer-part'];
-            const requiredNumberIds = ['qty-input', 'dim-length-input', 'dim-width-input', 'pnl-x', 'pnl-y'];
-            
-            let allFilled = true;
-
-            requiredTextIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const value = el.textContent.trim();
-                    if (value === '請輸入' || value === '') {
-                        allFilled = false;
-                    }
-                }
-            });
-
-            requiredNumberIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const value = el.textContent.trim();
-                    const numValue = parseFloat(value);
-                    if (value === '請輸入' || value === '' || !isFinite(numValue)) { 
-                        allFilled = false;
-                    }
-                }
-            });
-
-            const qualifiedSpan = document.getElementById('final-qualified');
-            if (allFilled) {
-                qualifiedSpan.innerHTML = '&#9745; 合格'; // 打勾
-                qualifiedSpan.classList.remove('qualified-inactive');
-                qualifiedSpan.classList.add('qualified-active');
-            } else {
-                qualifiedSpan.innerHTML = '&#9744; 合格'; // 空框
-                qualifiedSpan.classList.remove('qualified-active');
-                qualifiedSpan.classList.add('qualified-inactive');
-            }
         }
         
         document.addEventListener('DOMContentLoaded', () => {
@@ -1445,22 +1445,18 @@
             
             updateSpecs();
             
-            // Add listeners for basic validation updates
-            ['customer-name', 'customer-part', 'qty-input', 'dim-length-input', 'dim-width-input', 'pnl-x', 'pnl-y'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) {
-                    el.addEventListener('input', updateFinalDecisionStatus);
-                    el.addEventListener('blur', updateFinalDecisionStatus);
-                }
-            });
-            
             document.getElementById('spec-length-nominal')?.addEventListener('input', populateAllInspectionData);
             document.getElementById('spec-width-nominal')?.addEventListener('input', populateAllInspectionData);
             document.getElementById('spec-hole1-nominal')?.addEventListener('input', populateAllInspectionData);
             document.getElementById('spec-hole2-nominal')?.addEventListener('input', populateAllInspectionData);
             document.getElementById('spec-hole3-nominal')?.addEventListener('input', populateAllInspectionData);
             document.getElementById('spec-hole4-nominal')?.addEventListener('input', populateAllInspectionData);
+            
+            // 監聽所有輸入變更以即時更新合格狀態
+            document.querySelector('.page-container').addEventListener('input', checkCompletion);
+            document.querySelectorAll('select').forEach(sel => sel.addEventListener('change', checkCompletion));
 
+            // 手機版輸入優化
             const editables = document.querySelectorAll('[contenteditable="true"]');
             editables.forEach(el => {
                 el.addEventListener('click', (e) => {
@@ -1470,12 +1466,10 @@
                     el.focus();
                 }, {passive: true});
             });
-
-            // Initial Check
-            updateFinalDecisionStatus();
+            
+            checkCompletion(); // 初始化時檢查一次
         });
         
-        // Custom Modal UI (取代 alert)
         function showModal(message) {
             let modal = document.getElementById('custom-alert-modal');
             if (!modal) {
