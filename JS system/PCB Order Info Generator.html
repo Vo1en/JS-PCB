@@ -3,160 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PCB規格產生器</title>
+  <title>駿鑫 規格產生器</title>
+  
+  <link rel="stylesheet" href="navbar.css">
   <link rel="stylesheet" href="style.css">
+  
   <style>
-  /* ================================================= */
-  /* === START: 來自 navbar.html 的 CSS 樣式 === */
-  /* ================================================= */
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
-
-  :root {
-      --bg-gradient: linear-gradient(135deg, #fcfaf5 0%, #f0ebde 100%);
-      --glass-bg: rgba(255, 255, 255, 0.9);
-      --glass-border: rgba(194, 168, 120, 0.6);
-      --text-main: #1f2937;
-      --text-sub: #6b7280;
-      --gold-gradient: linear-gradient(135deg, #c2a878 0%, #e3d1a8 50%, #9e8b6b 100%);
-      --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-      --active-color: #c2a878;
-  }
-
-  /* 全域 box-sizing，避免寬度超出造成左右滑動 */
+  /* 全域 box-sizing */
   *, *::before, *::after {
       box-sizing: border-box;
   }
 
-  .navbar {
+  /* === JS PCB 浮水印樣式 === */
+  body::before {
+      content: '';
       position: fixed;
       top: 0;
       left: 0;
-      right: 0;
       width: 100%;
-      display: flex;
-      align-items: center;
-      padding: 10px 16px;
-      justify-content: flex-start;
-      background-color: var(--glass-bg);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      border-bottom: 2px solid var(--glass-border);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-      z-index: 1000;
+      height: 100%;
+      /* 請確認您的圖片路徑是否正確，通常是在 pic 資料夾內 */
+      background-image: url('pic/JS_LOGO.png'); 
+      background-repeat: repeat;       /* 讓圖片重複平鋪 */
+      background-position: center center;
+      background-size: 300px;          /* 控制浮水印 Logo 的大小 */
+      opacity: 0.1;                    /* 透明度 (0.1 代表很淡) */
+      z-index: -1;                     /* 確保在最底層，不會擋到內容 */
+      pointer-events: none;            /* 讓滑鼠可以穿透，不影響操作 */
   }
 
-  .brand-logo {
-      display: flex;
-      align-items: center;
-      text-decoration: none;
-      padding: 5px 0;
-      flex-shrink: 0;
-  }
-
-  .text-logo {
-      font-family: 'Roboto', sans-serif;
-      font-size: 2rem;
-      font-weight: 900;
-      letter-spacing: -1px;
-      background: var(--gold-text-gradient);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
-      transition: transform 0.3s, filter 0.3s;
-      animation: shine 5s linear infinite;
-      white-space: nowrap;
-  }
-
-  .brand-logo:hover .text-logo {
-      transform: scale(1.05);
-      filter: drop-shadow(0 0 5px rgba(194, 168, 120, 0.8))
-              drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
-  }
-
-  .nav-links {
-      display: flex;
-      gap: 20px;
-      margin-left: 30px;
-      flex-wrap: nowrap;
-  }
-
-  .nav-item {
-      text-decoration: none;
-      color: var(--text-main);
-      font-size: 1rem;
-      /* 修改 1: 這裡從 500 改為 700 (Bold) */
-      font-weight: 700;
-      padding: 5px 0;
-      position: relative;
-      transition: color 0.3s;
-      white-space: nowrap;
-  }
-
-  .nav-item::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      width: 0;
-      height: 3px;
-      background: var(--active-color);
-      transition: width 0.3s ease-out, left 0.3s ease-out;
-      border-radius: 2px;
-  }
-
-  .nav-item:hover {
-      color: var(--active-color);
-  }
-  
-  .nav-item.current {
-      color: var(--active-color);
-  }
-
-  .nav-item:hover::after,
-  .nav-item.current::after {
-      width: 100%;
-      left: 0;
-  }
-
-  @keyframes shine {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
-  }
-
-  /* 平板 / 手機：navbar 改成上下堆疊、置中 */
-  @media (max-width: 768px) {
-      .navbar {
-          flex-direction: column;
-          align-items: center;
-          padding: 8px 10px; /* 稍微減少 padding */
-          gap: 6px;
-          margin-left: 0;
-      }
-      .text-logo {
-          font-size: 1.8rem;
-          letter-spacing: -0.5px;
-      }
-      .nav-links {
-          width: 100%;
-          justify-content: center;
-          flex-wrap: wrap; /* 允許換行 */
-          gap: 8px 12px;   /* 調整間距，讓內容更容易擠進去 */
-          margin-left: 0;  /* 確保沒有左邊距影響置中 */
-      }
-      .nav-item {
-          font-size: 0.9rem;
-      }
-      /* 調整手機版 body padding-top 以適應展開的 navbar */
-      /* 修改: 減少上方留白，消除灰色空隙，調整為 105px 左右 (視導覽列實際高度) */
-      body {
-          padding-top: 105px !important; 
-      }
-  }
-  /* ================================================= */
-  /* === END: 來自 navbar.html 的 CSS 樣式 === */
-  /* ================================================= */
-
+  /* 保留原本針對此頁面的樣式微調 */
   .logo-wrap {
     text-align: center;
     margin: 12px 0 4px; 
@@ -170,16 +46,16 @@
   body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     margin: 0;
-    padding: 80px 16px 20px 16px;  /* 上方預留給 navbar */
-    background: #f5f5f5;
+    /* 上方預留給 navbar - 已修正為 0 (由 main-container 推開) */
+    padding: 0px 16px 20px 16px;  
+    background: #f9f9f9;
     max-width: 100%;
-    overflow-x: hidden;            /* 關掉左右捲動 */
+    overflow-x: hidden;
   }
 
-  /* 確保內容置中，並保留左右邊距以避免內容貼邊 */
   .main-container {
-    max-width: 800px;
-    margin: 0 auto;
+    width: 210mm; /* 強制 A4 寬度 */
+    margin: 110px auto 20px auto; /* 配合導覽列高度 */
     padding: 0;
   }
 
@@ -188,18 +64,17 @@
     font-size: 22px;
     margin-top: 0; 
     margin-bottom: 20px; 
-    font-weight: 700; /* h1 也確保加粗 */
+    font-weight: 700;
   }
   
-  /* 強化卡片視覺效果 */
-  .card {
+ .card {
     background: #fff;
-    border-radius: 12px; 
-    padding: 24px; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    border-radius: 0; /* A4 紙通常沒有圓角 */
+    padding: 15mm;    /* A4 標準邊距 */
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); /* 統一陰影風格 */
+    min-height: 297mm; /* (選用) 讓它至少有一張紙高 */
   }
   
-  /* 欄位組件間距更清晰 */
   .field-group {
     display: grid;
     grid-template-columns: 100px 1fr; 
@@ -213,11 +88,9 @@
     text-align: left;
     color: #333;
     padding-left: 0;
-    /* 修改 2: 新增這行，讓內容的項目名稱變粗 */
     font-weight: 700; 
   }
   
-  /* 修改：讓 select 和 input 寬度統一，並處理 input-wrapper */
   .select-container {
     width: 100%;
     position: relative;
@@ -237,9 +110,8 @@
     color: #888;
   }
 
-  /* 自行輸入區塊的樣式 */
   .custom-input-wrapper {
-    display: none; /* 預設隱藏 */
+    display: none;
     width: 100%;
     gap: 8px;
     align-items: center;
@@ -275,7 +147,6 @@
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
   }
 
-  /* 按鈕區塊間距與置中 */
   .btn-row {
     display: flex;
     justify-content: center; 
@@ -291,7 +162,7 @@
     background: #2563eb;
     color: #fff;
     transition: background 0.2s; 
-    font-weight: 500; /* 按鈕也可以稍微加粗 */
+    font-weight: 500;
   }
   button:hover {
     background: #1d4ed8;
@@ -300,7 +171,6 @@
     background: #6b7280;
   }
   
-  /* 輸出訊息區塊 */
   .output-area {
     margin-top: 15px;
   }
@@ -311,11 +181,10 @@
     margin-bottom: 4px;
   }
 
-  /* 這裡拉高輸出欄位，讓內容一次多一點 */
   textarea#output {
     width: 100%;
     margin-top: 0;
-    min-height: 350px;  /* 桌機版預設高度加長 */
+    min-height: 350px;
     font-family: Menlo, Consolas, monospace; 
     line-height: 1.5;
   }
@@ -327,16 +196,15 @@
     margin-top: -6px;
   }
 
-  /* 🔻 手機版樣式 */
-  @media (max-width: 600px) {
+  /* 手機版樣式微調 */
+ @media (max-width: 600px) {
     .main-container {
-      margin: 0 auto; /* 修改: 取消上方 margin，消除間距 */
-      padding: 0; 
-      max-width: 100%;
+      width: 100%; /* 手機版要佔滿 */
+      margin: 0;
     }
     
     body {
-      padding: 105px 10px 20px 10px; /* 修改: 手機版 body padding 同步減少 */
+      padding: 80px 10px 20px 10px; /* 手機版針對此頁面的 padding */
       overflow-x: hidden;
     }
 
@@ -345,9 +213,9 @@
       margin-bottom: 12px;
     }
     .card {
-      padding: 18px 14px; 
-      border-radius: 8px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border-radius: 0;
+      padding: 15px; /* 手機版內距縮小 */
+      box-shadow: none;
     }
     .field-group {
       grid-template-columns: 1fr;
@@ -381,26 +249,21 @@
       width: 70%;
     }
     textarea#output {
-      min-height: 300px;  /* 手機版也比原本更高一點 */
+      min-height: 300px;
       font-size: 13px;
     }
+  }
+  
+  /* 針對此頁面的 navbar 手機版修正 */
+  @media (max-width: 768px) {
+      /* 由於 navbar.css 已經設定好高度，這裡只要確保 body padding 足夠即可 */
   }
 </style>
 </head>
 <body>
 
-<nav class="navbar">
-  <a href="index.html" class="brand-logo">
-    <span class="text-logo">JS PCB</span>
-  </a>
-
-  <div class="nav-links">
-    <a href="index.html" class="nav-item">首頁</a>
-    <a href="PCB Order Info Generator.html" class="nav-item current">PCB規格產生器</a>
-    <a href="PCB Inspection Report.html" class="nav-item">出貨檢驗報告</a>
-    <a href="PCB Test Report.html" class="nav-item">電性測試報告</a>
-  </div>
-</nav>
+<div id="navbar-container"></div>
+<script src="navbar.js"></script>
 
 <div class="main-container">
   <div class="card">
@@ -707,11 +570,9 @@
 </div>
 
 <script>
-  // 修改 #1: 新增格式化數字的函式
+  // 保留原本的邏輯腳本，完全不變
   function formatNumber(input) {
-    // 移除非數字的字元
     var value = input.value.replace(/\D/g, "");
-    // 如果有值，則加上千分位逗號
     if (value) {
       input.value = Number(value).toLocaleString("en-US");
     } else {
@@ -719,34 +580,27 @@
     }
   }
 
-  // --- 新增: 自行輸入相關邏輯 ---
-
-  // 當選單改變時，檢查是否選擇了 "custom"
   function checkCustom(selectEl) {
     if (selectEl.value === 'custom') {
       var customDivId = selectEl.id + '_custom_div';
       var customDiv = document.getElementById(customDivId);
       var customInput = document.getElementById(selectEl.id + '_custom');
       if (customDiv) {
-        selectEl.style.display = 'none'; // 隱藏選單
-        customDiv.style.display = 'flex'; // 顯示輸入框組
+        selectEl.style.display = 'none';
+        customDiv.style.display = 'flex';
         if(customInput) customInput.focus();
       }
     }
   }
 
-  // 重置回選單模式
   function resetSelect(selectId) {
     var selectEl = document.getElementById(selectId);
     var customDiv = document.getElementById(selectId + '_custom_div');
     if (selectEl && customDiv) {
       customDiv.style.display = 'none';
       selectEl.style.display = 'block';
-      selectEl.value = '-'; // 重置為預設值，或第一項
-      
-      // 因為重置了值，需要重新檢查連動狀態 (例如 material 或 layers 影響警告)
+      selectEl.value = '-';
       if (selectEl.onchange) {
-        // 手動觸發 onchange 事件以更新狀態 (如果是 onSelectChange 綁定)
         onSelectChange(selectEl);
       } else {
          updateStates();
@@ -754,16 +608,12 @@
     }
   }
 
-  // 統一處理 onchange，先檢查 custom，再更新狀態
   function onSelectChange(el) {
     checkCustom(el);
     updateStates();
   }
 
   function updateStates() {
-    // 若為 custom，原本的 value 取得可能會變成 "custom"，這時候邏輯需小心
-    // 但通常來說，如果是 custom，我們就讓它通過 (不觸發特定警告或禁用)，這符合「自行輸入」的彈性
-
     var layer        = document.getElementById("layers").value;
     var layersSel    = document.getElementById("layers");
     var innerSelect  = document.getElementById("innerCu");
@@ -795,8 +645,6 @@
       }
     }
 
-    // 先全部啟用，再根據邏輯禁用
-    // 注意：如果目前是 custom 模式 (hidden)，這些 disabled 操作不影響輸入框，只影響背後的 select (已隱藏)
     for (i = 0; i < thicknessSel.options.length; i++) {
       thicknessSel.options[i].disabled = false;
     }
@@ -814,7 +662,6 @@
     finishSelect.disabled = false;
     finishWarn.style.display = "none";
 
-    // FR-1 特殊邏輯
     if (materialSel.value === "FR-1") {
       for (i = 0; i < layersSel.options.length; i++) {
         opt = layersSel.options[i];
@@ -831,7 +678,6 @@
         opt = thicknessSel.options[i];
         opt.disabled = (opt.value !== "1.6mm");
       }
-      // 如果不是 custom 才強制切換
       if (thicknessSel.value !== "custom") {
         thicknessSel.value = "1.6mm";
       }
@@ -863,14 +709,10 @@
       return;
     }
 
-    // 內層銅厚邏輯
-    // 如果 layer 是 custom，條件都不符合，走 else 路徑 (啟用)，這是合理的
     if (layer === "單面板" || layer === "雙面板") {
       innerSelect.disabled = true;
       innerSelect.value = "-";
       innerWarn.style.display = "block";
-      // 如果 user 在單面板切換成 custom 輸入內層銅厚，會被這裡 disable 擋住嗎？
-      // 不會，因為 disabled 是針對 select。custom input 是獨立的 input 欄位。
     } else if (
       layer === "四層板" ||
       layer === "六層板" ||
@@ -883,12 +725,10 @@
         innerSelect.value = "0.5oz";
       }
     } else {
-      // custom 或其他
       innerSelect.disabled = false;
       innerWarn.style.display = "none";
     }
 
-    // 板厚邏輯
     if (
       layer === "四層板" ||
       layer === "六層板" ||
@@ -925,9 +765,7 @@
       thicknessWarn.style.display = "none";
     }
 
-    // 表面處理邏輯
     if (layer === "六層板" || layer === "八層板" || layer === "十層板") {
-      // 只有在非 custom 情況下強制鎖定
       if (finishSelect.value !== "custom") {
         finishSelect.value = "化金 2u";
         finishSelect.disabled = true;
@@ -935,7 +773,6 @@
       }
     }
 
-    // 特殊製程邏輯
     if (layer === "六層板" || layer === "八層板" || layer === "十層板") {
       if (special1Sel.value !== "custom") {
         special1Sel.value = "樹脂塞孔";
@@ -949,17 +786,15 @@
     return str.replace(/^\s+|\s+$/g, "");
   }
 
-  // 修改: getValue 支援讀取 Custom Input
   function getValue(id) {
     var el = document.getElementById(id);
     if (!el) return "-";
     
-    // 如果是 select 且值為 custom，則讀取對應的 input
     if (el.tagName === 'SELECT' && el.value === 'custom') {
       var customInput = document.getElementById(id + '_custom');
       if (customInput) {
         var val = trim(customInput.value);
-        return val || ""; // 自行輸入如果不填，就回傳空字串或視為空白
+        return val || ""; 
       }
     }
     
@@ -992,9 +827,7 @@
     var specialAmountEl = document.getElementById("specialAmount");
     var specialAmount = "";
     if (specialAmountEl) {
-      // 修改 #1: 取得輸入值後，先移除逗號以便後續處理（雖然這裡只是顯示，但保持數值乾淨是好習慣）
       var rawVal = trim(specialAmountEl.value || "");
-      // 如果已經格式化過，直接使用該字串，或者先移除逗號再重新格式化確認
       var cleanVal = rawVal.replace(/,/g, ""); 
       
       if (cleanVal) {
@@ -1005,7 +838,7 @@
     var specialsIds = ["special1", "special2", "special3"];
     var specials = [];
     for (var i = 0; i < specialsIds.length; i++) {
-      var v = getValue(specialsIds[i]); // 使用更新後的 getValue
+      var v = getValue(specialsIds[i]);
       if (v && v !== "-") specials.push(v);
     }
 
@@ -1076,4 +909,3 @@
 
 </body>
 </html>
-

@@ -3,144 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>駿鑫 PCB 測試報告</title>
+    <title>駿鑫 電性測試報告</title>
+    
+    <link rel="stylesheet" href="navbar.css">
+    
     <style>
 /* ================================================= */
 /* === START: 來自 navbar.html 的 CSS 樣式 === */
 /* ================================================= */
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
 
-        :root {
-            --bg-gradient: linear-gradient(135deg, #fcfaf5 0%, #f0ebde 100%);
-            --glass-bg: rgba(255, 255, 255, 0.9);
-            --glass-border: rgba(194, 168, 120, 0.6);
-            --text-main: #1f2937;
-            --text-sub: #6b7280;
-            --gold-gradient: linear-gradient(135deg, #c2a878 0%, #e3d1a8 50%, #9e8b6b 100%);
-            --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-            --active-color: #c2a878;
-        }
-
-        /* 導航欄的固定定位和樣式 */
-        .navbar {
+        /* === JS PCB 浮水印樣式 === */
+        body::before {
+            content: '';
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            display: flex;
-            align-items: center;
-            padding: 10px 40px;
-            justify-content: flex-start;
-            gap: 50px;
-            background-color: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-bottom: 2px solid var(--glass-border);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            z-index: 1000; /* 確保在最上層 */
+            height: 100%;
+            background-image: url('pic/JS_LOGO.png'); 
+            background-repeat: repeat;       /* 讓圖片重複平鋪 */
+            background-position: center center;
+            background-size: 300px;          /* 控制浮水印 Logo 的大小 */
+            opacity: 0.1;                    /* 透明度 (0.1 代表很淡) */
+            z-index: -1;                     /* 確保在最底層，不會擋到內容 */
+            pointer-events: none;            /* 讓滑鼠可以穿透，不影響操作 */
         }
-
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            padding: 5px 0;
-        }
-
-        .text-logo {
-            font-family: 'Roboto', sans-serif;
-            font-size: 2.2rem;
-            font-weight: 900;
-            letter-spacing: -1px;
-            background: var(--gold-text-gradient);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
-            transition: transform 0.3s, filter 0.3s;
-            animation: shine 5s linear infinite;
-        }
-
-        .brand-logo:hover .text-logo {
-            transform: scale(1.05);
-            filter: drop-shadow(0 0 5px rgba(194, 168, 120, 0.8))
-                    drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 25px;
-        }
-
-        .nav-item {
-            text-decoration: none;
-            color: var(--text-main);
-            font-size: 1rem;
-            font-weight: 500;
-            padding: 5px 0;
-            position: relative;
-            transition: color 0.3s;
-        }
-
-        .nav-item::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 3px;
-            background: var(--active-color);
-            transition: width 0.3s ease-out, left 0.3s ease-out;
-            border-radius: 2px;
-        }
-
-        .nav-item:hover {
-            color: var(--active-color);
-        }
-        
-        /* 標示目前頁面 */
-        .nav-item.current {
-            color: var(--active-color);
-        }
-
-        .nav-item:hover::after,
-        .nav-item.current::after {
-            width: 100%;
-            left: 0;
-        }
-
-        @keyframes shine {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 15px 20px;
-                gap: 10px;
-            }
-            .text-logo {
-                font-size: 1.8rem;
-                letter-spacing: -0.5px;
-            }
-            .nav-links {
-                width: 100%;
-                flex-wrap: wrap;
-                gap: 15px 15px;
-            }
-            .nav-item {
-                font-size: 0.9rem;
-            }
-            /* 手機版導航欄高度更高，調整 body 頂部間距 */
-            body {
-                padding-top: 170px !important; /* 確保內容不會被navbar遮擋 */
-            }
-        }
-/* ================================================= */
-/* === END: 來自 navbar.html 的 CSS 樣式 === */
-/* ================================================= */
 
 /* 出貨數量：數字 + 單位 固定貼在一起 */
 .info-value.ship-quantity {
@@ -149,46 +37,32 @@
     gap: 4px;   /* 數字與「片」的位置距離 */
 }
 
-        /* 全局設置與浮水印 */
+        /* 全局設置 */
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
             margin: 0;
-            /* 調整頂部 padding，為 Navbar 騰出空間 (約 60px) */
-            padding: 80px 20px 20px 20px; 
+            padding: 0; /* 修正距離：由 container margin 負責 */
             position: relative;
-            background-color: #f4f4f4; /* 輕微的背景色 */
+            background-color: #f9f9f9; /* 統一底色 */
             color: #333;
             font-size: 18px; /* 內容字體放大至 18px */
         }
 
-        /* 浮水印樣式 (已更新為 JS_LOGO.png) */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /* 浮水印圖片路徑已更新 */
-            background-image: url('JS_LOGO.png'); 
-            background-repeat: repeat;
-            background-position: center center;
-            /* 調整大小以適合作為浮水印重複平鋪 */
-            background-size: 300px; 
-            opacity: 0.1;
-            z-index: -1;
-            pointer-events: none;
-        }
-
+        /* 主要容器 (A4 風格) */
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            width: 210mm; /* 強制 A4 寬度 */
+            max-width: none;
+            margin: 110px auto 20px auto; /* 頂部距離 110px，避開導航列 */
             background-color: #fff;
-            padding: 20px;
-            border-radius: 8px; /* 增加圓角 */
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 增加陰影 */
-            position: relative; /* 用於定位動作按鈕 */
+            padding: 15mm; /* A4 標準邊距 */
+            border-radius: 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            min-height: 297mm; /* A4 高度 */
+            
+            /* 【關鍵修正】加上這一行，按鈕才會定位在紙張內，而不是飛到視窗右上角 */
+            position: relative; 
         }
 
         /* 動作按鈕 (列印/PDF) - 桌面版 */
@@ -211,6 +85,7 @@
             transition: background-color 0.2s, transform 0.1s;
             display: flex;
             align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .action-buttons button:hover {
             background: #2563eb;
@@ -229,7 +104,6 @@
         }
 
         .logo-container img {
-            /* 調整最大寬度以符合 Logo 實際大小和佈局 */
             max-width: 250px; 
             height: auto;
             margin-bottom: 10px;
@@ -446,13 +320,15 @@
                 padding: 10px; /* 減少 body 邊距 */
                 font-size: 16px; /* 內容字體略小 */
                 padding-bottom: 70px; /* 為底部固定按鈕預留空間 */
-                /* 確保內容不會被手機版 navbar 遮擋 */
-                padding-top: 170px !important; 
+                /* 配合新的漢堡選單高度，設定為 80px */
+                padding-top: 80px !important; 
             }
             .container {
                 padding: 15px; 
                 box-shadow: none; /* 移除容器陰影 */
                 border-radius: 0;
+                width: 100%;
+                margin: 0;
             }
             .report-title {
                 font-size: 24px; /* 標題縮小 */
@@ -558,7 +434,7 @@
 
         @media print {
             /* 隱藏動作按鈕和 navbar */
-            .action-buttons, .navbar {
+            .action-buttons, .navbar, #navbar-container {
                 display: none !important;
             }
             
@@ -696,18 +572,9 @@
 </head>
 <body>
 
-<nav class="navbar">
-        <a href="index.html" class="brand-logo">
-            <span class="text-logo">JS PCB</span>
-        </a>
+<div id="navbar-container"></div>
+<script src="navbar.js"></script>
 
-        <div class="nav-links">
-            <a href="index.html" class="nav-item">首頁</a>
-            <a href="PCB Order Info Generator.html" class="nav-item">PCB規格產生器</a>
-            <a href="PCB Inspection Report.html" class="nav-item">出貨檢驗報告</a>
-            <a href="PCB Test Report.html" class="nav-item current">電性測試報告</a>
-        </div>
-    </nav>
 <div class="container">
         <div class="action-buttons">
             <button onclick="window.print()" title="列印 / 存為PDF">
@@ -947,4 +814,3 @@
 </body>
 
 </html>
-
