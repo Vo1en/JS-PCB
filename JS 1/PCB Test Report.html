@@ -21,7 +21,7 @@
             line-height: 1.6;
             margin: 0;
             /* 調整頂部 padding，為 Navbar 騰出空間 */
-            padding: 110px 20px 20px 20px; 
+            padding: 0px 20px 20px 20px; 
             position: relative;
             background-color: #f4f4f4; /* 輕微的背景色 */
             color: #333;
@@ -46,15 +46,16 @@
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            width: 210mm; /* 強制 A4 寬度 */
+            max-width: none; /* 移除原本的 800px 限制 */
+            margin: 110px auto 20px auto;
             background-color: #fff;
-            padding: 20px;
-            border-radius: 8px; /* 增加圓角 */
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 增加陰影 */
-            position: relative; /* 用於定位動作按鈕 */
+            padding: 15mm; /* A4 標準邊距 */
+            border-radius: 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-sizing: border-box; /* 確保內距不撐大寬度 */
+            min-height: 297mm;
         }
-
         /* 動作按鈕 (列印/PDF) - 桌面版 */
         .action-buttons {
             position: absolute;
@@ -289,10 +290,11 @@
                 padding-bottom: 70px;
                 padding-top: 80px !important; /* 保留給 navbar 的空間 */
             }
-            .container {
-                padding: 15px; 
+        .container {
+                width: 100%;
+                padding: 15px;
                 box-shadow: none;
-                border-radius: 0;
+                margin: 0;
             }
             .report-title {
                 font-size: 24px;
