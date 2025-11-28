@@ -2,7 +2,7 @@
 
 :root {
     --bg-gradient: linear-gradient(135deg, #fcfaf5 0%, #f0ebde 100%);
-    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-bg: rgba(255, 255, 255, 0.95); /* 稍微增加不透明度 */
     --glass-border: rgba(194, 168, 120, 0.6);
     --text-main: #1f2937;
     --text-sub: #6b7280;
@@ -11,15 +11,10 @@
     --active-color: #c2a878;
 }
 
-/* === 核心修正：強制隔離樣式 === */
+/* === 核心修正 === */
 .navbar, .navbar * {
-    /* 1. 強制統一盒模型，解決高度不一的問題 */
     box-sizing: border-box !important;
-    
-    /* 2. 強制統一字體，解決字體粗細和風格不一的問題 */
     font-family: 'Noto Sans TC', sans-serif !important;
-    
-    /* 3. 避免受到外部行高影響 */
     line-height: 1.5;
 }
 
@@ -28,13 +23,11 @@
     top: 0;
     left: 0;
     width: 100%;
-    /* 強制高度為自動，由 padding 決定，避免被外部 CSS 壓縮 */
     height: auto !important; 
     display: flex;
     align-items: center;
-    padding: 10px 40px; /* 這裡決定了視覺厚度 */
-    justify-content: flex-start;
-    gap: 50px;
+    justify-content: space-between; /* 改為兩端對齊 */
+    padding: 10px 40px;
     background-color: var(--glass-bg);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
@@ -48,14 +41,13 @@
     align-items: center;
     text-decoration: none;
     padding: 5px 0;
-    /* 確保 Logo 不會被壓縮 */
     flex-shrink: 0;
+    z-index: 1002; /* 確保 Logo 在最上層 */
 }
 
 .text-logo {
-    /* Logo 使用特殊字體，需獨立設定 */
     font-family: 'Roboto', sans-serif !important;
-    font-size: 2.2rem !important; /* 強制字體大小 */
+    font-size: 2.2rem !important;
     font-weight: 900 !important;
     letter-spacing: -1px;
     background: var(--gold-text-gradient);
@@ -65,30 +57,30 @@
     filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
     transition: transform 0.3s, filter 0.3s;
     animation: shine 5s linear infinite;
-    /* 確保文字不會換行 */
     white-space: nowrap;
 }
 
-.brand-logo:hover .text-logo {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 5px rgba(194, 168, 120, 0.8))
-            drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+/* === 漢堡選單按鈕 (電腦版隱藏) === */
+.hamburger {
+    display: none;
+    cursor: pointer;
+    font-size: 1.8rem;
+    color: var(--text-main);
+    user-select: none;
+    z-index: 1002; /* 確保按鈕在最上層 */
 }
 
 .nav-links {
     display: flex;
     gap: 25px;
-    align-items: center; /* 確保文字垂直置中 */
+    align-items: center;
 }
 
 .nav-item {
     text-decoration: none;
     color: var(--text-main);
-    
-    /* 強制設定導航文字大小與粗細，不繼承 body */
     font-size: 16px !important; 
     font-weight: 700 !important; 
-    
     padding: 5px 0;
     position: relative;
     transition: color 0.3s;
@@ -107,16 +99,11 @@
     border-radius: 2px;
 }
 
-.nav-item:hover {
+.nav-item:hover, .nav-item.current {
     color: var(--active-color);
 }
 
-.nav-item.current {
-    color: var(--active-color);
-}
-
-.nav-item:hover::after,
-.nav-item.current::after {
+.nav-item:hover::after, .nav-item.current::after {
     width: 100%;
     left: 0;
 }
@@ -126,30 +113,69 @@
     100% { background-position: 100% 50%; }
 }
 
+/* === 手機版響應式樣式 (關鍵修改) === */
 @media (max-width: 768px) {
     .navbar {
-        flex-direction: column;
-        align-items: center;
         padding: 15px 20px;
-        gap: 10px;
     }
+    
     .text-logo {
         font-size: 1.8rem !important;
-        letter-spacing: -0.5px;
     }
+
+    /* 顯示漢堡按鈕 */
+    .hamburger {
+        display: block;
+    }
+
+    /* 隱藏原本的連結，並改為絕對定位的下拉選單 */
     .nav-links {
+        position: absolute;
+        top: 100%; /* 接在 navbar 下方 */
+        left: 0;
         width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 10px 15px;
+        background-color: #fff; /* 不透明背景 */
+        border-bottom: 2px solid var(--glass-border);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        
+        flex-direction: column; /* 垂直排列 */
+        align-items: center;
+        gap: 0; /* 移除間距，改用 padding */
+        
+        /* 展開動畫相關 */
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out;
     }
+
+    /* 當加上 .active class 時展開選單 */
+    .nav-links.active {
+        max-height: 300px; /* 足夠放下所有連結的高度 */
+    }
+
+    /* 手機版連結樣式優化 */
     .nav-item {
-        font-size: 14px !important; /* 手機版字體縮小 */
+        width: 100%;
+        text-align: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 16px !important;
+    }
+    
+    .nav-item:last-child {
+        border-bottom: none;
+    }
+
+    /* 手機版移除底部線條動畫，改用背景色強調 */
+    .nav-item::after {
+        display: none;
+    }
+    
+    .nav-item:hover, .nav-item.current {
+        background-color: #fcfaf5; /* 輕微背景色變化 */
     }
 }
 
 @media print {
-    .navbar {
-        display: none !important;
-    }
+    .navbar { display: none !important; }
 }
