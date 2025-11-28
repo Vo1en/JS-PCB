@@ -21,11 +21,6 @@
             --active-color: #c2a878;
         }
 
-        /* 全域 box-sizing */
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-
         .navbar {
             position: fixed;
             top: 0;
@@ -49,7 +44,6 @@
             align-items: center;
             text-decoration: none;
             padding: 5px 0;
-            flex-shrink: 0;
         }
 
         .text-logo {
@@ -64,7 +58,6 @@
             filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
             transition: transform 0.3s, filter 0.3s;
             animation: shine 5s linear infinite;
-            white-space: nowrap;
         }
 
         .brand-logo:hover .text-logo {
@@ -76,7 +69,6 @@
         .nav-links {
             display: flex;
             gap: 25px;
-            flex-wrap: nowrap;
         }
 
         .nav-item {
@@ -87,7 +79,6 @@
             padding: 5px 0;
             position: relative;
             transition: color 0.3s;
-            white-space: nowrap;
         }
 
         .nav-item::after {
@@ -106,10 +97,6 @@
             color: var(--active-color);
         }
 
-        .nav-item.current {
-            color: var(--active-color);
-        }
-
         .nav-item:hover::after,
         .nav-item.current::after {
             width: 100%;
@@ -124,9 +111,9 @@
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
-                align-items: center;
-                padding: 10px 10px;
-                gap: 5px;
+                align-items: flex-start;
+                padding: 15px 20px;
+                gap: 10px;
             }
             .text-logo {
                 font-size: 1.8rem;
@@ -134,9 +121,8 @@
             }
             .nav-links {
                 width: 100%;
-                justify-content: center;
                 flex-wrap: wrap;
-                gap: 8px 15px;
+                gap: 15px 15px;
             }
             .nav-item {
                 font-size: 0.9rem;
@@ -155,13 +141,13 @@
             padding: 0;
             color: #333;
             width: 100%;
-            padding-top: 80px; /* 電腦版上方留白 */
         }
 
         .page-container {
             width: 210mm; /* A4 width standard */
             background-color: white;
-            margin: 0 auto 20px auto; 
+            /* 調整 margin-top 以避免被 navbar 遮擋 */
+            margin: 80px auto 20px auto; 
             padding: 15mm; 
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             box-sizing: border-box;
@@ -197,12 +183,6 @@
             color: #2c3e50;
         }
 
-        .company-details-line {
-            font-size: 12px; 
-            color: #666;
-            margin-top: 2px;
-        }
-
         .report-title {
             font-size: 28px;
             text-align: center;
@@ -212,13 +192,13 @@
         }
 
         /* Table Styles */
-        /* 修正 #2: 加入 table-layout: fixed，防止切換輸入框時欄位跳動 */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 12px; 
             font-size: 13px;
-            table-layout: fixed; /* 固定佈局 */
+            /* [修改3] 加入固定佈局，防止週期輸入框出現時推擠左側欄位 */
+            table-layout: fixed;
         }
 
         th, td {
@@ -226,21 +206,16 @@
             padding: 6px; 
             text-align: left;
             color: black;
-            overflow: hidden; /* 防止內容撐開表格 */
+            /* 防止內容撐開單元格 */
+            overflow: hidden; 
         }
 
-        /* 明確定義欄位寬度，確保不會跑版 */
         th {
             background-color: #e0f2fe; 
             font-weight: bold;
-            width: 15%; /* 標題欄寬度固定 */
+            width: 15%; /* 因為 table-layout: fixed，此寬度會被嚴格執行 */
             white-space: nowrap;
             color: #333; 
-        }
-
-        /* 內容欄位寬度 */
-        td {
-             width: 35%; /* 剩餘空間平均分配 (100% - 15%*2) / 2 = 35% */
         }
         
         .section-header {
@@ -292,12 +267,13 @@
             border: 1px dashed #ccc;
             background-color: #f7f7f7;
             text-align: right;
-            width: 110px;
+            width: 100px; 
         }
         .date-container {
              margin-top: 10px;
         }
 
+        /* 動作按鈕 (列印/PDF) - 桌面版 */
         .action-buttons {
             position: absolute;
             top: 20px; 
@@ -404,10 +380,11 @@
         .spec-tolerance {
              display: inline-block; 
         }
+        /* [修改2] 強制公差顯示不換行 */
         .tolerance-display {
             display: inline-block;
             margin-left: 2px;
-            white-space: nowrap; 
+            white-space: nowrap !important; /* 強制不換行 */
         }
         
         .color-dot {
@@ -436,7 +413,6 @@
              padding: 4px 6px; 
         }
         
-        /* 檢驗數據表格的特例寬度 */
         #inspection-data-table th:nth-child(n+3):nth-child(-n+7),
         #inspection-data-table td:nth-child(n+3):nth-child(-n+7) {
             width: 8% !important; 
@@ -446,32 +422,20 @@
         #inspection-data-table th:nth-child(1) {
             width: 15% !important; 
         }
-        #inspection-data-table th:nth-child(2),
-        #inspection-data-table td:nth-child(2) {
-             width: auto; /* 規格欄位寬度自動 */
-        }
         
         .final-decision-box {
             padding: 8px 10px !important; 
             margin-top: 25px; 
             page-break-before: avoid; 
         }
-        
-        .decision-qualified-active {
-            color: green;
-            font-weight: bold;
-        }
-        .decision-inactive {
-            color: #999;
-        }
 
         /* ================================================= */
         /* === 手機版響應式優化 (Mobile Optimization) === */
         /* ================================================= */
         @media screen and (max-width: 600px) {
-            /* 修正 #1: 調整上方留白為 112px */
+            /* [修改1] 縮減 body padding-top，減少橫幅與下方的間距 */
             body {
-                padding-top: 112px !important; 
+                padding-top: 110px; /* 原 160px -> 改為 110px */
             }
 
             .page-container {
@@ -479,30 +443,49 @@
                 padding: 12px;
                 padding-bottom: 20px; 
                 box-shadow: none;
-                margin: 0 !important; 
+                margin: 0;
                 margin-top: 0 !important; 
             }
+
+            /* [修改5] 手機版日期輸入框加寬 */
+            #inspectionDate {
+                width: 150px !important;
+                max-width: 100%;
+            }
+
+            .no-print {
+                flex-direction: column;
+                align-items: flex-start !important;
+                padding: 12px 15px !important;
+                gap: 10px;
+            }
+            .no-print span {
+                margin-right: 0 !important;
+                margin-bottom: 5px;
+            }
+            .nav-btn {
+                display: block;
+                width: 100%;
+                text-align: center;
+                margin-right: 0;
+                margin-bottom: 5px;
+                box-sizing: border-box;
+            }
             
-            /* Header Adjustments for Mobile */
             header {
                 flex-direction: column;
-                align-items: center;
+                align-items: center; 
                 text-align: center;
             }
             .company-info {
-                align-items: center; 
+                align-items: center;
                 margin-bottom: 10px;
             }
             .header-right {
                 align-items: center;
                 width: 100%;
             }
-            #inspectionDate {
-                width: 150px !important;
-                min-width: 140px;
-                text-align: center;
-            }
-
+            
             .action-buttons {
                 position: fixed;
                 bottom: 0;
@@ -533,12 +516,10 @@
                 font-size: 24px;
             }
 
-            /* 手機版：取消 table 固定佈局，改用 block 堆疊顯示 */
             table:not(#inspection-data-table) {
                 display: block;
                 width: 100%;
                 border: none;
-                table-layout: auto !important; /* 取消固定寬度 */
             }
             
             table:not(#inspection-data-table) tbody {
@@ -562,7 +543,7 @@
 
             table:not(#inspection-data-table) th {
                 display: block;
-                width: 100%;
+                width: 100% !important; /* 在手機卡片模式下，重置寬度為 100% */
                 background-color: #f8f9fa;
                 border: none;
                 border-bottom: 1px solid #eee;
@@ -592,7 +573,6 @@
                 box-sizing: border-box;
             }
             
-            /* 通用樣式：這裡讓一般輸入框在手機版變寬 */
             .page-container .editable,
             .page-container .editable-nominal {
                 width: 100% !important;
@@ -604,33 +584,6 @@
                 padding: 4px; 
             }
             
-            /* 修正 #1: 針對「檢驗數據表格」的特殊處理 */
-            /* 強制將輸入框改回 inline-block 並限制寬度，解決跑版問題 */
-            #inspection-data-table .editable-nominal {
-                display: inline-block !important; /* 強制並排 */
-                width: 50px !important; /* 限制寬度 */
-                min-width: 50px !important;
-                margin-top: 0 !important;
-                min-height: auto !important;
-                line-height: normal !important;
-            }
-            
-            #inspection-data-table .tolerance-display {
-                white-space: nowrap !important;
-            }
-
-            /* 針對規格欄位 (第二欄) 使用 Flex 排列，確保水平置中不換行 */
-            #inspection-data-table td:nth-child(2) {
-                display: flex !important;
-                flex-direction: row !important;
-                align-items: center !important;
-                justify-content: center !important;
-                white-space: nowrap !important;
-                border: 1px solid #000 !important;
-                padding: 4px !important;
-                min-width: 150px; 
-            }
-
             #qty-input {
                 width: 100% !important; 
                 text-align: left !important;
@@ -686,7 +639,7 @@
         @media print {
             body {
                 background-color: white;
-                padding: 0 !important; 
+                padding: 0;
                 font-size: 12pt; 
             }
             .page-container {
@@ -760,18 +713,11 @@
             #inspection-data-table-wrapper {
                 overflow-x: visible;
             }
-            
-            /* 列印時恢復預設表格顯示 */
-            #inspection-data-table td:nth-child(2) {
-                display: table-cell !important;
-                white-space: nowrap !important;
-                border: 1px solid #000 !important;
-            }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
+<nav class="navbar">
         <a href="index.html" class="brand-logo">
             <span class="text-logo">JS PCB</span>
         </a>
@@ -783,7 +729,7 @@
             <a href="PCB Test Report.html" class="nav-item">電性測試報告</a>
         </div>
     </nav>
-    <div class="page-container" contenteditable="false">
+<div class="page-container" contenteditable="false">
         
         <div class="action-buttons">
             <button onclick="prepareForPrint()" title="列印 / 存為PDF">
@@ -794,8 +740,11 @@
         <header contenteditable="false">
             <div class="company-info">
                 <div class="company-name" contenteditable="true">駿鑫實業有限公司</div>
-                <div class="company-details-line" contenteditable="true">新北市五股區成泰路二段197巷31號</div>
-                <div class="company-details-line" contenteditable="true">TEL: 02-2291-1252 #26</div>
+                <div style="font-size: 12px; color: #666;" contenteditable="true">
+                    新北市五股區成泰路二段197巷31號 
+                    <br style="display:block; content:''; margin-top:0px;">
+                    <span style="display:inline-block; margin-top: 4px;">TEL: 02-2291-1252 #26</span>
+                </div>
             </div>
              <div class="header-right">
                 <div class="date-container">
@@ -1065,8 +1014,8 @@
 
         <div style="margin-top: 25px; border: 2px solid #000; text-align: center; background-color: #f9f9f9;" class="final-decision-box">
             <strong style="font-size: 16px;">最終判定: </strong>
-            <span id="decision-ok" class="decision-inactive" style="font-size: 20px; margin-left: 20px;">&#9744; 合格</span>
-            <span id="decision-ng" class="decision-inactive" style="font-size: 20px; margin-left: 20px;">&#9744; 不合格</span>
+            <span style="font-size: 20px; font-weight: bold; margin-left: 20px;">&#9745; 合格</span>
+            <span style="font-size: 20px; color: #999; margin-left: 20px;">&#9744; 不合格</span>
         </div>
 
 <div class="footer-section" contenteditable="false">
@@ -1108,7 +1057,6 @@
                 selectElement.style.display = 'inline-block';
                 inputElement.value = ''; 
             }
-            checkCompletion(); 
         }
         
         function revertToSelect(inputElement, containerId) {
@@ -1122,7 +1070,6 @@
                     selectElement.selectedIndex = 0; 
                 }
             }
-            checkCompletion(); 
         }
 
         function toggleDateCodeInput(selectElement) {
@@ -1138,7 +1085,6 @@
                 selectElement.style.display = 'inline-block';
                 inputElement.value = '';
             }
-            checkCompletion(); 
         }
 
         function revertToDateCodeSelect(inputElement) {
@@ -1148,7 +1094,6 @@
                 selectElement.style.display = 'inline-block';
                 selectElement.value = 'none';
             }
-            checkCompletion(); 
         }
         
         function handlePlaceholderFocus(el) {
@@ -1182,7 +1127,6 @@
             } else {
                  el.classList.remove('placeholder-text');
             }
-            checkCompletion(); 
         }
 
         function enforceNumericalInput(el) {
@@ -1197,57 +1141,6 @@
 
             if (el.textContent !== value) {
                 el.textContent = value;
-            }
-            checkCompletion(); 
-        }
-
-        function checkCompletion() {
-            let allFilled = true;
-
-            const requiredTextIds = ['customer-name', 'customer-part'];
-            requiredTextIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const value = el.textContent.trim();
-                    if (value === '請輸入' || value === '') {
-                        allFilled = false;
-                    }
-                }
-            });
-
-            const requiredNumberIds = ['qty-input', 'dim-length-input', 'dim-width-input', 'pnl-x', 'pnl-y'];
-            requiredNumberIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const value = el.textContent.trim();
-                    const numValue = parseFloat(value);
-                    if (value === '請輸入' || value === '' || !isFinite(numValue)) { 
-                        allFilled = false;
-                    }
-                }
-            });
-
-            const dateCodeSelect = document.getElementById('date-code-select');
-            const dateCodeInput = document.getElementById('date-code-input');
-            if (dateCodeSelect.value === 'has') {
-                if (dateCodeInput.value.trim() === '' || dateCodeInput.value.trim() === '請輸入週期碼') {
-                    allFilled = false;
-                }
-            }
-
-            const okSpan = document.getElementById('decision-ok');
-            const ngSpan = document.getElementById('decision-ng');
-
-            if (allFilled) {
-                okSpan.innerHTML = '&#9745; 合格';
-                okSpan.classList.add('decision-qualified-active');
-                okSpan.classList.remove('decision-inactive');
-                ngSpan.innerHTML = '&#9744; 不合格';
-            } else {
-                okSpan.innerHTML = '&#9744; 合格';
-                okSpan.classList.remove('decision-qualified-active');
-                okSpan.classList.add('decision-inactive');
-                ngSpan.innerHTML = '&#9744; 不合格';
             }
         }
 
@@ -1293,16 +1186,6 @@
                     }
                 }
             });
-            
-            const dateCodeSelect = document.getElementById('date-code-select');
-            const dateCodeInput = document.getElementById('date-code-input');
-            if (dateCodeSelect.value === 'has') {
-                if (dateCodeInput.value.trim() === '' || dateCodeInput.value.trim() === '請輸入週期碼') {
-                     dateCodeInput.classList.add('missing');
-                     allFilled = false;
-                     missingFields.push('週期代碼');
-                }
-            }
             
             if (allFilled) {
                 const inspectionRowsHidden = hideEmptyInspectionRows();
@@ -1372,54 +1255,31 @@
         }
 
         function generateRandomData(nominal, tolerance, decimals, rowIndex) {
-            let val;
+            let min, max, value;
             
             if (rowIndex === 0 || rowIndex === 1) {
-                const maxDeviation = 0.11;     
-                const tightLimit = 0.08;       
-                const negativeChance = 0.15;   
-                const tightDistributionChance = 0.60; 
-                
-                let deviation;
-                const isTight = Math.random() < tightDistributionChance;
-                
-                if (isTight) {
-                    deviation = Math.random() * tightLimit;
-                } else {
-                    deviation = Math.random() * (maxDeviation - tightLimit) + tightLimit;
+                const restrictedTolerance = 0.15;
+                if (Math.random() < 0.90) { 
+                    min = nominal;
+                    max = nominal + restrictedTolerance;
+                } else { 
+                    min = nominal - restrictedTolerance;
+                    max = nominal;
                 }
-                
-                const isNegative = Math.random() < negativeChance;
-                
-                if (isNegative) {
-                    val = nominal - deviation;
-                } else {
-                    val = nominal + deviation;
-                }
-                
-                return val.toFixed(2); 
+                value = Math.random() * (max - min) + min;
+                return value.toFixed(2); 
             } 
             else if (rowIndex >= 2) {
-                const min = nominal;
-                const max = nominal + 0.03;
-                
-                val = Math.random() * (max - min) + min;
-                return val.toFixed(decimals);
+                min = nominal; 
+                max = nominal + tolerance;
+                value = Math.random() * (max - min) + min;
+                return value.toFixed(decimals);
             }
             
-            const min = nominal - tolerance;
-            const max = nominal + tolerance;
-            val = Math.random() * (max - min) + min;
-            return val.toFixed(decimals);
-        }
-
-        function populateAllInspectionData() {
-            populateRowData(0, 'spec-length-nominal');
-            populateRowData(1, 'spec-width-nominal');
-            populateRowData(2, 'spec-hole1-nominal');
-            populateRowData(3, 'spec-hole2-nominal');
-            populateRowData(4, 'spec-hole3-nominal');
-            populateRowData(5, 'spec-hole4-nominal');
+            min = nominal - tolerance;
+            max = nominal + tolerance;
+            value = Math.random() * (max - min) + min;
+            return value.toFixed(decimals);
         }
 
         function populateRowData(rowIndex, nominalId) {
@@ -1458,6 +1318,56 @@
             }
         }
 
+        function checkJudgement(dataEl) {
+            const row = dataEl.closest('tr');
+            
+            const data1 = row.cells[2].querySelector('span.editable').textContent.trim();
+            const data2 = row.cells[3].querySelector('span.editable').textContent.trim();
+            const data3 = row.cells[4].querySelector('span.editable').textContent.trim();
+            const data4 = row.cells[5].querySelector('span.editable').textContent.trim();
+            const data5 = row.cells[6].querySelector('span.editable').textContent.trim();
+
+            const judgementCell = row.cells[7];
+            
+            if (data1 === '' && data2 === '' && data3 === '' && data4 === '' && data5 === '') {
+                judgementCell.textContent = '';
+            } else if (judgementCell.textContent.trim() === '') {
+                judgementCell.textContent = 'OK';
+            }
+        }
+
+        function updateSpecs() {
+            const lengthInput = document.getElementById('dim-length-input');
+            const widthInput = document.getElementById('dim-width-input');
+            const lengthNominal = document.getElementById('spec-length-nominal');
+            const widthNominal = document.getElementById('spec-width-nominal');
+
+            const lengthVal = lengthInput ? lengthInput.textContent.trim() : '';
+            const widthVal = widthInput ? widthInput.textContent.trim() : '';
+
+            if (lengthNominal && lengthVal && lengthVal !== '請輸入') {
+                lengthNominal.textContent = lengthVal;
+            } else if (lengthNominal) {
+                lengthNominal.textContent = '';
+            }
+            if (widthNominal && widthVal && widthVal !== '請輸入') {
+                widthNominal.textContent = widthVal;
+            } else if (widthNominal) {
+                widthNominal.textContent = '';
+            }
+            
+            populateAllInspectionData();
+        }
+
+        function populateAllInspectionData() {
+            populateRowData(0, 'spec-length-nominal');
+            populateRowData(1, 'spec-width-nominal');
+            populateRowData(2, 'spec-hole1-nominal');
+            populateRowData(3, 'spec-hole2-nominal');
+            populateRowData(4, 'spec-hole3-nominal');
+            populateRowData(5, 'spec-hole4-nominal');
+        }
+        
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('select').forEach(select => {
                 const inputId = select.id ? select.id.replace('-select', '-other-input') : '';
@@ -1476,9 +1386,6 @@
             document.getElementById('spec-hole2-nominal')?.addEventListener('input', populateAllInspectionData);
             document.getElementById('spec-hole3-nominal')?.addEventListener('input', populateAllInspectionData);
             document.getElementById('spec-hole4-nominal')?.addEventListener('input', populateAllInspectionData);
-            
-            document.querySelector('.page-container').addEventListener('input', checkCompletion);
-            document.querySelectorAll('select').forEach(sel => sel.addEventListener('change', checkCompletion));
 
             const editables = document.querySelectorAll('[contenteditable="true"]');
             editables.forEach(el => {
@@ -1489,8 +1396,6 @@
                     el.focus();
                 }, {passive: true});
             });
-            
-            checkCompletion(); 
         });
         
         function showModal(message) {
