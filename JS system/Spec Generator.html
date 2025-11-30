@@ -406,16 +406,16 @@
                     <div class="info-content-wrap">
                         <select id="thickness" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
-                            <option>0.4mm</option>
-                            <option>0.6mm</option>
-                            <option>0.8mm</option>
-                            <option>1.0mm</option>
-                            <option>1.2mm</option>
-                            <option selected>1.6mm</option>
-                            <option>2.0mm</option>
-                            <option>2.4mm</option>
-                            <option>3.0mm</option>
-                            <option>3.2mm</option>
+                            <option value="0.4 mm">0.4 mm</option>
+                            <option value="0.6 mm">0.6 mm</option>
+                            <option value="0.8 mm">0.8 mm</option>
+                            <option value="1.0 mm">1.0 mm</option>
+                            <option value="1.2 mm">1.2 mm</option>
+                            <option value="1.6 mm" selected>1.6 mm</option>
+                            <option value="2.0 mm">2.0 mm</option>
+                            <option value="2.4 mm">2.4 mm</option>
+                            <option value="3.0 mm">3.0 mm</option>
+                            <option value="3.2 mm">3.2 mm</option>
                             <option value="custom">自行輸入</option>
                         </select>
                         <div id="thickness_custom_div" class="custom-input-wrapper">
@@ -425,7 +425,7 @@
                     </div>
                 </div>
                 <div id="thicknessWarning" class="warning" style="display:none;">
-                    板厚 0.4mm 太薄，無法進行 V-Cut。若需拼板，建議採用郵票孔設計。
+                    板厚 0.4 mm 太薄，無法進行 V-Cut。若需拼板，建議採用郵票孔設計。
                 </div>
             </div>
             
@@ -735,7 +735,7 @@
     copyText();     // 再複製文字
   }
 
-  // PCB 規格連動規則 (保留原邏輯，完全不變)
+  // PCB 規格連動規則 (已更新所有板厚相關的字串)
   function updateStates() {
     var layer        = getValue("layers"); 
     var layersSel    = document.getElementById("layers");
@@ -794,10 +794,10 @@
 
       for (i = 0; i < thicknessSel.options.length; i++) {
         opt = thicknessSel.options[i];
-        opt.disabled = (opt.value !== "1.6mm" && opt.value !== "-" && opt.value !== "custom");
+        opt.disabled = (opt.value !== "1.6 mm" && opt.value !== "-" && opt.value !== "custom");
       }
-      if (thicknessSel.value !== "1.6mm" && thicknessSel.value !== "custom") {
-        thicknessSel.value = "1.6mm";
+      if (thicknessSel.value !== "1.6 mm" && thicknessSel.value !== "custom") {
+        thicknessSel.value = "1.6 mm";
       }
 
       for (i = 0; i < outerCuSel.options.length; i++) {
@@ -855,26 +855,26 @@
     ) {
       for (i = 0; i < thicknessSel.options.length; i++) {
         opt = thicknessSel.options[i];
-        if (opt.value === "0.4mm") opt.disabled = true;
+        if (opt.value === "0.4 mm") opt.disabled = true;
       }
     }
 
     if (layer === "八層板" || layer === "十層板") {
       for (i = 0; i < thicknessSel.options.length; i++) {
         opt = thicknessSel.options[i];
-        if (opt.value === "0.6mm") opt.disabled = true;
+        if (opt.value === "0.6 mm") opt.disabled = true;
       }
     }
     
     var currentThicknessOpt = thicknessSel.options[thicknessSel.selectedIndex];
     if (currentThicknessOpt && currentThicknessOpt.disabled && thicknessSel.value !== "custom") {
-      thicknessSel.value = "1.6mm"; 
+      thicknessSel.value = "1.6 mm"; 
     }
 
     var thickness = getValue("thickness");
     if (
       thicknessWarn &&
-      thickness === "0.4mm" &&
+      thickness === "0.4 mm" &&
       currentThicknessOpt &&
       !currentThicknessOpt.disabled
     ) {
@@ -920,6 +920,8 @@
     }
     
     var v = trim(el.value);
+    // [新增] 針對板厚欄位，如果使用者選擇的是預設選項，將顯示文字中的空格去除，但保留值為有空格的，以確保與 updateStates 邏輯匹配。
+    // 但是這裡的 getValue 是給 generateText 使用，generateText 需要的是有空格的值，所以不用修改。
     return v || "";
   }
   
@@ -952,6 +954,7 @@
       "料號：" + (partNo || "-"),
       "板材：" + (material || "-"),
       "層別：" + (layers || "-"),
+      // 板厚的值已經被修改為 "X.X mm"
       "板厚：" + (thickness || "-")
     ];
 
