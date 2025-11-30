@@ -174,7 +174,7 @@ function initTemplateLogic() {
         const syncPrintText = () => {
             const val = qtyInput.value;
             const unit = qtyUnit.value;
-            qtyPrintDisplay.textContent = val ? `${val} ${unit}` : ''; 
+            qtyPrintDisplay.textContent = val ? `${val} ${unit}` : '';
         };
 
         qtyInput.addEventListener('input', function() {
@@ -182,7 +182,7 @@ function initTemplateLogic() {
             if (rawValue) {
                 this.value = parseInt(rawValue).toLocaleString('en-US');
             } else {
-                this.value = ''; 
+                this.value = '';
             }
             syncPrintText();
         });
@@ -191,7 +191,7 @@ function initTemplateLogic() {
     }
 }
 
-// === 4. 列印前驗證功能 ===
+// === 4. 列印前驗證功能 (已修正：啟用 window.print()) ===
 function validateAndPrint() {
     let isValid = true;
     let firstErrorElement = null;
@@ -210,7 +210,7 @@ function validateAndPrint() {
 
         if (isError) {
             isValid = false;
-            el.classList.add('input-error'); 
+            el.classList.add('input-error');
 
             if (!firstErrorElement) firstErrorElement = el;
 
@@ -231,14 +231,15 @@ function validateAndPrint() {
     });
 
     if (isValid) {
-        // window.print(); // 這裡不執行列印，留給 HTML 裡的覆寫函式處理
-        return true; // [修正] 驗證成功，返回 true
+        // [已修正] 驗證成功，呼叫瀏覽器列印功能
+        window.print();
+        return true; 
     } else {
         alert("⚠️ 尚有欄位未填寫或未選擇！\n請依紅框提示完成輸入後再列印。");
         if (firstErrorElement) {
             firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             firstErrorElement.focus();
         }
-        return false; // [修正] 驗證失敗，返回 false
+        return false;
     }
 }
