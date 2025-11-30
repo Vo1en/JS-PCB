@@ -197,20 +197,36 @@
     flex-shrink: 0;
   }
   
-  /* A4 紙張的樣式容器 - **已修正寬度問題** */
-  .a4-paper {
-    max-width: 900px; /* 限制最大寬度，避免超出螢幕 */
-    width: 100%; /* 確保在 max-width 範圍內置中和縮放 */
-    min-height: auto;
-    background: var(--bg-page);
-    padding: 20px; /* 調整為 px */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    margin: 0 auto 20px auto; /* 置中 */
+  /* ========================================= */
+  /* [A4 規格主要修改區] */
+  /* 參考 report.css 的 A4 規格，實現 A4 頁面佈局 */
+  .page-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      /* 確保內容有邊距，避免貼邊 */
+      padding: 20px; 
+      padding-bottom: 40px; 
+      box-sizing: border-box;
   }
+
+  .a4-paper {
+      /* 鎖定為 A4 寬度 */
+      width: 210mm; 
+      /* 至少一個 A4 高度 */
+      min-height: 297mm; 
+      background: var(--bg-page);
+      /* 邊距調整為 mm */
+      padding: 15mm 15mm; 
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      /* 移除原有的 margin，讓 flex 容器置中 */
+      margin: 0; 
+  }
+  /* ========================================= */
 
   /* 隱藏 template.js 渲染的基本資訊區塊 */
   #unified-header-container .info-grid { 
@@ -328,6 +344,11 @@
 
   /* 手機響應式調整 (Label 置中) */
   @media (max-width: 768px) {
+      /* [A4 規格修改 - 手機版] 確保手機版也能正確顯示 */
+      .page-container {
+          padding: 5px; 
+          padding-bottom: 80px !important; 
+      }
       .a4-paper {
           width: 100%;
           min-height: auto;
@@ -527,7 +548,7 @@
                             <option>-</option>
                             <option value="綠色" selected>🟢 綠色</option>
                             <option value="藍色">🔵 藍色</option>
-                            <option value="黑色">⚫  黑色</option>
+                            <option value="黑色">⚫ 黑色</option>
                             <option value="白色">⚪ 白色</option>
                             <option value="紅色">🔴 紅色</option>
                             <option value="黃色">🟡 黃色</option>
