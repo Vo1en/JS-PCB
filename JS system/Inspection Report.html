@@ -21,11 +21,16 @@
         }
         .section-header-wrapper .section-title { margin-bottom: 0; }
 
-        .standard-badge {
-            font-size: 13px; color: #555; background-color: #f2efe6;
-            padding: 5px 12px; border-radius: 20px; font-weight: 600;
-            border: 1px solid #dcd6c6; letter-spacing: 0.5px;
-        }
+.standard-badge {
+    font-size: 13px; 
+    color: #333; /* 使用一致的深色 */
+    background-color: var(--label-bg); /* 綁定 report.css 變數 (預設: #fafafa) */
+    padding: 5px 12px; 
+    border-radius: 20px; 
+    font-weight: 600;
+    border: 1px solid var(--border-color); /* 綁定 report.css 變數 (預設: #c2a878) */
+    letter-spacing: 0.5px;
+}
 
         /* 最終判定區塊 */
         .final-decision-box {
