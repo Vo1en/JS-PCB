@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PCB規格產生器</title>
   
-  <link rel="stylesheet" href="report.css">
+  <link rel="stylesheet" href="JS system/report.css">
   <link rel="stylesheet" href="navbar.css"> <style>
   /* --- 引入字型 (複製自 index.html) --- */
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
@@ -18,6 +18,15 @@
       
       /* [新增/修正] 確保 A4 內頁背景色設定為白色 */
       --bg-page: #ffffff; 
+      
+      /* ↓↓↓ 確保 Label 樣式定義在全域變數中，模擬 report.css 提供的變數 (或作為後備) ↓↓↓ */
+      --label-bg: #f0ebde; /* 淺米色背景 (report.css 定義為 #fafafa) */
+      --label-text-color: #333; /* 深色文字 */
+      --label-border-color: #e0d8c8; /* 淺咖啡色邊框 (report.css 定義為 #c2a878) */
+      /* 注意：此處的後備值與 report.css 實際值可能略有不同，但會確保樣式不丟失。
+         如果 report.css 成功載入，將以 report.css 的變數定義為準。
+      */
+      /* ↑↑↑ 確保 Label 樣式定義在全域變數中 ↑↑↑ */
   }
     
   /* 移除 JS PCB 浮水印樣式 */
@@ -115,22 +124,28 @@
       height: 34px; 
   }
 
-  /* 統一 Label 樣式 */
+  /* ------------------- ↓↓↓ 修改區塊：Label 樣式綁定 CSS 變數 ↓↓↓ ------------------- */
+  /* 統一 Label 樣式 - 透過變數實現綁定/繼承 */
   .info-item-custom .label {
-      /* 沿用 report.css 的 label 樣式 */
-      background-color: var(--label-bg, #f0ebde);
-      color: #333;
+      /* 綁定/繼承自變數 (來自 report.css) */
+      background-color: var(--label-bg); 
+      color: var(--label-text-color, #333); 
+      border: 1px solid var(--label-border-color);
+      
+      /* 樣式與佈局屬性 (保留) */
       font-weight: 700;
       font-size: 14px;
       padding: 3px 10px;
       border-radius: 4px;
-      /* [修改 1] 將標籤寬度調整為統一的 85px (原 100px) */
+      
+      /* 保留 PCB 頁面專用的寬度 (覆蓋 report.css 的 70px) */
       width: 85px; 
+      
       text-align: center;
       margin-right: 8px;
       flex-shrink: 0;
-      border: 1px solid var(--border-color, #e0d8c8);
   }
+  /* ------------------- ↑↑↑ 修改區塊：Label 樣式綁定 CSS 變數 ↑↑↑ ------------------- */
   
   /* 統一內容區的 input/select/div 樣式 */
   .info-content-wrap {
@@ -391,6 +406,8 @@
           margin-bottom: 0px !important;
           flex-shrink: 0 !important;
           text-align: center; 
+          
+          /* 確保在手機版也維持顏色/背景/邊框 */
       }
       
       .info-content-wrap {
