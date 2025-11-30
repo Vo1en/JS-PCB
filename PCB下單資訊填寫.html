@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JS system - 規格產生器</title>
+  <title>PCB規格產生器</title>
   
   <link rel="stylesheet" href="report.css">
   <link rel="stylesheet" href="navbar.css"> <style>
@@ -15,6 +15,9 @@
       --text-main: #1f2937;
       --gold-gradient: linear-gradient(135deg, #c2a878 0%, #e3d1a8 50%, #9e8b6b 100%);
       --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+      
+      /* [新增/修正] 確保 A4 內頁背景色設定為白色 */
+      --bg-page: #ffffff; 
   }
     
   /* 移除 JS PCB 浮水印樣式 */
@@ -22,7 +25,7 @@
 
   /* 針對新的報表結構調整主要容器 */
   body {
-    background-color: #f5f5f5;
+    background-color: #f5f5f5; /* 頁面外底色：淺灰色 */
     /* 已移除 padding-top: 0; 以繼承 report.css 中的 padding-top: 80px */ 
     margin: 0;
     font-family: 'Noto Sans TC', sans-serif;
