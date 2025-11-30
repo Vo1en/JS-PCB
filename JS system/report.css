@@ -6,7 +6,7 @@
     --border-color: #c2a878;
     --bg-page: #ffffff;
     --text-primary: #1f2937;
-    --label-bg: #f8f5ee; /* [已修改] 將 Label 背景色調淺 */
+    --label-bg: #fafafa; /* [再次修改] 將 Label 背景色調得更淺 (原 #f8f5ee) */
     --remarks-signature-gap: 20px;
     
     /* [新增] 複製 index.html 的金屬漸層和動畫相關變數 */
@@ -146,7 +146,7 @@ body {
     text-align: center;
     margin-right: 8px;
     flex-shrink: 0;
-    border: 1px solid var(--border-color); /* [已修改] Label 外框改成金色 */
+    border: 1px solid var(--border-color); /* Label 外框是金色 */
 }
 
 .input-line {
@@ -261,7 +261,7 @@ body {
     border-radius: 4px;
     display: inline-block;
     margin-bottom: 5px;
-    border: 1px solid var(--border-color); /* [已修改] Label box 外框也改成金色 */
+    border: 1px solid var(--border-color); /* Label box 外框是金色 */
 }
 
 .remarks-input {
