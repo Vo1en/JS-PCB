@@ -7,14 +7,6 @@
   
   <link rel="stylesheet" href="report.css">
   <link rel="stylesheet" href="navbar.css"> <style>
-  /* * 【重要修改：解決跑版問題】 
-   * 設置全局 box-sizing 為 border-box，確保 padding 和 border 
-   * 包含在 width 內，防止元件在 width: 100% 時溢出父容器。
-   */
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-  
   /* 移除 JS PCB 浮水印樣式 */
   body::before { content: none !important; }
 
@@ -182,7 +174,7 @@
 
   /* [變更 4] 增加輸出文字欄位長度 */
   #output-text {
-    width: 100%; /* 確保寬度為 100% */
+    width: 100%;
     min-height: 400px; /* 增加高度以容納更多資訊 */
     padding: 10px;
     border: 1px solid #ccc;
@@ -190,8 +182,6 @@
     font-size: 14px;
     line-height: 1.6;
     resize: vertical;
-    word-wrap: break-word; /* 確保長文本自動換行 */
-    overflow-wrap: break-word; /* 確保長文本自動換行 */
   }
 
   /* [變更 5] 輸出欄位標籤樣式 */
@@ -276,37 +266,36 @@
           margin: 0;
       }
       
+      /* 修正警告訊息的水平定位，讓它對齊輸入框 */
       .warning {
-          margin-left: 0;
-          margin-top: 5px; /* 手機版不使用負值 */
-          padding-left: 128px; /* 確保手機版靠左對齊時，文字也有適當邊距 */
+          margin-left: 93px !important; 
+          margin-top: 5px; 
+          padding-left: 35px !important; /* 確保與輸入框內文字對齊 */
+          margin-bottom: -5px;
       }
       
       .info-item-custom {
-          /* [修改 3] 移除 flex-direction: column; 讓 Label 和輸入框保持在同一行 */
-          /* flex-direction: column; */
-          align-items: flex-start;
-          height: auto;
+          /* **關鍵修改：確保水平排列的優先級最高** */
+          display: flex !important;
+          flex-direction: row !important; 
+          align-items: center !important;
+          height: auto; /* 允許內容撐開高度 */
           padding-bottom: 5px;
-          
-          /* [修改 3] 新增樣式，讓手機版也使用 flex 排版 */
-          flex-direction: row; 
-          align-items: center;
           border-bottom: 1px solid #ddd;
       }
 
       .info-item-custom .label {
-          /* [修改 3] 移除 width: auto; 讓手機版使用統一的 85px 寬度 */
-          width: 85px; 
-          margin-bottom: 0px; /* 調整為 0，因為不是垂直堆疊 */
-          /* 強制置中對齊 */
+          /* 確保標籤寬度固定，不被壓縮或換行 */
+          width: 85px !important; 
+          margin-right: 8px !important;
+          margin-bottom: 0px !important;
+          flex-shrink: 0 !important;
           text-align: center; 
       }
       
       .info-content-wrap {
-          width: 100%;
-          /* 確保輸入框在 Label 旁邊 */
-          flex-grow: 1;
+          width: auto !important;
+          flex-grow: 1 !important;
       }
 
       .btn-row {
