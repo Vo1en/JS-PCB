@@ -131,19 +131,19 @@
     flex-shrink: 0;
   }
   
-  /* A4 紙張的樣式容器 */
+  /* A4 紙張的樣式容器 - **已修正寬度問題** */
   .a4-paper {
-    width: 210mm;
-    min-height: 297mm;
+    max-width: 900px; /* 限制最大寬度，避免超出螢幕 */
+    width: 100%; /* 確保在 max-width 範圍內置中和縮放 */
+    min-height: auto;
     background: var(--bg-page);
-    padding: 15mm 15mm;
+    padding: 20px; /* 調整為 px */
     box-shadow: 0 5px 15px rgba(0,0,0,0.15);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     position: relative;
-    /* 保持這個修改，移除 a4-paper 頂部 margin */
-    margin: 0 auto 20px auto; 
+    margin: 0 auto 20px auto; /* 置中 */
   }
 
   /* 隱藏 template.js 渲染的基本資訊區塊 */
@@ -266,6 +266,9 @@
           margin: 0;
       }
       
+  #output-text {
+          width: 95% !important;
+
       /* 修正警告訊息的水平定位，讓它對齊輸入框 */
       .warning {
           margin-left: 93px !important; 
@@ -634,12 +637,12 @@
         
         <div class="btn-row">
             <button type="button" class="btn-one-click" onclick="generateAndCopyText()">一鍵生成並複製</button>
-            <button type="button" class="btn-generate" onclick="generateText()">生成規格文字</button>
-            <button type="button" class="btn-copy" onclick="copyText()">複製規格文字</button>
+            <button type="button" class="btn-generate" onclick="generateText()">生成文字</button>
+            <button type="button" class="btn-copy" onclick="copyText()">複製文字</button>
         </div>
 
         <div class="output-area">
-            <span class="output-label">生成規格文字</span>
+            <span class="output-label">規格訊息</span>
             <textarea id="output-text" readonly placeholder="點擊「生成規格文字」按鈕後，會在此處顯示完整的 PCB 規格資訊"></textarea>
         </div>
 
@@ -1004,4 +1007,3 @@
 
 </body>
 </html>
-
