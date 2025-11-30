@@ -35,7 +35,7 @@
         border-bottom: 1px solid #ddd; 
     }
 
-    /* --- 測試結果區塊優化 --- */
+    /* --- 測試結果區塊優化 (修正排版) --- */
     .test-result-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -47,36 +47,35 @@
         border-radius: 4px;
     }
 
-    .result-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 12px;
-        border: 1px solid #e0d8c8;
-        border-radius: 4px;
-        background: #fff;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
+.result-item {
+    display: flex;
+    flex-direction: column; /* 舊版樣式 */
+    align-items: center;    /* 舊版樣式 */
+    justify-content: center; /* 舊版樣式 */
+    padding: 12px;
+    border: 1px solid #e0d8c8;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
 
-    .result-label {
-        font-size: 15px; 
-        font-weight: bold;
-        color: #666;
-        margin-bottom: 8px;
-    }
+.result-label {
+    font-size: 15px; 
+    font-weight: bold;
+    color: #666;
+    margin-bottom: 8px; /* 舊版樣式 */
+}
 
-    .result-value-input {
-        width: 100%;
-        text-align: center;
-        border: none;
-        font-size: 22px; 
-        font-weight: 800;
-        color: #333;
-        background: transparent;
-        outline: none;
-    }
-
+.result-value-input {
+    width: 100%;
+    text-align: center; /* 舊版樣式 */
+    border: none;
+    font-size: 22px; 
+    font-weight: 800;
+    color: #333;
+    background: transparent;
+    outline: none;
+}
     .res-pass input { color: #10b981; } 
     .res-fail input { color: #ef4444; } 
     
@@ -112,11 +111,25 @@
             padding: 0 !important;
         }
     }
-    
-    /* === 手機板優化：縮小標籤字體以防換行 (新增部分) === */
+
+    /* 新增：行動版文字自適應調整 */
     @media (max-width: 600px) {
+        /* 表格標題和數據：嘗試縮小字體以避免換行 */
+        .inspection-table th, 
+        .inspection-table td {
+            font-size: 14px; 
+            padding: 8px 5px;
+        }
+
+        /* 測試結果標籤：強制不換行，並略微縮小字體 */
         .result-label {
-            font-size: 13px; /* 針對小螢幕將字體縮小 */
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        
+        /* 測試結果數值：保持相對大，但防止溢出 */
+        .result-value-input {
+            font-size: 20px;
         }
     }
 </style>
@@ -143,11 +156,11 @@
             <h3 class="section-title">測試結果</h3>
             <div class="test-result-grid">
                 <div class="result-item res-pass">
-                    <span class="result-label">PASS (良品)</span>
+                    <span class="result-label">PASS (通過)</span>
                     <input type="text" id="passCount" class="result-value-input" value="0" readonly>
                 </div>
                 <div class="result-item res-fail">
-                    <span class="result-label">OPEN (開路)</span>
+                    <span class="result-label">OPEN (斷路)</span>
                     <input type="text" id="openCount" class="result-value-input" value="0" readonly>
                 </div>
                 <div class="result-item res-fail">
@@ -212,8 +225,13 @@
     document.addEventListener('DOMContentLoaded', () => {
         // 延遲執行以確保 template.js 渲染完畢
         setTimeout(initTestLogic, 200);
+        
+        // 【修正點】Test Report 不再覆寫 validateAndPrint，直接使用 template.js 的通用驗證功能。
+        // 原本的簡單驗證邏輯已移除，讓 template.js 的通用驗證負責。
     });
-
+    
+    // =======================================================
+    
     function initTestLogic() {
         const shipQuantityInput = document.getElementById('qty-input');
         
@@ -286,6 +304,10 @@
         // 監聽事件
         shipQuantityInput.addEventListener('input', updateTestResults);
         shipQuantityInput.addEventListener('keyup', updateTestResults); 
+        
+        // 額外監聽單位變更事件，確保數量顯示同步
+        const qtyUnit = document.getElementById('qty-unit');
+        if (qtyUnit) qtyUnit.addEventListener('change', updateTestResults);
         
         // 初始化執行一次
         updateTestResults();
