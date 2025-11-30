@@ -191,12 +191,13 @@ function initTemplateLogic() {
     }
 }
 
-// === 4. 列印前驗證功能 (已修正：啟用 window.print()) ===
+// === 4. 列印前驗證功能 (修正：只驗證，不列印) ===
 function validateAndPrint() {
     let isValid = true;
     let firstErrorElement = null;
 
-    const inputs = document.querySelectorAll('input:not([type="hidden"]):not([disabled]):not([readonly]), select:not([disabled])');
+    // 排除 Test Report 的唯讀欄位
+    const inputs = document.querySelectorAll('input:not([type="hidden"]):not([disabled]):not([readonly]):not(#passCount):not(#openCount):not(#shortCount), select:not([disabled])');
 
     inputs.forEach(el => {
         if (el.offsetParent === null) return;
@@ -204,6 +205,7 @@ function validateAndPrint() {
         const val = el.value.trim();
         let isError = false;
 
+        // 確保非自訂輸入的 select/input 不為空
         if (val === "" || val === "none" || val === "請選擇") {
             isError = true;
         }
@@ -214,6 +216,7 @@ function validateAndPrint() {
 
             if (!firstErrorElement) firstErrorElement = el;
 
+            // 移除錯誤標記的事件監聽
             el.addEventListener('input', function() {
                 if (this.value.trim() !== "" && this.value !== "none") {
                     this.classList.remove('input-error');
@@ -231,8 +234,7 @@ function validateAndPrint() {
     });
 
     if (isValid) {
-        // [已修正] 驗證成功，呼叫瀏覽器列印功能
-        window.print();
+        // 驗證成功，返回 true
         return true; 
     } else {
         alert("⚠️ 尚有欄位未填寫或未選擇！\n請依紅框提示完成輸入後再列印。");
@@ -240,6 +242,7 @@ function validateAndPrint() {
             firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             firstErrorElement.focus();
         }
+        // 驗證失敗，返回 false
         return false;
     }
 }

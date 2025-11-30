@@ -1,15 +1,24 @@
-/* report.css - 修正版：備註高度縮小 */
+/* report.css - 修正版：備註高度縮小 & 配色調整為正式風格 (保留金色元素) */
 
 :root {
-    --gold-dark: #b38728;
+    /* 主要金色調 (保留) */
+    --gold-dark: #b38728; /* 深金色，用於強調和邊框 */
     --gold-light: #fcf6ba;
-    --border-color: #c2a878;
+    
+    /* 邊框/次要線條 (從金色/米色系改為更正式的暖灰色系) */
+    --border-color: #a8a8a8; /* 穩重的中灰色 (原 #c2a878) */
+    --line-separator: #d4d4d4; /* 較淺的線條分隔色 (原 #ddd) */
+
+    /* 基本配色 (保留) */
     --bg-page: #ffffff;
     --text-primary: #1f2937;
-    --label-bg: #fafafa; /* [再次修改] 將 Label 背景色調得更淺 (原 #f8f5ee) */
+    
+    /* Label/標籤背景 (保留淺色，但調整為更中性的灰白) */
+    --label-bg: #f5f5f5; /* 淺灰色/米白色 (原 #fafafa) */
+    
     --remarks-signature-gap: 20px;
     
-    /* [新增] 複製 index.html 的金屬漸層和動畫相關變數 */
+    /* 金屬漸層和動畫相關變數 (保留) */
     --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
 }
 
@@ -53,6 +62,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    /* 保留深金色分隔線 */
     border-bottom: 4px solid var(--gold-dark);
     padding-bottom: 15px; 
     margin-bottom: 25px; 
@@ -70,8 +80,9 @@ body {
 }
 
 .header-sub-info {
+    /* 調整為更穩重的深灰色 */
     font-size: 14px;
-    color: #444;
+    color: #555; /* 原 #444 */
     font-weight: 500;
     margin-top: 3px;
     letter-spacing: 0.5px;
@@ -83,9 +94,9 @@ body {
 .report-title-badge {
     font-size: 26px; 
     
-    /* 恢復舊徽章樣式 */
-    background-color: #fcfaf5;
-    border: 1px solid var(--border-color);
+    /* 調整為更正式的淺灰底和邊框 */
+    background-color: #fcfcfc; /* 原 #fcfaf5 */
+    border: 1px solid var(--border-color); /* 使用新的中灰邊框 */
     padding: 8px 25px;
     border-radius: 4px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -94,7 +105,7 @@ body {
     font-weight: 700;
     letter-spacing: 2px;
     
-    /* 應用流動金屬效果 (複製 index.html) */
+    /* 應用流動金屬效果 (保留) */
     color: transparent; /* Keep text transparent for gradient */
     background: var(--gold-text-gradient);
     background-size: 200% auto;
@@ -108,9 +119,11 @@ body {
 .section-title {
     font-size: 16px;
     font-weight: 700;
+    /* 保留深金色 */
     color: var(--gold-dark);
     margin: 0 0 8px 0;
     padding-left: 10px;
+    /* 保留深金色邊線 */
     border-left: 4px solid var(--gold-dark);
     line-height: 1;
 }
@@ -130,7 +143,8 @@ body {
 .info-item {
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #ddd;
+    /* 調整為新的淺線條分隔色 */
+    border-bottom: 1px solid var(--line-separator); /* 原 #ddd */
     padding-bottom: 2px;
     height: 34px;
 }
@@ -146,11 +160,13 @@ body {
     text-align: center;
     margin-right: 8px;
     flex-shrink: 0;
-    border: 1px solid var(--border-color); /* Label 外框是金色 */
+    /* 保留金色邊框作為點綴 */
+    border: 1px solid var(--gold-dark); /* 原 var(--border-color) */
 }
 
 .input-line {
-    border: 1px solid #ccc;
+    /* 調整為更正式的邊框顏色 */
+    border: 1px solid var(--line-separator); /* 原 #ccc */
     background-color: #fff;
     border-radius: 4px;
     outline: none;
@@ -163,6 +179,7 @@ body {
 }
 
 .input-line:focus {
+    /* 保留深金色焦點效果 */
     border-color: var(--gold-dark);
     box-shadow: 0 0 0 3px rgba(179, 135, 40, 0.1);
 }
@@ -214,26 +231,32 @@ body {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    /* 調整為新的邊框色 */
     border: 1px solid var(--border-color);
 }
 
 .inspection-table th, 
 .inspection-table td {
     padding: 8px 6px;
-    border: 1px solid #ddd;
+    /* 調整為新的線條分隔色 */
+    border: 1px solid var(--line-separator); /* 原 #ddd */
     text-align: center;
     white-space: nowrap;
 }
 
 .inspection-table th {
-    background: linear-gradient(to bottom, #fcfaf5, #f0ebde);
+    /* 調整為更正式的淺灰色/米白色漸變 */
+    background: linear-gradient(to bottom, #fcfcfc, #f5f5f5); /* 原 #fcfaf5, #f0ebde */
     color: #333;
     font-weight: 700;
-    border-bottom: 2px solid var(--border-color);
+    /* 保留金色底部邊框 */
+    border-bottom: 2px solid var(--gold-dark); /* 原 var(--border-color) */
 }
 
+/* 調整條紋底色 */
 .inspection-table tr:nth-child(even) { background-color: #fcfcfc; }
-.inspection-table tr:hover { background-color: #fffdf5; }
+/* 調整懸停底色 */
+.inspection-table tr:hover { background-color: #f7f7f7; } /* 原 #fffdf5 */
 
 /* === 備註區 === */
 #unified-remarks-container {
@@ -242,10 +265,12 @@ body {
 }
 
 .remarks-section {
-    border: 1px solid #ddd;
+    /* 調整為新的線條分隔色 */
+    border: 1px solid var(--line-separator); /* 原 #ddd */
     padding: 8px;
     border-radius: 4px;
-    background-color: #fbfbfb;
+    /* 調整為更正式的淺灰色底色 */
+    background-color: #fcfcfc; /* 原 #fbfbfb */
     /* New Requirement 3: 備註欄位靠下對齊 */
     display: flex;
     flex-direction: column;
@@ -261,13 +286,15 @@ body {
     border-radius: 4px;
     display: inline-block;
     margin-bottom: 5px;
-    border: 1px solid var(--border-color); /* Label box 外框是金色 */
+    /* 保留金色邊框作為點綴 */
+    border: 1px solid var(--gold-dark); /* 原 var(--border-color) */
 }
 
 .remarks-input {
     width: 100%;
     box-sizing: border-box;
-    border: 1px solid #eee;
+    /* 調整為新的淺線條分隔色 */
+    border: 1px solid #e0e0e0; /* 原 #eee */
     background: #fff;
     padding: 8px 10px;
     line-height: 1.5;
@@ -284,6 +311,7 @@ body {
     transition: border-color 0.2s;
     overflow: hidden;
 }
+/* 保留深金色焦點效果 */
 .remarks-input:focus { border-color: var(--gold-dark); }
 
 /* === 簽核區 === */
@@ -299,19 +327,21 @@ body {
 .sign-box { width: 48%; text-align: center; }
 
 .sign-title {
-    background-color: var(--label-bg); /* [已修改] 使用新的淺色背景 */
+    background-color: var(--label-bg);
     padding: 6px;
     font-size: 15px;
     font-weight: bold;
     color: #333;
-    border: 1px solid var(--border-color);
+    /* 保留金色邊框 */
+    border: 1px solid var(--gold-dark); /* 原 var(--border-color) */
     border-bottom: none; 
     letter-spacing: 5px; 
 }
 
 .sign-stamp-area {
     height: 70px; 
-    border: 1px solid var(--border-color);
+    /* 保留金色邊框 */
+    border: 1px solid var(--gold-dark); /* 原 var(--border-color) */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -391,7 +421,7 @@ body {
     }
 }
 
-/* === 列印專用樣式 === */
+/* === 列印專用樣式 (保留大部分原有功能) === */
 @media print {
     @page { size: A4; margin: 0; }
     body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -399,13 +429,21 @@ body {
     #navbar-container, .action-buttons, .navbar, .reset-cycle-btn { display: none !important; }
     
     .page-container { padding: 0; margin: 0; display: block; }
-    .a4-paper { width: 100%; height: 100vh; padding: 15mm; box-shadow: none; margin: 0 auto; page-break-after: always; }
+    .a4-paper { 
+        width: 100%; 
+        height: 100% !important; /* 👈 修正點 1: 確保高度撐滿列印頁面 */
+        min-height: auto !important; /* 👈 修正點 2: 移除最小高度限制 */
+        padding: 15mm; 
+        box-shadow: none; 
+        margin: 0 auto; 
+        page-break-after: always; 
+    }
     
     .input-line { border: none; background: transparent; padding: 0; box-shadow: none; }
     input::placeholder, textarea::placeholder { color: transparent; }
     select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none; padding: 0; }
     
-    /* [新增] 確保流動金屬字在列印時顯示為黑色 */
+    /* [新增] 確保流動金屬字在列印時顯示為黑色 (保留) */
     .report-title-badge {
         color: #000 !important;
         -webkit-text-fill-color: #000 !important;
@@ -413,15 +451,17 @@ body {
         animation: none !important;
     }
 
-    /* 強制備註與簽名在最下方 */
-    #unified-remarks-container { margin-top: auto; }
+    /* 強制備註與簽名在最下方 (加強 margin-top: auto;) */
+    #unified-remarks-container { 
+        margin-top: auto !important; 
+    }
     
     .remarks-input {
         border: none; 
         background: transparent; 
         box-shadow: none;
         
-        /* [修正點 4] 列印時同樣鎖定為 40px */
+        /* [修正點 4] 列印時同樣鎖定為 40px (保留) */
         height: 40px !important;       
         line-height: 1.5 !important;
         padding: 5px 0 !important;
@@ -430,14 +470,14 @@ body {
         display: block !important;
     }
     
-    /* 列印時移除錯誤紅框 */
+    /* 列印時移除錯誤紅框 (保留) */
     .input-error {
         border: none !important;
         background-color: transparent !important;
         box-shadow: none !important;
     }
 
-    /* [新增] New Requirement 2: 獨立隱藏備註區塊 */
+    /* [新增] New Requirement 2: 獨立隱藏備註區塊 (保留) */
     .print-hide-remarks { 
         display: none !important; 
         height: 0 !important;
@@ -446,14 +486,14 @@ body {
         margin-bottom: 0 !important;
     }
 
-    /* 調整備註對齊 (New Requirement 3: 靠下對齊) */
+    /* 調整備註對齊 (New Requirement 3: 靠下對齊) (保留) */
     .remarks-section {
         display: flex !important;
         flex-direction: column !important;
         justify-content: flex-end !important; 
     }
     
-    /* NEW: 確保新的單位文字在列印時樣式正確 */
+    /* NEW: 確保新的單位文字在列印時樣式正確 (保留) */
     .unit-display-text {
         font-size: 14px !important;
         font-weight: normal !important;
@@ -464,14 +504,14 @@ body {
         white-space: nowrap !important;
     }
 
-    /* 修正 split-input 在列印時的行為 */
+    /* 修正 split-input 在列印時的行為 (保留) */
     .split-input {
         /* 在列印模式下，讓輸入框平均分配空間 */
         flex: 1 !important;
     }
 }
 
-/* === 驗證錯誤警示樣式 === */
+/* === 驗證錯誤警示樣式 (保留) === */
 .input-error {
     border: 2px solid #ef4444 !important; /* 紅框 */
     background-color: #fef2f2 !important; /* 淺紅底 */
@@ -485,7 +525,7 @@ body {
     75% { transform: translateX(5px); }
 }
 
-/* New: 用於尺寸/排版輸入框，讓其平均分配空間 */
+/* New: 用於尺寸/排版輸入框，讓其平均分配空間 (保留) */
 .split-input {
     flex: 1; 
     text-align: center;

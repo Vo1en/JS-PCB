@@ -239,9 +239,6 @@
     document.addEventListener('DOMContentLoaded', () => {
         // 延遲執行以確保 template.js 渲染完畢
         setTimeout(initTestLogic, 200);
-        
-        // 【修正點】Test Report 不再覆寫 validateAndPrint，直接使用 template.js 的通用驗證功能。
-        // 原本的簡單驗證邏輯已移除，讓 template.js 的通用驗證負責。
     });
     
     // =======================================================
@@ -326,6 +323,43 @@
         // 初始化執行一次
         updateTestResults();
     }
+    
+    // [關鍵修正] Test Report 的列印邏輯覆寫，以處理備註隱藏
+    const originalValidateAndPrint = window.validateAndPrint; 
+    
+    window.validateAndPrint = function() {
+        
+        // 1. 先執行內容檢查 (現在只返回布林值)
+        if (!originalValidateAndPrint()) {
+            // 如果驗證失敗，則退出
+            return false;
+        }
+
+        // 2. 驗證成功後，處理備註隱藏邏輯 (與 Inspection Report 邏輯一致)
+        const remarksInput = document.querySelector('.remarks-input');
+        const remarksContainer = document.getElementById('unified-remarks-container');
+        const remarksIsEmpty = remarksInput && remarksInput.value.trim() === '';
+        
+        if (remarksContainer) {
+            if (remarksIsEmpty) {
+                // 如果備註為空，則在列印時完全隱藏備註區
+                remarksContainer.classList.add('print-hide-remarks');
+            } else {
+                // 如果備註不為空，則確保區塊顯示
+                remarksContainer.classList.remove('print-hide-remarks');
+            }
+        }
+
+        // 3. 執行列印 (只執行這一次)
+        window.print();
+        
+        // 4. 列印完成後，移除備註隱藏 class，讓螢幕顯示恢復正常
+        setTimeout(() => {
+            if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
+        }, 100);
+        
+        return true;
+    };
 </script>
 </body>
 </html>

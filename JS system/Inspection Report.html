@@ -128,7 +128,7 @@
             body { padding-top: 0; }
             .page-container { margin-top: 0; }
             .remarks-input { height: 40px !important; min-height: 40px !important; resize: none; }
-            .standard-badge { border: 1px solid #999; color: #000; background: transparent; }
+            .standard-badge { border: 1px solid #999; color: #000; }
             
             /* 列印時隱藏未輸入的成品孔徑行 */
             .print-hidden-row {
@@ -287,7 +287,7 @@
                             <option value="硬金 5u">硬金 5u"</option>
                             <option value="OSP">OSP</option>
                             <option value="裸銅">裸銅</option>
-                            <option value="其他">其他 (輸入)</繆</option>
+                            <option value="其他">其他 (輸入)繆</option>
                         </select>
                         <div class="input-group toggle-input-box" id="surface-input-group" style="display: none;">
                             <input type="text" class="input-line" placeholder="輸入處理" oninput="checkCompletion()">
@@ -692,7 +692,7 @@
         const originalValidateAndPrint = window.validateAndPrint; 
         window.validateAndPrint = function() {
             
-            // *** 關鍵修正 1：點擊列印時，檢查成品孔徑 A 規格是否輸入，並整合到主檢查中 ***
+            // 關鍵修正 1：點擊列印時，檢查成品孔徑 A 規格是否輸入，並整合到主檢查中
             const nominalSpecA = document.getElementById('spec-hole1-nominal');
             let isHoleASpecEmpty = nominalSpecA?.textContent.trim() === '';
 
@@ -720,7 +720,7 @@
             // [修正 1] 隱藏未輸入的成品孔徑行
             prepareRowsForPrint();
             
-            // [修正 2] 檢查備註並獨立隱藏備註區
+            // [修正 2] 檢查備註並獨立隱藏備註區 (現在 template.js 不執行列印，所以在這裡加入備註隱藏/顯示邏輯)
             const remarksInput = document.querySelector('.remarks-input');
             const remarksContainer = document.getElementById('unified-remarks-container');
             const remarksIsEmpty = remarksInput && remarksInput.value.trim() === '';
@@ -735,7 +735,7 @@
                 }
             }
             
-            // 3. 執行列印
+            // 3. 執行列印 (只執行這一次)
             window.print();
             
             // 4. 為了讓螢幕顯示恢復正常，在列印完成後移除 class
