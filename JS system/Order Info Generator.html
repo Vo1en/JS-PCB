@@ -268,6 +268,7 @@
       
   #output-text {
           width: 95% !important;
+  }
 
       /* 修正警告訊息的水平定位，讓它對齊輸入框 */
       .warning {
@@ -636,7 +637,7 @@
         <div id="unified-remarks-container"></div>
         
         <div class="btn-row">
-            <button type="button" class="btn-one-click" onclick="generateAndCopyText()">一鍵生成並複製</button>
+            <button type="button" class="btn-one-click" onclick="generateAndCopyText()">一鍵生成+複製</button>
             <button type="button" class="btn-generate" onclick="generateText()">生成文字</button>
             <button type="button" class="btn-copy" onclick="copyText()">複製文字</button>
         </div>
@@ -971,7 +972,7 @@
     document.getElementById("output-text").value = msg;
   }
   
-  // [新增函式] 一鍵生成並複製
+  // [新增函式] 一鍵生成複製
   function generateAndCopyText() {
     generateText(); // 先生成文字
     copyText();     // 再複製文字
@@ -985,7 +986,7 @@
         output.select();
         output.setSelectionRange(0, 99999); 
         document.execCommand("copy");
-        alert("規格文字已複製到剪貼簿！");
+        alert("文字訊息已複製到剪貼簿！");
     } else {
         // 如果輸出欄位是空的，先生成一次
         generateText(); 
