@@ -7,7 +7,16 @@
     --bg-page: #ffffff;
     --text-primary: #1f2937;
     --label-bg: #f0ebde;
-    --remarks-signature-gap: 20px; 
+    --remarks-signature-gap: 20px;
+    
+    /* [新增] 複製 index.html 的金屬漸層和動畫相關變數 */
+    --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+}
+
+/* [新增] 金屬流光動畫 (複製自 index.html) */
+@keyframes shine {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
 }
 
 body {
@@ -70,17 +79,29 @@ body {
 
 .header-right { text-align: right; }
 
+/* [修改] report-title-badge 樣式：保留邊框/底色，並應用流動金屬字 */
 .report-title-badge {
     font-size: 26px; 
-    color: var(--gold-dark);
+    
+    /* 恢復舊徽章樣式 */
     background-color: #fcfaf5;
     border: 1px solid var(--border-color);
-    padding: 8px 25px; 
+    padding: 8px 25px;
     border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    
     margin: 0;
     font-weight: 700;
     letter-spacing: 2px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    
+    /* 應用流動金屬效果 (複製 index.html) */
+    color: transparent; /* Keep text transparent for gradient */
+    background: var(--gold-text-gradient);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 5s linear infinite;
+    display: inline-block; /* 確保動畫適用於文字 */
 }
 
 /* === 區塊標題 === */
@@ -383,6 +404,14 @@ body {
     .input-line { border: none; background: transparent; padding: 0; box-shadow: none; }
     input::placeholder, textarea::placeholder { color: transparent; }
     select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none; padding: 0; }
+    
+    /* [新增] 確保流動金屬字在列印時顯示為黑色 */
+    .report-title-badge {
+        color: #000 !important;
+        -webkit-text-fill-color: #000 !important;
+        background: transparent !important;
+        animation: none !important;
+    }
 
     /* 強制備註與簽名在最下方 */
     #unified-remarks-container { margin-top: auto; }
