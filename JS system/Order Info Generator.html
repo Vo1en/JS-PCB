@@ -7,6 +7,14 @@
   
   <link rel="stylesheet" href="report.css">
   <link rel="stylesheet" href="navbar.css"> <style>
+  /* * 【重要修改：解決跑版問題】 
+   * 設置全局 box-sizing 為 border-box，確保 padding 和 border 
+   * 包含在 width 內，防止元件在 width: 100% 時溢出父容器。
+   */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  
   /* 移除 JS PCB 浮水印樣式 */
   body::before { content: none !important; }
 
@@ -174,7 +182,7 @@
 
   /* [變更 4] 增加輸出文字欄位長度 */
   #output-text {
-    width: 100%;
+    width: 100%; /* 確保寬度為 100% */
     min-height: 400px; /* 增加高度以容納更多資訊 */
     padding: 10px;
     border: 1px solid #ccc;
@@ -182,6 +190,8 @@
     font-size: 14px;
     line-height: 1.6;
     resize: vertical;
+    word-wrap: break-word; /* 確保長文本自動換行 */
+    overflow-wrap: break-word; /* 確保長文本自動換行 */
   }
 
   /* [變更 5] 輸出欄位標籤樣式 */
@@ -490,11 +500,11 @@
                             <option value="-">-</option>
                             <option value="有鉛噴錫">有鉛噴錫</option>
                             <option value="無鉛噴錫" selected>無鉛噴錫</option>
-                            <option value="化金 1u">化金 1u</option>
-                            <option value="化金 2u">化金 2u</option>
-                            <option value="化金 3u">化金 3u</option>
-                            <option value="硬金 3u">硬金 3u</option>
-                            <option value="硬金 5u">硬金 5u</option>
+                            <option value="化金 1u">化金 1u"</option>
+                            <option value="化金 2u">化金 2u"</option>
+                            <option value="化金 3u">化金 3u"</option>
+                            <option value="硬金 3u">硬金 3u"</option>
+                            <option value="硬金 5u">硬金 5u"</option>
                             <option value="OSP">OSP</option>
                             <option value="裸銅">裸銅</option>
                             <option value="custom">自行輸入</option>
