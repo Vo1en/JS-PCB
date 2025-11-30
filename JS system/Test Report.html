@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>駿鑫 電性測試報告</title>
+    
+    <link rel="stylesheet" href="navbar.css">
+    
+    <link rel="stylesheet" href="report.css">
+
+<style>
+    /* === 針對此報告的客製化樣式調整 === */
+    
+    /* --- 螢幕顯示樣式 --- */
+    .inspection-table th, 
+    .inspection-table td {
+        font-size: 16px;       
+        padding: 12px 10px;    
+        height: auto;          
+    }
+    
+    .table-input {
+        width: 90%;
+        text-align: center;
+        border: none;
+        background: transparent;
+        font-size: 16px;       
+        outline: none;
+        font-weight: 500;
+        color: #000;
+    }
+    .table-input:focus {
+        background-color: #fefce8;
+        border-bottom: 1px solid #ddd; 
+    }
+
+    /* --- 測試結果區塊優化 --- */
+    .test-result-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px; 
+        background-color: #fcfcfc;
+        border: 1px solid #eee;
+        border-radius: 4px;
+    }
+
+    .result-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        border: 1px solid #e0d8c8;
+        border-radius: 4px;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .result-label {
+        font-size: 15px; 
+        font-weight: bold;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .result-value-input {
+        width: 100%;
+        text-align: center;
+        border: none;
+        font-size: 22px; 
+        font-weight: 800;
+        color: #333;
+        background: transparent;
+        outline: none;
+    }
+
+    .res-pass input { color: #10b981; } 
+    .res-fail input { color: #ef4444; } 
+    
+    /* === 列印專用樣式修正 === */
+    @media print {
+        #navbar-container, .navbar, .action-buttons { display: none !important; }
+        
+        .test-result-grid {
+            border: none;
+            background: none;
+            padding: 0;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        .result-item {
+            border: 1px solid #ccc;
+            box-shadow: none;
+            padding: 5px;
+        }
+        
+        /* 強制表格樣式與螢幕一致 */
+        .inspection-table th, 
+        .inspection-table td { 
+            font-size: 16px !important;    
+            padding: 10px 10px !important; 
+            white-space: normal !important;
+        }
+
+        .table-input {
+            text-align: center !important;
+            font-size: 16px !important;    
+            width: 100% !important;
+            padding: 0 !important;
+        }
+    }
+</style>
+</head>
+<body>
+
+    <div id="navbar-container"></div>
+    <script src="navbar.js"></script>
+
+    <div class="action-buttons">
+        <button onclick="validateAndPrint()" class="btn-print" title="列印 / 存為PDF">
+            <svg class="icon-printer" viewBox="0 0 24 24">
+                <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
+            </svg>
+            列印 / PDF
+        </button>
+    </div>
+
+    <div class="page-container">
+        <div class="a4-paper">
+            
+            <div id="unified-header-container" data-title="電性測試報告"></div>
+
+            <h3 class="section-title">測試結果</h3>
+            <div class="test-result-grid">
+                <div class="result-item res-pass">
+                    <span class="result-label">PASS (良品)</span>
+                    <input type="text" id="passCount" class="result-value-input" value="0" readonly>
+                </div>
+                <div class="result-item res-fail">
+                    <span class="result-label">OPEN (開路)</span>
+                    <input type="text" id="openCount" class="result-value-input" value="0" readonly>
+                </div>
+                <div class="result-item res-fail">
+                    <span class="result-label">SHORT (短路)</span>
+                    <input type="text" id="shortCount" class="result-value-input" value="0" readonly>
+                </div>
+            </div>
+
+            <h3 class="section-title">測試參數及條件</h3>
+            <div class="table-wrapper">
+                <table class="inspection-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">測試項目</th>
+                            <th style="width: 60%;">規格值 / 條件</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>測試電壓 (Test Voltage)</td>
+                            <td><input type="text" class="table-input" value="250 V" placeholder="請輸入"></td>
+                        </tr>
+                        <tr>
+                            <td>測試電流 (Test Current)</td>
+                            <td><input type="text" class="table-input" value="-" placeholder="請輸入"></td>
+                        </tr>
+                        <tr>
+                            <td>通路阻抗 (Conductance)</td>
+                            <td><input type="text" class="table-input" value="20 Ω" placeholder="請輸入"></td>
+                        </tr>
+                        <tr>
+                            <td>絕緣阻抗 (Insulation)</td>
+                            <td><input type="text" class="table-input" value="100 MΩ" placeholder="請輸入"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="unified-remarks-container"></div>
+
+            <div class="signature-section">
+                <div class="sign-box">
+                    <div class="sign-title">測試人員</div>
+                    <div class="sign-stamp-area">
+                        <img src="pic/reviewer.png" alt="Reviewer" class="stamp-img" onerror="this.style.display='none'">
+                    </div>
+                </div>
+                <div class="sign-box">
+                    <div class="sign-title">核准人員</div>
+                    <div class="sign-stamp-area">
+                        <img src="pic/approver.png" alt="Approver" class="stamp-img" onerror="this.style.display='none'">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="template.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 延遲執行以確保 template.js 渲染完畢
+        setTimeout(initTestLogic, 200);
+    });
+
+    function initTestLogic() {
+        const shipQuantityInput = document.getElementById('qty-input');
+        
+        const passCountInput = document.getElementById('passCount');
+        const openCountInput = document.getElementById('openCount');
+        const shortCountInput = document.getElementById('shortCount');
+
+        if (!shipQuantityInput || !passCountInput) return;
+
+        function updateTestResults() {
+            // 1. 獲取輸入數量
+            const rawVal = shipQuantityInput.value.replace(/,/g, '');
+            const shipQuantity = parseInt(rawVal) || 0;
+
+            // === 修正邏輯：PASS 直接等於輸入數量 ===
+            let passCount = shipQuantity;
+            
+            // 2. 計算 OPEN / SHORT (以輸入數量為基準計算，但不扣除 Pass)
+            let openCount = 0;
+            let shortCount = 0;
+            let failCount = 0;
+            let shouldTriggerDefect = false;
+            
+            // 觸發條件 (數量 > 500 必觸發，否則 30% 機率)
+            if (shipQuantity > 500) {
+                shouldTriggerDefect = true;
+            } else if (shipQuantity > 0) {
+                if (Math.random() < 0.30) {
+                    shouldTriggerDefect = true;
+                }
+            }
+            
+            if (shouldTriggerDefect && shipQuantity > 0) { 
+                const minStep = 1;  // 0.1%
+                const maxStep = 20; // 2.0%
+                const randomStep = Math.floor(Math.random() * (maxStep - minStep + 1)) + minStep;
+                const randPercent = randomStep / 1000; 
+
+                // 計算不良數
+                failCount = Math.floor(shipQuantity * randPercent); 
+                
+                // 分配 OPEN / SHORT
+                if (failCount > 0) {
+                    const randomSplit = Math.random();
+                    if (randomSplit < 0.5) {
+                        openCount = Math.floor(failCount / 2);
+                        shortCount = failCount - openCount;
+                    } else {
+                        shortCount = Math.floor(failCount / 2);
+                        openCount = failCount - shortCount;
+                    }
+
+                    // 邊界修正：確保至少有 1 個不良
+                    if (failCount > 0 && openCount === 0 && shortCount === 0) {
+                        openCount = failCount;
+                    }
+                }
+            }
+
+            // 3. 更新畫面
+            passCountInput.value = passCount.toLocaleString(); 
+            openCountInput.value = openCount;
+            shortCountInput.value = shortCount;
+            
+            // 紅字警示
+            openCountInput.style.color = openCount > 0 ? '#dc2626' : '#333';
+            shortCountInput.style.color = shortCount > 0 ? '#dc2626' : '#333';
+        }
+
+        // 監聽事件
+        shipQuantityInput.addEventListener('input', updateTestResults);
+        shipQuantityInput.addEventListener('keyup', updateTestResults); 
+        
+        // 初始化執行一次
+        updateTestResults();
+    }
+</script>
+</body>
+</html>
