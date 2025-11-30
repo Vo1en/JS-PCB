@@ -174,7 +174,8 @@
 
   /* [變更 4] 增加輸出文字欄位長度 */
   #output-text {
-    width: 97%;
+    /* ***以下是根據您的要求修改的部分*** */
+    width: 90%; /* (修改) 減少寬度以在左右產生間距 */
     min-height: 400px; /* 增加高度以容納更多資訊 */
     padding: 10px;
     border: 1px solid #ccc;
@@ -182,6 +183,9 @@
     font-size: 14px;
     line-height: 1.6;
     resize: vertical;
+    /* (新增) 水平置中，讓左右間距固定 */
+    display: block;
+    margin: 0 auto;
   }
 
   /* [變更 5] 輸出欄位標籤樣式 */
@@ -266,9 +270,11 @@
           margin: 0;
       }
       
-  #output-text {
-          width: 95% !important;
-  }
+    /* ***以下是根據您的要求修改的部分*** */
+    #output-text {
+        width: 90% !important; /* (修改) 調整手機版寬度 */
+        margin: 0 auto !important; /* (新增) 確保手機版也置中 */
+    }
 
       /* 修正警告訊息的水平定位，讓它對齊輸入框 */
       .warning {
