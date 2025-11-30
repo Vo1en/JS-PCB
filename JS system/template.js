@@ -152,17 +152,32 @@ function initTemplateLogic() {
     if (cycleSelect && cycleContainer && cycleInput && resetBtn) {
         cycleSelect.addEventListener('change', function() {
             if (this.value === 'has') {
-                this.style.display = 'none';
+                // [修正點]：將 display: 'none' 改為 visibility: 'hidden' + width: '0'
+                this.style.visibility = 'hidden'; 
+                this.style.width = '0';
+                this.style.padding = '0'; // 清除 padding
+                
                 cycleContainer.style.display = 'flex';
                 cycleInput.focus();
+            } else {
+                // 確保切換到 'no' 或 '請選擇' 時，恢復 Select 正常顯示
+                this.style.visibility = 'visible';
+                this.style.width = '100%';
+                this.style.padding = '4px 8px'; // 恢復 input-line 的 padding
             }
         });
 
         resetBtn.addEventListener('click', function() {
             cycleInput.value = "";
             cycleContainer.style.display = 'none';
+            
+            // [修正點]：恢復 Select 的顯示屬性
             cycleSelect.style.display = 'block';
-            cycleSelect.value = 'none';
+            cycleSelect.style.visibility = 'visible';
+            cycleSelect.style.width = '100%';
+            cycleSelect.style.padding = '4px 8px'; // 恢復 input-line 的 padding
+            
+            cycleSelect.value = 'none'; // 將選單值設為 '無週期' 對應的 'no'
         });
     }
 
