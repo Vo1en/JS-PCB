@@ -10,12 +10,12 @@ document.addEventListener("DOMContentLoaded", function() {
             ☰
         </div>
 
-        <div class="nav-links" id="nav-links">
-            <a href="index.html" class="nav-item">首頁</a>
-            <a href="Spec Generator.html" class="nav-item">規格產生器</a>
-            <a href="Inspection Report.html" class="nav-item">出貨檢驗報告</a>
-            <a href="Test Report.html" class="nav-item">電性測試報告</a>
-        </div>
+<div class="nav-links" id="nav-links">
+    <a href="index.html" class="nav-item">首頁</a>
+    <a href="spec-generator.html" class="nav-item">規格產生器</a>
+    <a href="inspection-report.html" class="nav-item">出貨檢驗報告</a>
+    <a href="test-report.html" class="nav-item">電性測試報告</a>
+</div>
     </nav>
     `;
 

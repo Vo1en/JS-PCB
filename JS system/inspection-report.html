@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>駿鑫 出貨檢驗報告</title>
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="report.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .section-header-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-right: 5px; flex-wrap: wrap; gap: 5px; }
+        .section-header-wrapper .section-title { margin-bottom: 0; }
+        .standard-badge { font-size: 13px; color: #333; background-color: var(--label-bg); padding: 5px 12px; border-radius: 20px; font-weight: 600; border: 1px solid var(--border-color); letter-spacing: 0.5px; }
+        .final-decision-box { margin-top: 15px; margin-bottom: 20px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #fff; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .decision-label { font-size: 16px; font-weight: 700; color: #374151; }
+        .result-badge { font-size: 18px; font-weight: 800; padding: 8px 30px; border-radius: 4px; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease; text-align: center; min-width: 150px; box-sizing: border-box; }
+        .status-pending { background-color: #f3f4f6; color: #9ca3af; border: 1px dashed #d1d5db; }
+        .status-pass { background-color: #ecfdf5; color: #059669; border: 2px solid #059669; box-shadow: 0 0 5px rgba(5, 150, 105, 0.2); }
+        .status-fail { background-color: #fef2f2; color: #dc2626; border: 2px solid #dc2626; box-shadow: 0 0 5px rgba(220, 38, 38, 0.2); }
+        .wrapper-toggle { display: flex; align-items: center; width: 100%; position: relative; }
+        .toggle-input-box { width: 100%; display: flex; align-items: center; flex: 1; }
+        .reset-btn { cursor: pointer; font-size: 18px; color: #999; padding: 0 8px; line-height: 1; font-weight: bold; user-select: none; }
+        .reset-btn:hover { color: red; }
+        .editable-cell { min-width: 50px; display: inline-block; padding: 2px 5px; outline: none; border-bottom: 1px dashed #ccc; text-align: center; background: transparent; }
+        .editable-cell:focus { border-bottom: 1px solid #b38728; background-color: #fffdf5; }
+        .tolerance-display { font-size: 0.85em; color: #666; margin-left: 4px; white-space: nowrap; }
+        @media print {
+            .reset-btn { display: none !important; } input { border: none !important; background: transparent !important; } .editable-cell { border-bottom: 1px dashed #000 !important; } body { padding-top: 0; } .page-container { margin-top: 0; } .standard-badge { border: 1px solid #999; color: #000; } .print-hidden-row { display: none !important; } .result-badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } .status-pass { background-color: #ecfdf5 !important; color: #059669 !important; border: 2px solid #059669 !important; } .status-fail { background-color: #fef2f2 !important; color: #dc2626 !important; border: 2px solid #dc2626 !important; } .status-pending { display: none; } .final-decision-box { border: 1px solid #e5e7eb; }
+        }
+        @media (max-width: 768px) { .final-decision-box { flex-direction: row; gap: 10px; } .decision-label { white-space: nowrap; } .result-badge { min-width: auto; padding: 8px 15px; } }
+    </style>
+</head>
+<body>
+    <div id="navbar-container"></div>
+    <div class="page-container">
+        <div class="action-buttons">
+            <button class="btn-print" onclick="validateAndPrint()">
+                <svg class="icon-printer" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                列印
+            </button>
+            <button class="btn-pdf" onclick="downloadPDF()">
+                <svg class="icon-printer" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
+                生成 PDF
+            </button>
+        </div>
+
+        <div class="a4-paper">
+            <div id="unified-header-container" data-title="出貨檢驗報告"></div>
+            <h3 class="section-title">PCB 規格</h3>
+            <section class="info-grid grid-pcb" id="pcb-spec-section">
+                <div class="info-item span-standard"><span class="label">板材</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="material-input-group" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="FR-4">FR-4</option><option value="FR-1">FR-1</option><option value="鋁基板">鋁基板</option><option value="銅基板">銅基板</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="material-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入板材" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">層別</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="layer-input-group" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="單面板">單面板</option><option value="雙面板">雙面板</option><option value="四層板">四層板</option><option value="六層板">六層板</option><option value="八層板">八層板</option><option value="十層板">十層板</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="layer-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入層別" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">板厚</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="thickness-input-group" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="0.4 mm">0.4 mm</option><option value="0.6 mm">0.6 mm</option><option value="0.8 mm">0.8 mm</option><option value="1.0 mm">1.0 mm</option><option value="1.2 mm">1.2 mm</option><option value="1.6 mm">1.6 mm</option><option value="2.0 mm">2.0 mm</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="thickness-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入板厚" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">銅厚</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="copper-input-group" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="1 oz">1 oz</option><option value="2 oz">2 oz</option><option value="3 oz">3 oz</option><option value="4 oz">4 oz</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="copper-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入銅厚" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">防焊</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="mask-input-group" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="綠色">🟢 綠色</option><option value="白色">⚪ 白色</option><option value="紅色">🔴 紅色</option><option value="黑色">⚫ 黑色</option><option value="藍色">🔵 藍色</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="mask-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入顏色" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">文字</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="legend-input-group" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="白色">⚪ 白色</option><option value="黑色">⚫ 黑色</option><option value="無文字">無文字</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="legend-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入顏色" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">焊盤</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="surface-input-group" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="有鉛噴錫">有鉛噴錫</option><option value="無鉛噴錫">無鉛噴錫</option><option value="化金 1u">化金 1u"</option><option value="化金 2u">化金 2u"</option><option value="化金 3u">化金 3u"</option><option value="硬金 3u">硬金 3u"</option><option value="硬金 5u">硬金 5u"</option><option value="OSP">OSP</option><option value="裸銅">裸銅</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="surface-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入處理" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                
+                <div class="info-item desktop-spacer"></div>
+
+                <div class="info-item span-half">
+                    <span class="label">尺寸</span>
+                    <div class="input-group" style="gap: 5px;">
+                        <input type="text" id="dim-length-input" class="input-line split-input" placeholder="長" oninput="updateSpecs(); checkCompletion();">
+                        <span>x</span>
+                        <input type="text" id="dim-width-input" class="input-line split-input" placeholder="寬" oninput="updateSpecs(); checkCompletion();">
+                        <span class="unit-display-text" style="font-size: 12px; color: #666; white-space: nowrap;">mm</span>
+                    </div>
+                </div>
+
+                <div class="info-item span-half">
+                    <span class="label">排版</span>
+                    <div class="input-group" style="gap: 5px;">
+                        <input type="text" id="pnl-x" class="input-line split-input" placeholder="X" oninput="checkCompletion()">
+                        <span>x</span>
+                        <input type="text" id="pnl-y" class="input-line split-input" placeholder="Y" oninput="checkCompletion()">
+                        <span class="unit-display-text" style="flex-shrink: 0; width: 65px; font-size: 12px; font-weight: 600; text-align: center;">PCS / PNL</span>
+                    </div>
+                </div>
+            </section>
+
+            <table class="print-only-table" id="print-pcb-specs"><tr><th>板　　材</th><td id="print-material"></td><th>層　　別</th><td id="print-layer"></td><th>板　　厚</th><td id="print-thickness"></td></tr><tr><th>銅　　厚</th><td id="print-copper"></td><th>防　　焊</th><td id="print-mask"></td><th>文　　字</th><td id="print-legend"></td></tr><tr><th>焊　　盤</th><td id="print-surface"></td><th>出貨尺寸</th><td id="print-dim"></td><th>排版規格</th><td id="print-array"></td></tr></table>
+            <div class="section-header-wrapper"><h3 class="section-title">檢驗數據</h3><span class="standard-badge">抽樣標準: MIL-STD-105D</span></div>
+            <div class="table-wrapper">
+                <table class="inspection-table" id="inspection-data-table">
+                    <thead><tr><th style="min-width: 80px;">項目</th><th style="min-width: 100px;">規格 (mm)</th><th>樣本 A</th><th>樣本 B</th><th>樣本 C</th><th>樣本 D</th><th>樣本 E</th><th style="min-width: 60px;">判定</th></tr></thead>
+                    <tbody>
+                        <tr data-item="length"><td>長度</td><td><span contenteditable="true" class="editable-cell" id="spec-length-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.2">0.2</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td class="judgment-field" style="font-weight:bold;"></td> </tr>
+                        <tr data-item="width"><td>寬度</td><td><span contenteditable="true" class="editable-cell" id="spec-width-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.2">0.2</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td class="judgment-field" style="font-weight:bold;"></td> </tr>
+                        <tr id="row-hole-1"><td>孔徑 A</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole1-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
+                        <tr id="row-hole-2"><td>孔徑 B</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole2-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
+                        <tr id="row-hole-3"><td>孔徑 C</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole3-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="final-decision-box"><span class="decision-label">判定結果:</span><div id="final-decision-badge" class="result-badge status-pending">等待數據...</div></div>
+            <div id="unified-remarks-container"></div>
+            
+            <div class="signature-section">
+                <div class="sign-box">
+                    <div class="sign-title">檢驗人員</div>
+                    <div class="sign-stamp-area">
+                        <img src="data:image/png;base64,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" alt="檢驗人員" class="stamp-img">
+                    </div>
+                </div>
+                <div class="sign-box">
+                    <div class="sign-title">核准人員</div>
+                    <div class="sign-stamp-area">
+                        <img src="data:image/png;base64,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" alt="核准人員" class="stamp-img">
+                    </div>
+                </div>
+            </div>
+
+        </div> 
+    </div> 
+
+    <script src="navbar.js"></script>
+    <script src="template.js"></script>
+
+    <script>
+        let hasUserInteracted = false;
+
+        window.validateAndPrint = function(onlyValidate = false) {
+            let isComplete = true;
+            const basicIds = ['ui-client', 'ui-partno', 'qty-input'];
+            basicIds.forEach(id => { const el = document.getElementById(id); if (el && el.value.trim() === '') { el.classList.add('input-error'); isComplete = false; } else if (el) { el.classList.remove('input-error'); } });
+            const cycleSelect = document.getElementById('cycle-select');
+            const cycleInput = document.getElementById('cycle-input');
+            if (cycleSelect) {
+                 if (cycleSelect.value === '' || cycleSelect.value === '請選擇') { cycleSelect.classList.add('input-error'); isComplete = false; } 
+                 else if (cycleSelect.value === 'has' && cycleInput && cycleInput.value.trim() === '') { cycleInput.classList.add('input-error'); isComplete = false; } 
+                 else { cycleSelect.classList.remove('input-error'); if(cycleInput) cycleInput.classList.remove('input-error'); }
+            }
+            const pcbSection = document.getElementById('pcb-spec-section');
+            if (pcbSection) {
+                const selects = pcbSection.querySelectorAll('select');
+                selects.forEach(sel => {
+                    const wrapper = sel.closest('.wrapper-toggle');
+                    const inputGroup = wrapper ? wrapper.querySelector('.toggle-input-box') : null;
+                    const input = inputGroup ? inputGroup.querySelector('input') : null;
+                    if (inputGroup && inputGroup.style.display !== 'none') { if (input && input.value.trim() === '') { input.classList.add('input-error'); isComplete = false; } else if (input) { input.classList.remove('input-error'); } } else { if (sel.value === '' || sel.value === '請選擇') { sel.classList.add('input-error'); isComplete = false; } else { sel.classList.remove('input-error'); } }
+                });
+                const numericInputs = pcbSection.querySelectorAll('#dim-length-input, #dim-width-input, #pnl-x, #pnl-y');
+                numericInputs.forEach(inp => { if (inp.value.trim() === '') { inp.classList.add('input-error'); isComplete = false; } else { inp.classList.remove('input-error'); } });
+            }
+            const nominalSpecA = document.getElementById('spec-hole1-nominal');
+            if (nominalSpecA && nominalSpecA.textContent.trim() === '') { nominalSpecA.classList.add('input-error'); isComplete = false; } else if (nominalSpecA) { nominalSpecA.classList.remove('input-error'); }
+
+            if (!isComplete) { alert("請填寫所有標示紅框的必填欄位！"); return false; }
+
+            syncPcbSpecs();
+            prepareRowsForPrint();
+
+            const remarksInput = document.querySelector('.remarks-input');
+            const remarksContainer = document.getElementById('unified-remarks-container');
+            if (remarksContainer) { if (remarksInput && remarksInput.value.trim() === '') { remarksContainer.classList.add('print-hide-remarks'); } else { remarksContainer.classList.remove('print-hide-remarks'); } }
+
+            if (onlyValidate) return true;
+
+            window.print();
+            setTimeout(() => { document.querySelectorAll('.print-hidden-row').forEach(row => row.classList.remove('print-hidden-row')); if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks'); if (nominalSpecA) nominalSpecA.classList.remove('input-error'); }, 100);
+            return true;
+        };
+
+        // ⚠️ 修正後的下載函式：直接支援 Base64，不再隱藏圖片
+        window.downloadPDF = function() {
+            if (typeof html2pdf === 'undefined') { alert("PDF 生成元件尚未載入完成"); return; }
+            if (!window.validateAndPrint(true)) return;
+
+            const client = document.getElementById('ui-client').value || '客戶';
+            const partNo = document.getElementById('ui-partno').value || '料號';
+            const reportTitle = document.getElementById('unified-header-container').getAttribute('data-title') || '出貨檢驗報告';
+            const safePartNo = partNo.replace(/[\/\\:*?"<>|]/g, '_');
+            const fileName = `${client} ${safePartNo} ${reportTitle}.pdf`;
+            const element = document.querySelector('.a4-paper');
+
+            const opt = { margin: 0, filename: fileName, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+
+            document.body.classList.add('printing-pdf');
+            
+            // 直接生成 PDF
+            html2pdf().set(opt).from(element).save().then(function(){
+                document.body.classList.remove('printing-pdf');
+                document.querySelectorAll('.print-hidden-row').forEach(row => row.classList.remove('print-hidden-row'));
+                const remarksContainer = document.getElementById('unified-remarks-container');
+                if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
+            }).catch(function(err) {
+                console.error(err);
+                alert("PDF 生成失敗: " + err.message);
+                document.body.classList.remove('printing-pdf');
+            });
+        }
+
+        // ... 其餘函數保持不變 ...
+        function syncPcbSpecs() {
+            const mappings = [ { id: 'material', target: 'print-material' }, { id: 'layer', target: 'print-layer' }, { id: 'thickness', target: 'print-thickness' }, { id: 'copper', target: 'print-copper' },  { id: 'mask', target: 'print-mask' }, { id: 'legend', target: 'print-legend' }, { id: 'surface', target: 'print-surface' } ];
+            mappings.forEach(m => {
+                const select = document.querySelector(`.unit-select[data-target="${m.id}-input-group"]`);
+                const inputGroup = document.getElementById(`${m.id}-input-group`);
+                const input = inputGroup ? inputGroup.querySelector('input') : null;
+                const target = document.getElementById(m.target);
+                if (select && target) {
+                    let val = select.value;
+                    if (val === '其他' || (inputGroup && inputGroup.style.display !== 'none')) { val = input ? input.value : ''; }
+                    val = val.replace(/🟢|⚪|🔴|⚫|🔵/g, '').trim();
+                    if (m.id === 'thickness') { val = val.replace(/(\d)(mm)$/i, '$1 $2'); }
+                    target.textContent = val;
+                }
+            });
+            const len = document.getElementById('dim-length-input')?.value || '';
+            const wid = document.getElementById('dim-width-input')?.value || '';
+            const dimTarget = document.getElementById('print-dim');
+            if(dimTarget) dimTarget.textContent = (len && wid) ? `${len} x ${wid} mm` : '';
+            const px = document.getElementById('pnl-x')?.value || '';
+            const py = document.getElementById('pnl-y')?.value || '';
+            const arrTarget = document.getElementById('print-array');
+            if(arrTarget) arrTarget.textContent = (px && py) ? `${px} x ${py} PCS/PNL` : '';
+        }
+
+        function initToggleLogic() {
+            document.querySelectorAll('.toggle-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetBox = document.getElementById(targetId);
+                    if (this.value === '其他' && targetBox) { this.style.display = 'none'; targetBox.style.display = 'flex'; targetBox.querySelector('input')?.focus(); }
+                    hasUserInteracted = true; checkCompletion(); syncPcbSpecs();
+                });
+            });
+            document.querySelectorAll('.reset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const inputBox = this.closest('.toggle-input-box');
+                    const wrapper = this.closest('.wrapper-toggle');
+                    const select = wrapper.querySelector('select');
+                    if (inputBox && select) { inputBox.querySelector('input').value = ''; inputBox.style.display = 'none'; select.style.display = 'block'; select.value = ""; }
+                    hasUserInteracted = true; checkCompletion(); syncPcbSpecs();
+                });
+            });
+        }
+
+        function prepareRowsForPrint() {
+            const holeRows = [ document.getElementById('row-hole-1'), document.getElementById('row-hole-2'), document.getElementById('row-hole-3') ];
+            holeRows.forEach(row => {
+                if (row) {
+                    const nominalSpec = row.querySelector('.editable-cell:not(.data-field)');
+                    let isSpecEmpty = nominalSpec?.textContent.trim() === '';
+                    if (nominalSpec && !isSpecEmpty) { let content = nominalSpec.textContent.replace(/[^0-9.]/g, '').trim(); if (content === '') isSpecEmpty = true; }
+                    if (isSpecEmpty) row.classList.add('print-hidden-row'); else row.classList.remove('print-hidden-row');
+                }
+            });
+        }
+
+        function updateSpecs() {
+            const lengthInput = document.getElementById('dim-length-input');
+            const widthInput = document.getElementById('dim-width-input');
+            const lengthNominal = document.getElementById('spec-length-nominal');
+            const widthNominal = document.getElementById('spec-width-nominal');
+            if (lengthInput && lengthNominal) lengthNominal.textContent = lengthInput.value || '';
+            if (widthInput && widthNominal) widthNominal.textContent = widthInput.value || '';
+            populateAllInspectionData();
+        }
+
+        function parseSpec(nominalId) {
+            const nominalEl = document.getElementById(nominalId);
+            if (!nominalEl) return null;
+            const row = nominalEl.closest('tr');
+            const toleranceEl = row.querySelector('.spec-tolerance');
+            const nominal = parseFloat(nominalEl.textContent.trim());
+            const tolerance = toleranceEl ? parseFloat(toleranceEl.getAttribute('data-tolerance')) : 0;
+            if (isNaN(nominal)) return null;
+            return { nominal, tolerance };
+        }
+
+        function generateRandomData(nominal, tolerance, rowIndex) {
+            let val = nominal;
+            if (rowIndex === 0 || rowIndex === 1) {
+                if (Math.random() < 0.90) val = nominal + (Math.random() * 0.10); else val = nominal - (Math.random() * 0.05);
+            } else {
+                if (Math.random() < 0.20) val = nominal + 0.04; else val = nominal + 0.01 + (Math.random() * 0.03);
+            }
+            return val.toFixed(2);
+        }
+
+        function populateRowData(rowIndex, nominalId) {
+            const parsed = parseSpec(nominalId);
+            const tbody = document.getElementById('inspection-data-table').querySelector('tbody');
+            const row = tbody.rows[rowIndex];
+            if (!row) return;
+            const judgementCell = row.querySelector('.judgment-field');
+            const dataCells = row.querySelectorAll('.data-field');
+            if (!parsed) { dataCells.forEach(cell => cell.textContent = ''); judgementCell.textContent = ''; return; }
+            dataCells.forEach(cell => { cell.textContent = generateRandomData(parsed.nominal, parsed.tolerance, rowIndex); });
+            judgementCell.textContent = 'OK'; judgementCell.style.color = 'green';
+        }
+
+        function populateAllInspectionData() {
+            populateRowData(0, 'spec-length-nominal');
+            populateRowData(1, 'spec-width-nominal');
+            populateRowData(2, 'spec-hole1-nominal');
+            populateRowData(3, 'spec-hole2-nominal');
+            populateRowData(4, 'spec-hole3-nominal');
+            checkCompletion(); 
+        }
+
+        function checkJudgement(dataEl) {
+            const row = dataEl.closest('tr');
+            const judgementCell = row.querySelector('.judgment-field');
+            const allEmpty = Array.from(row.querySelectorAll('.data-field')).every(el => el.textContent.trim() === '');
+            if (allEmpty) { judgementCell.textContent = ''; } else { judgementCell.textContent = 'OK'; judgementCell.style.color = 'green'; }
+            hasUserInteracted = true; checkCompletion();
+        }
+
+        function checkCompletion() {
+            let isComplete = true;
+            const infoInputs = document.querySelectorAll('#unified-header-container .input-line');
+            if (infoInputs[0] && infoInputs[0].value.trim() === "") isComplete = false;
+            const basicInfoSection = document.querySelector('.info-grid'); 
+            if (basicInfoSection) {
+                const inputs = basicInfoSection.querySelectorAll('input[type="text"]');
+                inputs.forEach(input => { if (input.id !== 'cycle-input' && input.offsetParent !== null && input.value.trim() === "") { isComplete = false; } });
+            }
+            const pcbSection = document.getElementById('pcb-spec-section');
+            if (pcbSection) {
+                const visibleSelects = pcbSection.querySelectorAll('select');
+                visibleSelects.forEach(select => { if (select.offsetParent !== null && (select.value === "" || select.value === "請選擇")) { isComplete = false; } });
+                const visibleInputs = pcbSection.querySelectorAll('input[type="text"]');
+                visibleInputs.forEach(input => { if (input.offsetParent !== null && input.value.trim() === "") { isComplete = false; } });
+            }
+            const nominalSpecA = document.getElementById('spec-hole1-nominal');
+            const holeADataFields = document.getElementById('row-hole-1')?.querySelectorAll('.data-field');
+            let isHoleASpecEmpty = nominalSpecA?.textContent.trim() === '';
+            if (isHoleASpecEmpty) { isComplete = false; nominalSpecA?.classList.remove('input-error'); } else { nominalSpecA?.classList.remove('input-error'); }
+            if (isComplete && holeADataFields) {
+                const isHoleADataEmpty = Array.from(holeADataFields).every(field => field.textContent.trim() === '');
+                if (isHoleADataEmpty) isComplete = false;
+            }
+            const badgeEl = document.getElementById('final-decision-badge');
+            if (isComplete) { badgeEl.textContent = "PASSED / 合格"; badgeEl.className = "result-badge status-pass"; } else {
+                document.querySelectorAll('#inspection-data-table .editable-cell:not(.data-field)').forEach(el => { if (el.id !== 'spec-hole1-nominal') el.classList.remove('input-error'); });
+                badgeEl.textContent = "等待數據..."; badgeEl.className = "result-badge status-pending";
+            }
+        }
+
+        function initNumericInputLogic() {
+            const numericInputs = document.querySelectorAll('#dim-length-input, #dim-width-input, #pnl-x, #pnl-y');
+            numericInputs.forEach(input => { input.addEventListener('input', function() { this.value = this.value.replace(/[^0-9.]/g, ''); hasUserInteracted = true; }); });
+            const editableCells = document.querySelectorAll('.editable-cell, .data-field');
+            editableCells.forEach(cell => {
+                cell.addEventListener('input', function(e) { if (e.isComposing) return; const text = this.innerText; const clean = text.replace(/[^0-9.]/g, ''); if (text !== clean) { this.innerText = clean; try { const range = document.createRange(); const sel = window.getSelection(); range.selectNodeContents(this); range.collapse(false); sel.removeAllRanges(); sel.addRange(range); } catch(e) {} } hasUserInteracted = true; });
+                cell.addEventListener('keydown', function(e) { const allowedKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "."]; if (!isNaN(parseInt(e.key)) || allowedKeys.includes(e.key)) { if (e.key === '.' && this.innerText.includes('.')) e.preventDefault(); return; } e.preventDefault(); });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initToggleLogic(); initNumericInputLogic(); 
+            document.querySelectorAll('#inspection-data-table').forEach(table => { table.addEventListener('input', () => { hasUserInteracted = true; checkCompletion(); }); });
+            document.getElementById('spec-length-nominal')?.addEventListener('input', populateAllInspectionData);
+            document.getElementById('spec-width-nominal')?.addEventListener('input', populateAllInspectionData);
+            document.querySelectorAll('[id^="spec-hole"]').forEach(el => { el.addEventListener('input', populateAllInspectionData); });
+            const allInputs = document.querySelectorAll('#pcb-spec-section input, #pcb-spec-section select');
+            allInputs.forEach(el => { el.addEventListener('input', syncPcbSpecs); el.addEventListener('change', syncPcbSpecs); });
+            document.querySelectorAll('.reset-btn').forEach(btn => { btn.addEventListener('click', () => setTimeout(syncPcbSpecs, 50)); });
+            setTimeout(() => { const basicInfoGrid = document.querySelector('#unified-header-container .info-grid'); if (basicInfoGrid) { basicInfoGrid.addEventListener('input', () => { hasUserInteracted = true; checkCompletion(); }); basicInfoGrid.addEventListener('change', () => { hasUserInteracted = true; checkCompletion(); }); } }, 500); 
+        });
+    </script>
+</body>
+</html>
