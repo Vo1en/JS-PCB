@@ -1,533 +1,161 @@
-/* report.css - 修正版：備註高度縮小 & 配色調整為正式風格 (保留金色元素) */
+/* report.css - 最終修正版：完美垂直置中、手機版對齊、PDF 簽章 */
 
 :root {
-    /* 主要金色調 (保留) */
-    --gold-dark: #b38728; /* 深金色，用於強調和邊框 */
+    --gold-dark: #b38728;
     --gold-light: #fcf6ba;
-    
-    /* 邊框/次要線條 (從金色/米色系改為更正式的暖灰色系) */
-    --border-color: #a8a8a8; /* 穩重的中灰色 (原 #c2a878) */
-    --line-separator: #d4d4d4; /* 較淺的線條分隔色 (原 #ddd) */
-
-    /* 基本配色 (保留) */
+    --border-color: #a8a8a8;
+    --line-separator: #d4d4d4;
     --bg-page: #ffffff;
     --text-primary: #1f2937;
-    
-    /* Label/標籤背景 (保留淺色，但調整為更中性的灰白) */
-    --label-bg: #f5f5f5; /* 淺灰色/米白色 (原 #fafafa) */
-    
-    --remarks-signature-gap: 20px;
-    
-    /* 金屬漸層和動畫相關變數 (保留) */
+    --label-bg: #f5f5f5;
     --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
 }
 
-/* [新增] 金屬流光動畫 (複製自 index.html) */
-@keyframes shine {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 100% 50%; }
-}
+@keyframes shine { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
 
-body {
-    background-color: #f5f5f5;
-    margin: 0;
-    padding-top: 80px;
-    font-family: 'Noto Sans TC', sans-serif;
-}
+body { background-color: #f5f5f5; margin: 0; padding-top: 80px; font-family: 'Noto Sans TC', sans-serif; }
 
-/* === A4 紙張與容器設定 === */
-.page-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-    padding-bottom: 40px; 
-    box-sizing: border-box;
-}
+/* === A4 紙張 === */
+.page-container { width: 100%; display: flex; justify-content: center; padding: 20px; padding-bottom: 40px; box-sizing: border-box; }
+.a4-paper { width: 210mm; min-height: 297mm; background: var(--bg-page); padding: 15mm 15mm; box-shadow: 0 5px 15px rgba(0,0,0,0.15); box-sizing: border-box; display: flex; flex-direction: column; position: relative; }
 
-.a4-paper {
-    width: 210mm;
-    min-height: 297mm;
-    background: var(--bg-page);
-    padding: 15mm 15mm;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
+/* === 表頭 === */
+.report-header-modern { display: flex; justify-content: space-between; align-items: center !important; border-bottom: 4px solid var(--gold-dark); padding-bottom: 15px; margin-bottom: 25px; }
+.header-left { display: flex; flex-direction: column; justify-content: center; }
+.company-name-modern { font-size: 32px; font-weight: 900; color: #000; margin: 0; line-height: 1.2; }
+.header-sub-info { font-size: 14px; color: #555; font-weight: 500; margin-top: 5px; line-height: 1.2; }
+.report-title-badge { font-size: 30px; background-color: #fcfcfc; border: 1px solid var(--border-color); padding: 8px 25px; border-radius: 4px; margin: 0; font-weight: 700; color: transparent; background: var(--gold-text-gradient); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 5s linear infinite; display: inline-block; line-height: 1.2; }
+.section-title { font-size: 16px; font-weight: 700; color: var(--gold-dark); margin: 0 0 8px 0; padding-left: 10px; border-left: 4px solid var(--gold-dark); }
 
-/* === 表頭設計 === */
-.report-header-modern {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    /* 保留深金色分隔線 */
-    border-bottom: 4px solid var(--gold-dark);
-    padding-bottom: 15px; 
-    margin-bottom: 25px; 
-}
+/* === 輸入區塊 Grid === */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 30px; margin-bottom: 15px; }
+.info-grid.grid-pcb { grid-template-columns: repeat(6, 1fr); gap: 8px 15px; }
+.span-standard { grid-column: span 2; }
+.span-half { grid-column: span 3; }
+.desktop-spacer { grid-column: span 4; border: none !important; display: block; }
 
-.header-left { text-align: left; }
-
-.company-name-modern {
-    font-size: 32px;
-    font-weight: 900;
-    color: #000;
-    margin: 0 0 5px 0;
-    line-height: 1;
-    letter-spacing: 1px;
-}
-
-.header-sub-info {
-    /* 調整為更穩重的深灰色 */
-    font-size: 14px;
-    color: #555; /* 原 #444 */
-    font-weight: 500;
-    margin-top: 3px;
-    letter-spacing: 0.5px;
-}
-
-.header-right { text-align: right; }
-
-/* [修改] report-title-badge 樣式：保留邊框/底色，並應用流動金屬字 */
-.report-title-badge {
-    font-size: 26px; 
-    
-    /* 調整為更正式的淺灰底和邊框 */
-    background-color: #fcfcfc; /* 原 #fcfaf5 */
-    border: 1px solid var(--border-color); /* 使用新的中灰邊框 */
-    padding: 8px 25px;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    
-    margin: 0;
-    font-weight: 700;
-    letter-spacing: 2px;
-    
-    /* 應用流動金屬效果 (保留) */
-    color: transparent; /* Keep text transparent for gradient */
-    background: var(--gold-text-gradient);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shine 5s linear infinite;
-    display: inline-block; /* 確保動畫適用於文字 */
-}
-
-/* === 區塊標題 === */
-.section-title {
-    font-size: 16px;
-    font-weight: 700;
-    /* 保留深金色 */
-    color: var(--gold-dark);
-    margin: 0 0 8px 0;
-    padding-left: 10px;
-    /* 保留深金色邊線 */
-    border-left: 4px solid var(--gold-dark);
-    line-height: 1;
-}
-
-/* === 資訊欄位 (Grid) === */
-.info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 30px;
-    margin-bottom: 15px;
-}
-
-.info-grid.grid-3 {
-    grid-template-columns: repeat(3, 1fr);
-}
-
-.info-item {
-    display: flex;
-    align-items: center;
-    /* 調整為新的淺線條分隔色 */
-    border-bottom: 1px solid var(--line-separator); /* 原 #ddd */
-    padding-bottom: 2px;
-    height: 34px;
-}
-
-.info-item .label {
-    background-color: var(--label-bg);
-    color: #333;
-    font-weight: 700;
-    font-size: 14px;
-    padding: 3px 10px;
-    border-radius: 4px;
-    width: 70px;
-    text-align: center;
-    margin-right: 8px;
-    flex-shrink: 0;
-    /* 保留金色邊框作為點綴 */
-    border: 1px solid var(--gold-dark); /* 原 var(--border-color) */
-}
-
-.input-line {
-    /* 調整為更正式的邊框顏色 */
-    border: 1px solid var(--line-separator); /* 原 #ccc */
-    background-color: #fff;
-    border-radius: 4px;
-    outline: none;
-    font-size: 14px;
-    font-family: 'Noto Sans TC', sans-serif;
-    width: 100%;
-    padding: 4px 8px;
-    color: #000;
-    transition: all 0.2s ease;
-}
-
-.input-line:focus {
-    /* 保留深金色焦點效果 */
-    border-color: var(--gold-dark);
-    box-shadow: 0 0 0 3px rgba(179, 135, 40, 0.1);
-}
-
-.input-group {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 5px;
-}
-
-.unit-select {
-    border: none;
-    background: transparent;
-    font-size: 14px;
-    font-family: inherit;
-    color: #333;
-    outline: none;
-    cursor: pointer;
-    text-align: left;
-    padding-left: 5px;
-    width: 100%;
-}
-
-.reset-cycle-btn {
-    cursor: pointer;
-    color: #999;
-    font-weight: bold;
-    font-size: 18px;
-    padding: 0 5px;
-    user-select: none;
-}
-.reset-cycle-btn:hover { color: red; }
-
-.fixed-product-value {
-    font-size: 14px;
-    padding: 5px;
-    width: 100%;
-    color: #000;
-}
+.info-item { display: flex; align-items: center; border-bottom: 1px solid var(--line-separator); padding-bottom: 2px; height: 34px; }
+.info-item .label { background-color: var(--label-bg); color: #333; font-weight: 700; font-size: 14px; padding: 3px 8px; border-radius: 4px; width: 70px; text-align: center; margin-right: 8px; flex-shrink: 0; border: 1px solid var(--gold-dark); white-space: nowrap; }
+.input-group { display: flex; width: 100%; align-items: center; gap: 5px; flex: 1; min-width: 0; }
+.input-line { border: 1px solid var(--line-separator); background-color: #fff; border-radius: 4px; outline: none; font-size: 14px; width: 100%; padding: 4px 8px; color: #000; box-sizing: border-box; min-width: 0; }
+.input-line:focus { border-color: var(--gold-dark); }
+.input-error { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important; animation: shake 0.4s ease-in-out; }
+.unit-select { border: none; background: transparent; font-size: 14px; width: 100%; outline: none; min-width: 0; }
+.split-input { width: 90px; text-align: center; min-width: 0; flex-shrink: 0; }
+.unit-display-text { font-size: 12px !important; font-weight: 600 !important; color: #666; white-space: nowrap; text-align: left !important; width: auto !important; }
+.fixed-product-value { font-size: 14px; padding: 5px; width: 100%; color: #000; }
 .fixed-product-value::after { content: "PCB"; }
 
-/* === 表格樣式 === */
-.table-wrapper {
-    margin-bottom: 20px;
-}
+/* === 表格與簽名 === */
+.table-wrapper { margin-bottom: 20px; overflow-x: auto; }
+.inspection-table { width: 100%; border-collapse: collapse; font-size: 14px; border: 1px solid var(--border-color); }
+.inspection-table th, .inspection-table td { padding: 8px 6px; border: 1px solid var(--line-separator); text-align: center; }
+.inspection-table th { background: linear-gradient(to bottom, #fcfcfc, #f5f5f5); color: #333; border-bottom: 2px solid var(--gold-dark); }
+.inspection-table td:first-child, .inspection-table th:first-child { white-space: nowrap; }
+.inspection-table td:nth-child(2) { white-space: nowrap; } 
 
-.inspection-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    /* 調整為新的邊框色 */
-    border: 1px solid var(--border-color);
-}
+#unified-remarks-container { margin-top: auto; width: 100%; }
+.remarks-section { border: 1px solid var(--line-separator); padding: 8px; border-radius: 4px; background-color: #fcfcfc; display: flex; flex-direction: column; justify-content: flex-end; }
+.label-box { background-color: var(--label-bg); color: #333; font-weight: bold; font-size: 14px; padding: 3px 10px; border-radius: 4px; margin-bottom: 5px; border: 1px solid var(--gold-dark); }
+.remarks-input { width: 100%; border: 1px solid #e0e0e0; height: 40px !important; resize: none; border-radius: 4px; box-sizing: border-box; }
 
-.inspection-table th, 
-.inspection-table td {
-    padding: 8px 6px;
-    /* 調整為新的線條分隔色 */
-    border: 1px solid var(--line-separator); /* 原 #ddd */
-    text-align: center;
-    white-space: nowrap;
-}
-
-.inspection-table th {
-    /* 調整為更正式的淺灰色/米白色漸變 */
-    background: linear-gradient(to bottom, #fcfcfc, #f5f5f5); /* 原 #fcfaf5, #f0ebde */
-    color: #333;
-    font-weight: 700;
-    /* 保留金色底部邊框 */
-    border-bottom: 2px solid var(--gold-dark); /* 原 var(--border-color) */
-}
-
-/* 調整條紋底色 */
-.inspection-table tr:nth-child(even) { background-color: #fcfcfc; }
-/* 調整懸停底色 */
-.inspection-table tr:hover { background-color: #f7f7f7; } /* 原 #fffdf5 */
-
-/* === 備註區 === */
-#unified-remarks-container {
-    margin-top: auto; 
-    width: 100%;
-}
-
-.remarks-section {
-    /* 調整為新的線條分隔色 */
-    border: 1px solid var(--line-separator); /* 原 #ddd */
-    padding: 8px;
-    border-radius: 4px;
-    /* 調整為更正式的淺灰色底色 */
-    background-color: #fcfcfc; /* 原 #fbfbfb */
-    /* New Requirement 3: 備註欄位靠下對齊 */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end; 
-}
-
-.label-box {
-    background-color: var(--label-bg);
-    color: #333;
-    font-weight: bold;
-    font-size: 14px;
-    padding: 3px 10px;
-    border-radius: 4px;
-    display: inline-block;
-    margin-bottom: 5px;
-    /* 保留金色邊框作為點綴 */
-    border: 1px solid var(--gold-dark); /* 原 var(--border-color) */
-}
-
-.remarks-input {
-    width: 100%;
-    box-sizing: border-box;
-    /* 調整為新的淺線條分隔色 */
-    border: 1px solid #e0e0e0; /* 原 #eee */
-    background: #fff;
-    padding: 8px 10px;
-    line-height: 1.5;
-    
-    /* [修正點 4] 將高度從 60px 縮減為 40px，避免分頁 */
-    height: 40px !important; 
-    min-height: 40px !important; /* 確保最低高度 */
-    
-    resize: none;
-    font-family: inherit;
-    font-size: 14px;
-    outline: none;
-    border-radius: 4px;
-    transition: border-color 0.2s;
-    overflow: hidden;
-}
-/* 保留深金色焦點效果 */
-.remarks-input:focus { border-color: var(--gold-dark); }
-
-/* === 簽核區 === */
-.signature-section {
-    display: flex;
-    justify-content: space-between; 
-    align-items: flex-end;
-    margin-top: var(--remarks-signature-gap); 
-    padding: 0;
-    width: 100%; 
-}
-
+.signature-section { display: flex; justify-content: space-between; margin-top: 20px; width: 100%; }
 .sign-box { width: 48%; text-align: center; }
+.sign-title { background-color: var(--label-bg); padding: 6px; font-weight: bold; border: 1px solid var(--gold-dark); border-bottom: none; }
+.sign-stamp-area { height: 100px; border: 1px solid var(--gold-dark); display: flex; align-items: center; justify-content: center; }
+.stamp-img { max-height: 90%; max-width: 90%; object-fit: contain; }
 
-.sign-title {
-    background-color: var(--label-bg);
-    padding: 6px;
-    font-size: 15px;
-    font-weight: bold;
-    color: #333;
-    /* 保留金色邊框 */
-    border: 1px solid var(--gold-dark); /* 原 var(--border-color) */
-    border-bottom: none; 
-    letter-spacing: 5px; 
-}
+/* === 按鈕 === */
+.action-buttons { position: fixed; z-index: 1000; top: 150px; left: 50%; margin-left: calc(105mm + 60px); display: flex; flex-direction: column; gap: 15px; }
+.btn-print { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px); border: 1px solid #fff; padding: 12px 24px; border-radius: 50px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #1f2937; }
+.icon-printer { width: 20px; height: 20px; }
+.btn-pdf { background: rgba(220, 38, 38, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(220, 38, 38, 0.3); padding: 12px 24px; border-radius: 50px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #b91c1c; transition: all 0.2s; }
+.btn-pdf:hover { background: rgba(220, 38, 38, 0.2); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15); }
+.mobile-only { display: none !important; }
+.desktop-only { display: flex !important; }
 
-.sign-stamp-area {
-    height: 70px; 
-    /* 保留金色邊框 */
-    border: 1px solid var(--gold-dark); /* 原 var(--border-color) */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ccc;
-    font-size: 13px;
-    background-color: #fff;
-    position: relative; 
-}
+/* === 列印專用 (Shadow Table) === */
+.print-only-table { display: none; width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; color: #000; }
+.print-only-table th, .print-only-table td { border: 1px solid #000 !important; padding: 10px 4px; vertical-align: middle; }
+.print-only-table th { background-color: #f0f0f0 !important; font-weight: bold; text-align: center; white-space: nowrap; -webkit-print-color-adjust: exact; print-color-adjust: exact; width: 11%; }
+.print-only-table td { text-align: center; width: 22.33%; }
+.print-simple-header { display: none; }
 
-/* === 動作按鈕 === */
-.action-buttons {
-    position: fixed;
-    z-index: 1000;
-    top: 150px; 
-    left: 50%;
-    margin-left: calc(105mm + 60px); 
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.btn-print {
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px); 
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-    color: #334155;
-    padding: 12px 24px;
-    border-radius: 50px; 
-    font-size: 15px;
-    cursor: pointer;
-    font-weight: 700;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    white-space: nowrap;
-    transition: all 0.3s ease;
-}
-
-.icon-printer { width: 20px; height: 20px; fill: currentColor; }
-.btn-print:hover {
-    background: rgba(255, 255, 255, 0.85);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-    border-color: #fff; 
-}
-
-/* === 手機響應式 === */
+/* === 手機版 (左右排列) === */
 @media screen and (max-width: 768px) {
-    .page-container { 
-        padding: 5px; 
-        padding-bottom: 80px !important; 
-    }
-    
-    .a4-paper { padding: 15px; width: 100%; min-height: auto; }
-    
-    .report-header-modern { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
-    .header-left, .header-right { text-align: center; width: 100%; }
-    
-    .info-grid, .info-grid.grid-3 { grid-template-columns: 1fr; gap: 8px; }
-    .info-item { height: auto; padding: 6px 0; }
-    .signature-section { gap: 10px; }
-    .table-wrapper { overflow-x: auto; margin-right: -10px; }
-
-    .action-buttons {
-        top: auto; left: 0; bottom: 0; width: 100%; margin-left: 0;
-        padding: 0; background: #fff; transform: none;
-    }
-    .btn-print {
-        width: 100%; border-radius: 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.6); 
-        padding: 16px 0; font-size: 16px; margin: 0;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(25px);
-    }
+    .page-container { padding: 10px 5px; padding-bottom: 80px !important; display: flex; justify-content: center; }
+    .a4-paper { padding: 15px 12px; width: 100%; max-width: 100%; min-height: auto; }
+    .report-header-modern { flex-direction: column; text-align: center; gap: 10px; align-items: center !important; }
+    .company-name-modern { font-size: 26px; }
+    .info-grid, .info-grid.grid-pcb { display: flex; flex-direction: column; gap: 12px; }
+    .span-standard, .span-half { grid-column: auto; }
+    .desktop-spacer { display: none !important; }
+    .info-item { flex-direction: row; align-items: center; height: auto; padding-bottom: 2px; }
+    .info-item .label { margin-bottom: 0; text-align: center; }
+    .split-input { width: auto !important; flex: 1 !important; min-width: 50px; }
+    .input-group { width: 100%; display: flex; align-items: center; }
+    .unit-display-text { width: 70px !important; min-width: 70px !important; text-align: left !important; white-space: nowrap; flex-shrink: 0; }
+    .action-buttons { position: fixed; top: auto; bottom: 0; left: 0; width: 100%; margin: 0; gap: 0; flex-direction: row !important; z-index: 2000; }
+    .btn-print, .btn-pdf { flex: 1; width: 50% !important; border-radius: 0; margin: 0; height: 60px; justify-content: center; background: #fff; border-top: 1px solid #ccc; }
+    .btn-pdf { border-left: 1px solid #e5e7eb; background: #fef2f2; }
+    .mobile-only { display: flex !important; } .desktop-only { display: none !important; }
 }
 
-/* === 列印專用樣式 (保留大部分原有功能) === */
+/* === 列印模式 (原生) === */
 @media print {
+    #navbar-container, .action-buttons, .navbar, .reset-cycle-btn, .info-grid, .input-group, .reset-btn, .unit-display-text { display: none !important; }
+    .btn-pdf, .btn-print { display: none !important; }
+    .print-only-table { display: table !important; }
+    .final-decision-box { display: flex !important; border: 1px solid #000 !important; box-shadow: none !important; margin-top: 10px !important; margin-bottom: 10px !important; }
+    .report-header-modern { display: flex !important; border-bottom: 4px solid #b38728 !important; flex-direction: row !important; text-align: left !important; align-items: center !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .print-simple-header { display: none !important; }
+    .report-title-badge { background: none !important; -webkit-text-fill-color: #000 !important; color: #000 !important; animation: none !important; border: 1px solid #000 !important; box-shadow: none !important; }
     @page { size: A4; margin: 0; }
-    body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    
-    #navbar-container, .action-buttons, .navbar, .reset-cycle-btn { display: none !important; }
-    
-    .page-container { padding: 0; margin: 0; display: block; }
-    .a4-paper { 
-        width: 100%; 
-        height: 100% !important; /* 👈 修正點 1: 確保高度撐滿列印頁面 */
-        min-height: auto !important; /* 👈 修正點 2: 移除最小高度限制 */
-        padding: 15mm; 
-        box-shadow: none; 
-        margin: 0 auto; 
-        page-break-after: always; 
-    }
-    
-    .input-line { border: none; background: transparent; padding: 0; box-shadow: none; }
-    input::placeholder, textarea::placeholder { color: transparent; }
-    select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none; padding: 0; }
-    
-    /* [新增] 確保流動金屬字在列印時顯示為黑色 (保留) */
-    .report-title-badge {
-        color: #000 !important;
-        -webkit-text-fill-color: #000 !important;
-        background: transparent !important;
-        animation: none !important;
-    }
-
-    /* 強制備註與簽名在最下方 (加強 margin-top: auto;) */
-    #unified-remarks-container { 
-        margin-top: auto !important; 
-    }
-    
-    .remarks-input {
-        border: none; 
-        background: transparent; 
-        box-shadow: none;
-        
-        /* [修正點 4] 列印時同樣鎖定為 40px (保留) */
-        height: 40px !important;       
-        line-height: 1.5 !important;
-        padding: 5px 0 !important;
-        overflow: hidden !important;
-        resize: none !important;
-        display: block !important;
-    }
-    
-    /* 列印時移除錯誤紅框 (保留) */
-    .input-error {
-        border: none !important;
-        background-color: transparent !important;
-        box-shadow: none !important;
-    }
-
-    /* [新增] New Requirement 2: 獨立隱藏備註區塊 (保留) */
-    .print-hide-remarks { 
-        display: none !important; 
-        height: 0 !important;
-        padding: 0 !important;
-        margin-top: 0 !important; 
-        margin-bottom: 0 !important;
-    }
-
-    /* 調整備註對齊 (New Requirement 3: 靠下對齊) (保留) */
-    .remarks-section {
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: flex-end !important; 
-    }
-    
-    /* NEW: 確保新的單位文字在列印時樣式正確 (保留) */
-    .unit-display-text {
-        font-size: 14px !important;
-        font-weight: normal !important;
-        color: #000 !important;
-        text-align: center !important;
-        width: 65px !important; /* 與螢幕顯示保持一致 */
-        display: inline-block !important;
-        white-space: nowrap !important;
-    }
-
-    /* 修正 split-input 在列印時的行為 (保留) */
-    .split-input {
-        /* 在列印模式下，讓輸入框平均分配空間 */
-        flex: 1 !important;
-    }
+    html, body { height: 100%; width: 100%; margin: 0 !important; padding: 0 !important; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page-container { display: block; padding: 0; margin: 0; width: 100%; height: 100%; }
+    .a4-paper { width: 100%; height: 100%; padding: 10mm 15mm !important; box-shadow: none; margin: 0; zoom: 0.95; }
+    .inspection-table, .inspection-table th, .inspection-table td { border: 1px solid #000 !important; }
+    .remarks-section { border: 1px solid #000 !important; background: none !important; }
+    .remarks-input { border: none !important; }
+    .label-box { border: 1px solid #000 !important; background: none !important; }
+    .sign-title, .sign-stamp-area { border: 1px solid #000 !important; background: none !important; color: #000; }
+    .print-hide-remarks, .print-hidden-row { display: none !important; }
+    .input-error { border: none !important; background: transparent !important; box-shadow: none !important; animation: none !important; }
 }
 
-/* === 驗證錯誤警示樣式 (保留) === */
-.input-error {
-    border: 2px solid #ef4444 !important; /* 紅框 */
-    background-color: #fef2f2 !important; /* 淺紅底 */
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
-    animation: shake 0.3s ease-in-out;
+/* === PDF 生成模式 (模擬列印樣式) === */
+body.printing-pdf #navbar-container, body.printing-pdf .action-buttons, body.printing-pdf .navbar, body.printing-pdf .reset-cycle-btn, body.printing-pdf .info-grid, body.printing-pdf .input-group, body.printing-pdf .reset-btn, body.printing-pdf .unit-display-text { display: none !important; }
+body.printing-pdf .print-only-table { display: table !important; }
+body.printing-pdf .final-decision-box { border: 1px solid #000 !important; box-shadow: none !important; }
+body.printing-pdf .report-header-modern { border-bottom: 4px solid #b38728 !important; text-align: left !important; align-items: center !important; display: flex !important; }
+body.printing-pdf .report-title-badge { background: none !important; -webkit-text-fill-color: #000 !important; color: #000 !important; animation: none !important; border: 1px solid #000 !important; box-shadow: none !important; }
+body.printing-pdf .a4-paper { box-shadow: none !important; padding: 10mm 15mm !important; min-height: 0 !important; height: auto !important; margin: 0 !important; }
+body.printing-pdf input, body.printing-pdf .editable-cell { border: none !important; background: transparent !important; }
+body.printing-pdf .editable-cell { border-bottom: 1px dashed #000 !important; }
+body.printing-pdf .inspection-table, body.printing-pdf .inspection-table th, body.printing-pdf .inspection-table td { border: 1px solid #000 !important; }
+body.printing-pdf .remarks-section, body.printing-pdf .label-box, body.printing-pdf .sign-title, body.printing-pdf .sign-stamp-area { border: 1px solid #000 !important; background: none !important; color: #000 !important; }
+body.printing-pdf .print-hide-remarks, body.printing-pdf .print-hidden-row { display: none !important; }
+
+/* === [關鍵修正] PDF 表格完美垂直置中 === */
+/* 1. 設定固定行高，強制撐開空間 */
+body.printing-pdf .inspection-table td,
+body.printing-pdf .print-only-table td {
+    height: 35px !important; /* 固定高度確保空間 */
+    vertical-align: middle !important;
+    padding: 0 !important; /* 清除 padding 干擾 */
+    line-height: 35px !important; /* 行高 = 高度，實現文字置中 */
 }
 
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-
-/* New: 用於尺寸/排版輸入框，讓其平均分配空間 (保留) */
-.split-input {
-    flex: 1; 
-    text-align: center;
-    min-width: 0; 
+/* 2. 針對輸入框與內容再次修正 */
+body.printing-pdf input, 
+body.printing-pdf .editable-cell,
+body.printing-pdf .data-field {
+    vertical-align: middle !important;
+    display: inline-block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: normal !important; /* 重置行高，避免繼承 */
+    position: relative;
+    top: 2px; /* 微調：稍微往下壓一點點，視覺上最置中 */
 }
