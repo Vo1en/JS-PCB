@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>駿鑫 電性測試報告</title>
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="report.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .inspection-table th, .inspection-table td { font-size: 16px; padding: 12px 10px; height: auto; }
+        .table-input { width: 90%; text-align: center; border: none; background: transparent; font-size: 16px; outline: none; font-weight: 500; color: #000; border-bottom: 1px dashed transparent; }
+        .table-input:focus { background-color: #fefce8; border-bottom: 1px solid #b38728; }
+        .test-result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; padding: 15px; background-color: #fcfcfc; border: 1px solid #eee; border-radius: 4px; }
+        .result-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; border: 1px solid #e0d8c8; border-radius: 4px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .result-label { font-size: 15px; font-weight: bold; color: #666; margin-bottom: 8px; white-space: nowrap; }
+        .result-value-input { width: 100%; text-align: center; border: none; font-size: 22px; font-weight: 800; color: #333; background: transparent; outline: none; }
+        .res-pass input { color: #10b981; } .res-fail input { color: #ef4444; } 
+        @media print {
+            #navbar-container, .navbar, .action-buttons { display: none !important; }
+            .test-result-grid { border: none; background: none; padding: 0; margin-bottom: 10px; gap: 10px; grid-template-columns: repeat(3, 1fr) !important; }
+            .result-item { border: 1px solid #000; box-shadow: none; padding: 5px; }
+            .inspection-table th, .inspection-table td { font-size: 16px !important; padding: 10px 10px !important; white-space: normal !important; border: 1px solid #000 !important; }
+            .table-input { text-align: center !important; font-size: 16px !important; width: 100% !important; padding: 0 !important; }
+        }
+        @media (max-width: 768px) { .test-result-grid { gap: 5px; padding: 5px; } .result-item { padding: 10px 2px; } .result-label { font-size: 11px; margin-bottom: 2px; } .result-value-input { font-size: 18px; } .table-input { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div id="navbar-container"></div>
+    <div class="page-container">
+        <div class="action-buttons">
+            <button class="btn-print" onclick="validateAndPrint()">
+                <svg class="icon-printer" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                列印
+            </button>
+            <button class="btn-pdf" onclick="downloadPDF()">
+                <svg class="icon-printer" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
+                生成 PDF
+            </button>
+        </div>
+
+        <div class="a4-paper">
+            <div id="unified-header-container" data-title="電性測試報告"></div>
+            <h3 class="section-title">測試結果</h3>
+            <div class="test-result-grid">
+                <div class="result-item res-pass"><span class="result-label">PASS (通過)</span><input type="text" id="passCount" class="result-value-input" value="0" readonly></div>
+                <div class="result-item res-fail"><span class="result-label">OPEN (斷路)</span><input type="text" id="openCount" class="result-value-input" value="0" readonly></div>
+                <div class="result-item res-fail"><span class="result-label">SHORT (短路)</span><input type="text" id="shortCount" class="result-value-input" value="0" readonly></div>
+            </div>
+            <h3 class="section-title">測試參數及條件</h3>
+            <div class="table-wrapper">
+                <table class="inspection-table">
+                    <thead><tr><th style="width: 40%;">測試項目</th><th style="width: 60%;">規格值 / 條件</th></tr></thead>
+                    <tbody>
+                        <tr><td>測試電壓 (Test Voltage)</td><td><input type="text" class="table-input" value="250 V" placeholder="請輸入"></td></tr>
+                        <tr><td>測試電流 (Test Current)</td><td><input type="text" class="table-input" value="-" placeholder="請輸入"></td></tr>
+                        <tr><td>通路阻抗 (Conductance)</td><td><input type="text" class="table-input" value="20 Ω" placeholder="請輸入"></td></tr>
+                        <tr><td>絕緣阻抗 (Insulation)</td><td><input type="text" class="table-input" value="100 MΩ" placeholder="請輸入"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="unified-remarks-container"></div>
+            <div class="signature-section">
+                <div class="sign-box"><div class="sign-title">測試人員</div><div class="sign-stamp-area"><img src="pic/reviewer.png" alt="Reviewer" class="stamp-img" onerror="this.style.display='none'"></div></div>
+                <div class="sign-box"><div class="sign-title">核准人員</div><div class="sign-stamp-area"><img src="pic/approver.png" alt="Approver" class="stamp-img" onerror="this.style.display='none'"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="navbar.js"></script>
+    <script src="template.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => { setTimeout(initTestLogic, 200); });
+        
+        function initTestLogic() {
+            const shipQuantityInput = document.getElementById('qty-input');
+            const passCountInput = document.getElementById('passCount');
+            const openCountInput = document.getElementById('openCount');
+            const shortCountInput = document.getElementById('shortCount');
+            if (!shipQuantityInput || !passCountInput) return;
+            function updateTestResults() {
+                const rawVal = shipQuantityInput.value.replace(/,/g, '');
+                const shipQuantity = parseInt(rawVal) || 0;
+                let passCount = shipQuantity; let openCount = 0; let shortCount = 0; let failCount = 0; let shouldTriggerDefect = false;
+                if (shipQuantity > 500) { shouldTriggerDefect = true; } else if (shipQuantity > 0) { if (Math.random() < 0.30) { shouldTriggerDefect = true; } }
+                if (shouldTriggerDefect && shipQuantity > 0) { 
+                    const minStep = 1; const maxStep = 20; const randomStep = Math.floor(Math.random() * (maxStep - minStep + 1)) + minStep; const randPercent = randomStep / 1000; 
+                    failCount = Math.floor(shipQuantity * randPercent); 
+                    if (failCount > 0) {
+                        const randomSplit = Math.random();
+                        if (randomSplit < 0.5) { openCount = Math.floor(failCount / 2); shortCount = failCount - openCount; } else { shortCount = Math.floor(failCount / 2); openCount = failCount - shortCount; }
+                        if (failCount > 0 && openCount === 0 && shortCount === 0) { openCount = failCount; }
+                    }
+                }
+                passCountInput.value = passCount.toLocaleString(); openCountInput.value = openCount; shortCountInput.value = shortCount;
+                openCountInput.style.color = openCount > 0 ? '#dc2626' : '#333'; shortCountInput.style.color = shortCount > 0 ? '#dc2626' : '#333';
+            }
+            shipQuantityInput.addEventListener('input', updateTestResults); shipQuantityInput.addEventListener('keyup', updateTestResults); 
+            const qtyUnit = document.getElementById('qty-unit'); if (qtyUnit) qtyUnit.addEventListener('change', updateTestResults); updateTestResults();
+        }
+        
+        window.validateAndPrint = function(onlyValidate = false) {
+            let isComplete = true;
+            const basicIds = ['ui-client', 'ui-partno', 'qty-input'];
+            basicIds.forEach(id => { const el = document.getElementById(id); if (el && el.value.trim() === '') { el.classList.add('input-error'); isComplete = false; } else if (el) { el.classList.remove('input-error'); } });
+            const cycleSelect = document.getElementById('cycle-select');
+            const cycleInput = document.getElementById('cycle-input');
+            if (cycleSelect) {
+                 if (cycleSelect.value === '' || cycleSelect.value === '請選擇') { cycleSelect.classList.add('input-error'); isComplete = false; } 
+                 else if (cycleSelect.value === 'has' && cycleInput && cycleInput.value.trim() === '') { cycleInput.classList.add('input-error'); isComplete = false; } 
+                 else { cycleSelect.classList.remove('input-error'); if(cycleInput) cycleInput.classList.remove('input-error'); }
+            }
+            const tableInputs = document.querySelectorAll('.table-input');
+            tableInputs.forEach(input => { if (input.value.trim() === '') { input.classList.add('input-error'); isComplete = false; } else { input.classList.remove('input-error'); } });
+            if (!isComplete) { alert("請填寫所有標示紅框的必填欄位！"); return false; }
+            const remarksInput = document.querySelector('.remarks-input');
+            const remarksContainer = document.getElementById('unified-remarks-container');
+            if (remarksContainer) { if (remarksInput && remarksInput.value.trim() === '') { remarksContainer.classList.add('print-hide-remarks'); } else { remarksContainer.classList.remove('print-hide-remarks'); } }
+            if (onlyValidate) return true;
+            window.print();
+            setTimeout(() => { if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks'); }, 100);
+            return true;
+        };
+
+        window.downloadPDF = function() {
+            if (typeof html2pdf === 'undefined') { alert("PDF 生成元件尚未載入完成"); return; }
+            if (!window.validateAndPrint(true)) return;
+
+            const client = document.getElementById('ui-client').value || '客戶';
+            const partNo = document.getElementById('ui-partno').value || '料號';
+            const reportTitle = document.getElementById('unified-header-container').getAttribute('data-title') || '電性測試報告';
+            const safePartNo = partNo.replace(/[\/\\:*?"<>|]/g, '_');
+            const fileName = `${client} ${safePartNo} ${reportTitle}.pdf`;
+            const element = document.querySelector('.a4-paper');
+
+            // [修正] 不移除圖片，若本地執行出錯請用 Live Server
+            const opt = { margin: 0, filename: fileName, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+
+            document.body.classList.add('printing-pdf');
+
+            html2pdf().set(opt).from(element).save().then(function(){
+                 document.body.classList.remove('printing-pdf');
+                 const remarksContainer = document.getElementById('unified-remarks-container');
+                 if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
+            }).catch(function(err) {
+                console.error(err);
+                alert("PDF 生成失敗 (Tainted Canvas)：\n瀏覽器安全性限制本地圖片匯出。\n\n解決方法：\n1. 請使用 VS Code 的 Live Server 開啟網頁 (推薦)。\n2. 或者將圖片轉為 Base64 編碼。");
+                document.body.classList.remove('printing-pdf');
+            });
+        }
+    </script>
+</body>
+</html>
