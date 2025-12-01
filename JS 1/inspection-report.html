@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>駿鑫 出貨檢驗報告</title>
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="report.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div id="navbar-container"></div>
+    <div class="page-container">
+        
+        <div class="action-buttons">
+            <button class="btn-print" onclick="handlePrintProcess(checkInspectionCompletion)">
+                <svg class="icon-printer" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                列印
+            </button>
+            <button class="btn-pdf" onclick="handlePDFProcess(checkInspectionCompletion)">
+                <svg class="icon-printer" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
+                生成 PDF
+            </button>
+        </div>
+
+        <div class="a4-paper">
+            <div id="unified-header-container" data-title="出貨檢驗報告"></div>
+            <h3 class="section-title">PCB 規格</h3>
+            <section class="info-grid grid-pcb" id="pcb-spec-section">
+                <div class="info-item span-standard"><span class="label">板材</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="material-input-group" data-print-target="print-material" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="FR-4">FR-4</option><option value="FR-1">FR-1</option><option value="鋁基板">鋁基板</option><option value="銅基板">銅基板</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="material-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入板材" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">層別</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="layer-input-group" data-print-target="print-layer" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="單面板">單面板</option><option value="雙面板">雙面板</option><option value="四層板">四層板</option><option value="六層板">六層板</option><option value="八層板">八層板</option><option value="十層板">十層板</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="layer-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入層別" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">板厚</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="thickness-input-group" data-print-target="print-thickness" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="0.4 mm">0.4 mm</option><option value="0.6 mm">0.6 mm</option><option value="0.8 mm">0.8 mm</option><option value="1.0 mm">1.0 mm</option><option value="1.2 mm">1.2 mm</option><option value="1.6 mm">1.6 mm</option><option value="2.0 mm">2.0 mm</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="thickness-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入板厚" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">銅厚</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="copper-input-group" data-print-target="print-copper" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="1 oz">1 oz</option><option value="2 oz">2 oz</option><option value="3 oz">3 oz</option><option value="4 oz">4 oz</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="copper-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入銅厚" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">防焊</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="mask-input-group" data-print-target="print-mask" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="綠色">🟢 綠色</option><option value="白色">⚪ 白色</option><option value="紅色">🔴 紅色</option><option value="黑色">⚫ 黑色</option><option value="藍色">🔵 藍色</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="mask-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入顏色" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">文字</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="legend-input-group" data-print-target="print-legend" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="白色">⚪ 白色</option><option value="黑色">⚫ 黑色</option><option value="無文字">無文字</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="legend-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入顏色" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">焊盤</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="surface-input-group" data-print-target="print-surface" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="有鉛噴錫">有鉛噴錫</option><option value="無鉛噴錫">無鉛噴錫</option><option value="化金 1u">化金 1u"</option><option value="化金 2u">化金 2u"</option><option value="化金 3u">化金 3u"</option><option value="硬金 3u">硬金 3u"</option><option value="硬金 5u">硬金 5u"</option><option value="OSP">OSP</option><option value="裸銅">裸銅</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="surface-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入處理" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                
+                <div class="info-item desktop-spacer"></div>
+
+                <div class="info-item span-half">
+                    <span class="label">尺寸</span>
+                    <div class="input-group" style="gap: 5px;">
+                        <input type="text" id="dim-length-input" class="input-line split-input" placeholder="長" oninput="updateSpecs(); checkCompletion(); syncDimensions();">
+                        <span>x</span>
+                        <input type="text" id="dim-width-input" class="input-line split-input" placeholder="寬" oninput="updateSpecs(); checkCompletion(); syncDimensions();">
+                        <span class="unit-display-text" style="font-size: 12px; color: #666; white-space: nowrap;">mm</span>
+                    </div>
+                </div>
+
+                <div class="info-item span-half">
+                    <span class="label">排版</span>
+                    <div class="input-group" style="gap: 5px;">
+                        <input type="text" id="pnl-x" class="input-line split-input" placeholder="X" oninput="checkCompletion(); syncArray();">
+                        <span>x</span>
+                        <input type="text" id="pnl-y" class="input-line split-input" placeholder="Y" oninput="checkCompletion(); syncArray();">
+                        <span class="unit-display-text" style="flex-shrink: 0; width: 65px; font-size: 12px; font-weight: 600; text-align: center;">PCS / PNL</span>
+                    </div>
+                </div>
+            </section>
+
+            <table class="print-only-table" id="print-pcb-specs"><tr><th>板　　材</th><td id="print-material"></td><th>層　　別</th><td id="print-layer"></td><th>板　　厚</th><td id="print-thickness"></td></tr><tr><th>銅　　厚</th><td id="print-copper"></td><th>防　　焊</th><td id="print-mask"></td><th>文　　字</th><td id="print-legend"></td></tr><tr><th>焊　　盤</th><td id="print-surface"></td><th>出貨尺寸</th><td id="print-dim"></td><th>排版規格</th><td id="print-array"></td></tr></table>
+            <div class="section-header-wrapper"><h3 class="section-title">檢驗數據</h3><span class="standard-badge">抽樣標準: MIL-STD-105D</span></div>
+            <div class="table-wrapper">
+                <table class="inspection-table" id="inspection-data-table">
+                    <thead><tr><th style="min-width: 80px;">項目</th><th style="min-width: 100px;">規格 (mm)</th><th>樣本 A</th><th>樣本 B</th><th>樣本 C</th><th>樣本 D</th><th>樣本 E</th><th style="min-width: 60px;">判定</th></tr></thead>
+                    <tbody>
+                        <tr data-item="length"><td>長度</td><td><span contenteditable="true" class="editable-cell" id="spec-length-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.2">0.2</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td class="judgment-field" style="font-weight:bold;"></td> </tr>
+                        <tr data-item="width"><td>寬度</td><td><span contenteditable="true" class="editable-cell" id="spec-width-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.2">0.2</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td class="judgment-field" style="font-weight:bold;"></td> </tr>
+                        <tr id="row-hole-1"><td>孔徑 A</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole1-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
+                        <tr id="row-hole-2"><td>孔徑 B</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole2-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
+                        <tr id="row-hole-3"><td>孔徑 C</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole3-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="final-decision-box"><span class="decision-label">判定結果:</span><div id="final-decision-badge" class="result-badge status-pending">等待數據...</div></div>
+            <div id="unified-remarks-container"></div>
+            
+            <div class="signature-section">
+                <div class="sign-box">
+                    <div class="sign-title">檢驗人員</div>
+                    <div class="sign-stamp-area">
+                        <img src="pic/reviewer.png" alt="Reviewer" class="stamp-img" onerror="this.style.display='none'">
+                    </div>
+                </div>
+                <div class="sign-box">
+                    <div class="sign-title">核准人員</div>
+                    <div class="sign-stamp-area">
+                        <img src="pic/approver.png" alt="Approver" class="stamp-img" onerror="this.style.display='none'">
+                    </div>
+                </div>
+            </div>
+
+        </div> 
+    </div> 
+
+    <script src="navbar.js"></script>
+    <script src="template.js"></script>
+
+    <script>
+        let hasUserInteracted = false;
+
+        // 頁面專屬：檢查 PCB 規格與檢驗數據是否填寫完成
+        function checkInspectionCompletion() {
+            let isComplete = true;
+            
+            // 檢查 PCB 規格區塊
+            const pcbSection = document.getElementById('pcb-spec-section');
+            if (pcbSection) {
+                // 檢查下拉選單 (含 toggle input)
+                const selects = pcbSection.querySelectorAll('.toggle-select');
+                selects.forEach(sel => {
+                    const wrapper = sel.closest('.wrapper-toggle');
+                    const inputGroup = wrapper ? wrapper.querySelector('.toggle-input-box') : null;
+                    const input = inputGroup ? inputGroup.querySelector('input') : null;
+                    
+                    if (inputGroup && inputGroup.style.display !== 'none') {
+                        if (input && input.value.trim() === '') {
+                            input.classList.add('input-error');
+                            isComplete = false;
+                        } else if (input) {
+                            input.classList.remove('input-error');
+                            syncPcbSpecToPrint(sel, input.value);
+                        }
+                    } else {
+                        if (sel.value === '' || sel.value === '請選擇') {
+                            sel.classList.add('input-error');
+                            isComplete = false;
+                        } else {
+                            sel.classList.remove('input-error');
+                            syncPcbSpecToPrint(sel, sel.value);
+                        }
+                    }
+                });
+
+                // 檢查純文字輸入框 (尺寸/排版)
+                const numericInputs = pcbSection.querySelectorAll('#dim-length-input, #dim-width-input, #pnl-x, #pnl-y');
+                numericInputs.forEach(inp => {
+                    if (inp.value.trim() === '') {
+                        inp.classList.add('input-error');
+                        isComplete = false;
+                    } else {
+                        inp.classList.remove('input-error');
+                    }
+                });
+                
+                // 尺寸和排版同步到列印表格
+                syncDimensions();
+                syncArray();
+            }
+
+            // 檢查檢驗數據區塊
+            const nominalSpecA = document.getElementById('spec-hole1-nominal');
+            if (nominalSpecA && nominalSpecA.textContent.trim() === '') {
+                nominalSpecA.classList.add('input-error');
+                isComplete = false;
+            } else if (nominalSpecA) {
+                nominalSpecA.classList.remove('input-error');
+            }
+
+            // 隱藏未使用的孔徑行
+            prepareRowsForPrint();
+
+            return isComplete;
+        }
+
+        // 獨立函數：同步 PCB 規格到列印表格
+        function syncPcbSpecToPrint(selectEl, value) {
+            const printTargetId = selectEl.getAttribute('data-print-target');
+            const target = document.getElementById(printTargetId);
+            if (target) {
+                // 移除顏色符號
+                const cleanValue = value.replace(/🟢|⚪|🔴|⚫|🔵/g, '').trim();
+                target.textContent = cleanValue;
+            }
+        }
+        
+        // 獨立函數：同步尺寸到列印表格
+        function syncDimensions() {
+            const len = document.getElementById('dim-length-input')?.value || '';
+            const wid = document.getElementById('dim-width-input')?.value || '';
+            const dimTarget = document.getElementById('print-dim');
+            if(dimTarget) dimTarget.textContent = (len && wid) ? `${len} x ${wid} mm` : '';
+        }
+        
+        // 獨立函數：同步排版到列印表格
+        function syncArray() {
+            const px = document.getElementById('pnl-x')?.value || '';
+            const py = document.getElementById('pnl-y')?.value || '';
+            const arrTarget = document.getElementById('print-array');
+            if(arrTarget) arrTarget.textContent = (px && py) ? `${px} x ${py} PCS/PNL` : '';
+        }
+
+        function initToggleLogic() {
+            document.querySelectorAll('.toggle-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetBox = document.getElementById(targetId);
+                    if (this.value === '其他' && targetBox) { this.style.display = 'none'; targetBox.style.display = 'flex'; targetBox.querySelector('input')?.focus(); }
+                    hasUserInteracted = true; checkCompletion(); 
+                });
+            });
+            document.querySelectorAll('.reset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const inputBox = this.closest('.toggle-input-box');
+                    const wrapper = this.closest('.wrapper-toggle');
+                    const select = wrapper.querySelector('select');
+                    if (inputBox && select) { inputBox.querySelector('input').value = ''; inputBox.style.display = 'none'; select.style.display = 'block'; select.value = ""; }
+                    hasUserInteracted = true; checkCompletion(); 
+                });
+            });
+            
+            // 初始同步 PCB 規格到列印表格
+            document.querySelectorAll('.toggle-select').forEach(select => { syncPcbSpecToPrint(select, select.value); });
+        }
+
+        function prepareRowsForPrint() {
+            const holeRows = [ document.getElementById('row-hole-1'), document.getElementById('row-hole-2'), document.getElementById('row-hole-3') ];
+            holeRows.forEach(row => {
+                if (row) {
+                    const nominalSpec = row.querySelector('.editable-cell:not(.data-field)');
+                    let isSpecEmpty = nominalSpec?.textContent.trim() === '';
+                    if (nominalSpec && !isSpecEmpty) { 
+                        let content = nominalSpec.textContent.replace(/[^0-9.]/g, '').trim(); 
+                        if (content === '' || parseFloat(content) === 0) isSpecEmpty = true; 
+                    }
+                    if (isSpecEmpty) row.classList.add('print-hidden-row'); else row.classList.remove('print-hidden-row');
+                }
+            });
+        }
+
+        function updateSpecs() {
+            const lengthInput = document.getElementById('dim-length-input');
+            const widthInput = document.getElementById('dim-width-input');
+            const lengthNominal = document.getElementById('spec-length-nominal');
+            const widthNominal = document.getElementById('spec-width-nominal');
+            if (lengthInput && lengthNominal) lengthNominal.textContent = lengthInput.value || '';
+            if (widthInput && widthNominal) widthNominal.textContent = widthInput.value || '';
+            populateAllInspectionData();
+        }
+
+        function parseSpec(nominalId) {
+            const nominalEl = document.getElementById(nominalId);
+            if (!nominalEl) return null;
+            const row = nominalEl.closest('tr');
+            const toleranceEl = row.querySelector('.spec-tolerance');
+            const nominal = parseFloat(nominalEl.textContent.trim());
+            const tolerance = toleranceEl ? parseFloat(toleranceEl.getAttribute('data-tolerance')) : 0;
+            if (isNaN(nominal)) return null;
+            return { nominal, tolerance };
+        }
+
+        function generateRandomData(nominal, tolerance, rowIndex) {
+            let val = nominal;
+            // 尺寸 (0, 1) 的隨機性較大
+            if (rowIndex === 0 || rowIndex === 1) {
+                // 90% 機率在規格內，10% 機率輕微偏離
+                if (Math.random() < 0.90) { val = nominal + (Math.random() * tolerance * 0.5) - (tolerance * 0.25); } else { val = nominal + (Math.random() * 0.10) * (Math.random() < 0.5 ? 1 : -1); }
+            } else {
+                // 孔徑 (2, 3, 4) 隨機性較小，更靠近標稱值 (公差 0.05)
+                val = nominal + (Math.random() * 0.04) + 0.01; 
+            }
+            // 四捨五入到小數點後三位，然後固定兩位顯示
+            return (Math.round(val * 1000) / 1000).toFixed(2);
+        }
+
+        function populateRowData(rowIndex, nominalId) {
+            const parsed = parseSpec(nominalId);
+            const tbody = document.getElementById('inspection-data-table').querySelector('tbody');
+            const row = tbody.rows[rowIndex];
+            if (!row) return;
+            const judgementCell = row.querySelector('.judgment-field');
+            const dataCells = row.querySelectorAll('.data-field');
+            if (!parsed) { dataCells.forEach(cell => cell.textContent = ''); judgementCell.textContent = ''; return; }
+            dataCells.forEach(cell => { cell.textContent = generateRandomData(parsed.nominal, parsed.tolerance, rowIndex); });
+            judgementCell.textContent = 'OK'; judgementCell.style.color = 'green';
+        }
+
+        function populateAllInspectionData() {
+            populateRowData(0, 'spec-length-nominal');
+            populateRowData(1, 'spec-width-nominal');
+            populateRowData(2, 'spec-hole1-nominal');
+            populateRowData(3, 'spec-hole2-nominal');
+            populateRowData(4, 'spec-hole3-nominal');
+            checkCompletion(); 
+        }
+
+        function checkJudgement(dataEl) {
+            const row = dataEl.closest('tr');
+            const judgementCell = row.querySelector('.judgment-field');
+            const allEmpty = Array.from(row.querySelectorAll('.data-field')).every(el => el.textContent.trim() === '');
+            if (allEmpty) { judgementCell.textContent = ''; } else { judgementCell.textContent = 'OK'; judgementCell.style.color = 'green'; }
+            hasUserInteracted = true; checkCompletion();
+        }
+
+        function checkCompletion() {
+            let isComplete = true;
+            // 基礎資訊檢查 (從 template.js 的 reportData 檢查)
+            if (window.reportData.client.trim() === "" || window.reportData.partno.trim() === "") isComplete = false;
+            
+            // PCB 規格檢查
+            const pcbSection = document.getElementById('pcb-spec-section');
+            if (pcbSection) {
+                // 檢查所有下拉選單
+                pcbSection.querySelectorAll('.toggle-select').forEach(select => {
+                    const isInputVisible = select.style.display === 'none';
+                    if (!isInputVisible && (select.value === "" || select.value === "請選擇")) { isComplete = false; }
+                });
+                // 檢查所有輸入框 (包括隱藏的 toggle input 和尺寸排版)
+                pcbSection.querySelectorAll('input[type="text"]').forEach(input => {
+                    if (input.closest('.toggle-input-box') && input.closest('.toggle-input-box').style.display === 'flex' && input.value.trim() === "") {
+                        isComplete = false;
+                    } else if (!input.closest('.toggle-input-box') && input.value.trim() === "") {
+                        isComplete = false;
+                    }
+                });
+            }
+            
+            // 數據檢查 (孔徑 A 規格必須輸入)
+            const nominalSpecA = document.getElementById('spec-hole1-nominal');
+            let isHoleASpecEmpty = nominalSpecA?.textContent.trim() === '';
+            if (isHoleASpecEmpty) { isComplete = false; }
+            
+            // 數據檢查 (至少一筆數據)
+            const holeADataFields = document.getElementById('row-hole-1')?.querySelectorAll('.data-field');
+            if (isComplete && holeADataFields) {
+                const isHoleADataEmpty = Array.from(holeADataFields).every(field => field.textContent.trim() === '');
+                if (isHoleADataEmpty) isComplete = false;
+            }
+
+            // 更新判定 Badge
+            const badgeEl = document.getElementById('final-decision-badge');
+            if (isComplete) { 
+                badgeEl.textContent = "PASSED / 合格"; 
+                badgeEl.className = "result-badge status-pass"; 
+            } else {
+                badgeEl.textContent = "等待數據..."; 
+                badgeEl.className = "result-badge status-pending";
+            }
+        }
+
+        function initNumericInputLogic() {
+            const numericInputs = document.querySelectorAll('#dim-length-input, #dim-width-input, #pnl-x, #pnl-y');
+            numericInputs.forEach(input => { input.addEventListener('input', function() { this.value = this.value.replace(/[^0-9.]/g, ''); hasUserInteracted = true; }); });
+            const editableCells = document.querySelectorAll('.editable-cell, .data-field');
+            editableCells.forEach(cell => {
+                // 處理輸入限制
+                cell.addEventListener('input', function(e) { 
+                    if (e.isComposing) return; 
+                    const text = this.innerText; 
+                    // 允許數字和點
+                    const clean = text.replace(/[^0-9.]/g, ''); 
+                    if (text !== clean) { 
+                        this.innerText = clean; 
+                        // 讓光標留在末尾
+                        try { 
+                            const range = document.createRange(); 
+                            const sel = window.getSelection(); 
+                            range.selectNodeContents(this); 
+                            range.collapse(false); 
+                            sel.removeAllRanges(); 
+                            sel.addRange(range); 
+                        } catch(e) {} 
+                    } 
+                    hasUserInteracted = true; 
+                });
+                // 阻止非數字輸入
+                cell.addEventListener('keydown', function(e) { 
+                    const allowedKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "."]; 
+                    if (!isNaN(parseInt(e.key)) || allowedKeys.includes(e.key)) { 
+                        if (e.key === '.' && this.innerText.includes('.')) e.preventDefault(); 
+                        return; 
+                    } 
+                    // 允許 Ctrl/Cmd 相關操作 (複製貼上等)
+                    if (e.ctrlKey || e.metaKey) return; 
+                    e.preventDefault(); 
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initToggleLogic(); 
+            initNumericInputLogic(); 
+            
+            // 綁定所有 input 和 change 事件到 checkCompletion
+            const pcbInputs = document.querySelectorAll('#pcb-spec-section input, #pcb-spec-section select');
+            pcbInputs.forEach(el => { el.addEventListener('input', checkCompletion); el.addEventListener('change', checkCompletion); });
+            document.querySelectorAll('.reset-btn').forEach(btn => { btn.addEventListener('click', () => setTimeout(checkCompletion, 50)); });
+            
+            // 綁定數據輸入觸發
+            document.querySelectorAll('#inspection-data-table').forEach(table => { table.addEventListener('input', checkCompletion); });
+            document.querySelectorAll('[id^="spec-hole"]').forEach(el => { el.addEventListener('input', populateAllInspectionData); });
+            
+            // 尺寸更新也需要同步到列印表格
+            document.getElementById('dim-length-input')?.addEventListener('input', syncDimensions);
+            document.getElementById('dim-width-input')?.addEventListener('input', syncDimensions);
+            document.getElementById('pnl-x')?.addEventListener('input', syncArray);
+            document.getElementById('pnl-y')?.addEventListener('input', syncArray);
+            
+            // 確保基本資訊的變動也會觸發檢查
+            setTimeout(() => { 
+                const basicInfoGrid = document.querySelector('#unified-header-container .info-grid'); 
+                if (basicInfoGrid) { 
+                    basicInfoGrid.addEventListener('input', checkCompletion); 
+                    basicInfoGrid.addEventListener('change', checkCompletion); 
+                } 
+                // 初始載入時檢查一次 (因為 template.js 已經初始化)
+                checkCompletion();
+            }, 500); 
+        });
+    </script>
+</body>
+</html>
