@@ -1,4 +1,4 @@
-/* report.css - 最終修正版：針對 PDF 標題垂直置中問題進行微調 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
 
 :root {
     /* 金色系主色調 */
@@ -13,23 +13,60 @@
     --label-bg: #f5f5f5;
     
     --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+
+    /* UI/UX 優化：圓角統一 */
+    --ui-radius: 8px;
 }
 
 @keyframes shine { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
 
+/* === 新增：PDF 生成時的 Loading 遮罩與動畫 === */
+.loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.85); /* 稍微不透明一點，遮住背後雜訊 */
+    z-index: 9999;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(8px);
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+}
+.loading-overlay.active { opacity: 1; pointer-events: all; }
+
+.spinner {
+    width: 50px; height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid var(--gold-dark); /* 使用金色 */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* === 本體樣式 === */
 body { background-color: #f5f5f5; margin: 0; padding-top: 80px; font-family: 'Noto Sans TC', sans-serif; }
 
-/* === A4 紙張 === */
+/* === A4 紙張 (螢幕顯示用) === */
 .page-container { width: 100%; display: flex; justify-content: center; padding: 20px; padding-bottom: 40px; box-sizing: border-box; }
-.a4-paper { width: 210mm; min-height: 297mm; background: var(--bg-page); padding: 15mm 15mm; box-shadow: 0 5px 15px rgba(0,0,0,0.15); box-sizing: border-box; display: flex; flex-direction: column; position: relative; }
+.a4-paper { 
+    width: 210mm; 
+    min-height: 297mm; 
+    background: var(--bg-page); 
+    padding: 15mm 15mm; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15); 
+    box-sizing: border-box; 
+    display: flex; 
+    flex-direction: column; 
+    position: relative; 
+    border-radius: var(--ui-radius); 
+}
 
 /* === 表頭 === */
 .report-header-modern { display: flex; justify-content: space-between; align-items: center !important; border-bottom: 4px solid var(--gold-dark); padding-bottom: 15px; margin-bottom: 25px; }
 .header-left { display: flex; flex-direction: column; justify-content: center; }
 .company-name-modern { font-size: 32px; font-weight: 900; color: #000; margin: 0; line-height: 1.2; }
 .header-sub-info { font-size: 14px; color: #555; font-weight: 500; margin-top: 5px; line-height: 1.2; }
-.report-title-badge { font-size: 30px; background-color: #fcfcfc; border: 1px solid var(--border-color); padding: 8px 25px; border-radius: 4px; margin: 0; font-weight: 700; color: transparent; background: var(--gold-text-gradient); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 5s linear infinite; display: inline-block; line-height: 1.2; }
+.report-title-badge { font-size: 30px; background-color: #fcfcfc; border: 1px solid var(--border-color); padding: 8px 25px; border-radius: var(--ui-radius); margin: 0; font-weight: 700; color: transparent; background: var(--gold-text-gradient); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 5s linear infinite; display: inline-block; line-height: 1.2; }
 .section-title { font-size: 16px; font-weight: 700; color: var(--gold-dark); margin: 0 0 8px 0; padding-left: 10px; border-left: 4px solid var(--gold-dark); }
 
 /* === 輸入區塊 Grid === */
@@ -40,9 +77,9 @@ body { background-color: #f5f5f5; margin: 0; padding-top: 80px; font-family: 'No
 .desktop-spacer { grid-column: span 4; border: none !important; display: block; }
 
 .info-item { display: flex; align-items: center; border-bottom: 1px solid var(--line-separator); padding-bottom: 2px; height: 34px; }
-.info-item .label { background-color: var(--label-bg); color: #333; font-weight: 700; font-size: 14px; padding: 3px 8px; border-radius: 4px; width: 70px; text-align: center; margin-right: 8px; flex-shrink: 0; border: 1px solid var(--gold-dark); white-space: nowrap; }
+.info-item .label { background-color: var(--label-bg); color: #333; font-weight: 700; font-size: 14px; padding: 3px 8px; border-radius: var(--ui-radius); width: 70px; text-align: center; margin-right: 8px; flex-shrink: 0; border: 1px solid var(--gold-dark); white-space: nowrap; }
 .input-group { display: flex; width: 100%; align-items: center; gap: 5px; flex: 1; min-width: 0; }
-.input-line { border: 1px solid var(--line-separator); background-color: #fff; border-radius: 4px; outline: none; font-size: 14px; width: 100%; padding: 4px 8px; color: #000; box-sizing: border-box; min-width: 0; }
+.input-line { border: 1px solid var(--line-separator); background-color: #fff; border-radius: var(--ui-radius); outline: none; font-size: 14px; width: 100%; padding: 4px 8px; color: #000; box-sizing: border-box; min-width: 0; }
 .input-line:focus { border-color: var(--gold-dark); }
 .input-error { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important; animation: shake 0.4s ease-in-out; }
 .unit-select { border: none; background: transparent; font-size: 14px; width: 100%; outline: none; min-width: 0; }
@@ -59,36 +96,160 @@ body { background-color: #f5f5f5; margin: 0; padding-top: 80px; font-family: 'No
 .inspection-table td:first-child, .inspection-table th:first-child { white-space: nowrap; }
 .inspection-table td:nth-child(2) { white-space: nowrap; } 
 
+/* 螢幕顯示：備註與簽名推到最下方 */
 #unified-remarks-container { margin-top: auto; width: 100%; }
-.remarks-section { border: 1px solid var(--line-separator); padding: 8px; border-radius: 4px; background-color: #fcfcfc; display: flex; flex-direction: column; justify-content: flex-end; }
-.label-box { background-color: var(--label-bg); color: #333; font-weight: bold; font-size: 14px; padding: 3px 10px; border-radius: 4px; margin-bottom: 5px; border: 1px solid var(--gold-dark); }
-.remarks-input { width: 100%; border: 1px solid #e0e0e0; height: 40px !important; resize: none; border-radius: 4px; box-sizing: border-box; }
+
+.remarks-section { border: 1px solid var(--line-separator); padding: 8px; border-radius: var(--ui-radius); background-color: #fcfcfc; display: flex; flex-direction: column; justify-content: flex-end; }
+.label-box { background-color: var(--label-bg); color: #333; font-weight: bold; font-size: 14px; padding: 3px 10px; border-radius: var(--ui-radius); margin-bottom: 5px; border: 1px solid var(--gold-dark); }
+.remarks-input { width: 100%; border: 1px solid #e0e0e0; height: 40px !important; resize: none; border-radius: var(--ui-radius); box-sizing: border-box; }
 
 .signature-section { display: flex; justify-content: space-between; margin-top: 20px; width: 100%; }
-.sign-box { width: 48%; text-align: center; }
-.sign-title { background-color: var(--label-bg); padding: 6px; font-weight: bold; border: 1px solid var(--gold-dark); border-bottom: none; }
-.sign-stamp-area { height: 100px; border: 1px solid var(--gold-dark); display: flex; align-items: center; justify-content: center; }
-.stamp-img { max-height: 90%; max-width: 90%; object-fit: contain; }
+.sign-box { width: 45%; text-align: center; }
+.sign-title { background-color: var(--label-bg); padding: 6px; font-weight: bold; border: 1px solid var(--gold-dark); border-bottom: none; border-top-left-radius: var(--ui-radius); border-top-right-radius: var(--ui-radius); }
+
+.sign-stamp-area { 
+    height: 85px; 
+    border: 1px solid var(--gold-dark); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-bottom-left-radius: var(--ui-radius); 
+    border-bottom-right-radius: var(--ui-radius); 
+    overflow: hidden;
+    background-color: #fff;
+    padding: 0;
+}
+.stamp-img { 
+    height: 50%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain; 
+    display: none !important; 
+}
+body.show-signatures .stamp-img { display: inline-block !important; }
+
+.signature-control-area {
+    margin-top: 12px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 5px;
+}
+.toggle-label {
+    font-size: 13px;
+    color: #555;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    background: #eee;
+    padding: 3px 10px;
+    border-radius: 15px;
+    border: 1px solid #ccc;
+    transition: all 0.2s;
+}
+.toggle-label:hover { background: #e0e0e0; }
+.toggle-label input { margin-right: 5px; cursor: pointer; }
+.toggle-label input:checked + span { color: #000; }
+
+/* === Toast Notification === */
+.toast-notification {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background-color: rgba(5, 150, 105, 0.95);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 50px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    z-index: 99999;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.2);
+    white-space: nowrap;
+}
+.toast-notification.error {
+    background-color: rgba(220, 38, 38, 0.95);
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.2);
+}
+.toast-notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
 
 /* === 按鈕 === */
 .action-buttons { position: fixed; z-index: 1000; top: 150px; left: 50%; margin-left: calc(105mm + 60px); display: flex; flex-direction: column; gap: 15px; }
-.btn-print { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px); border: 1px solid #fff; padding: 12px 24px; border-radius: 50px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #1f2937; }
+.btn-print { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px); border: 1px solid #fff; padding: 12px 24px; border-radius: 50px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #1f2937; transition: all 0.2s; }
+.btn-print:active { transform: scale(0.98); box-shadow: none; }
 .icon-printer { width: 20px; height: 20px; }
 .btn-pdf { background: rgba(220, 38, 38, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(220, 38, 38, 0.3); padding: 12px 24px; border-radius: 50px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #b91c1c; transition: all 0.2s; }
 .btn-pdf:hover { background: rgba(220, 38, 38, 0.2); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15); }
+.btn-pdf:active { transform: scale(0.98); box-shadow: none; }
+
+.btn-glass-base { padding: 10px 25px; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 999px; cursor: pointer; font-weight: 700; transition: all 0.2s; background-color: rgba(255, 255, 255, 0.15); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.5); color: #212121; }
+.btn-glass-base:active { transform: scale(0.98); box-shadow: none; }
+
+.btn-glass-blue { background-color: rgba(0, 122, 255, 0.15); color: #004d99; }
+.btn-glass-blue:hover { background-color: rgba(0, 122, 255, 0.25); transform: translateY(-2px); }
+
+.btn-glass-gold { background-color: rgba(255, 199, 0, 0.15); color: #806600; }
+.btn-glass-gold:hover { background-color: rgba(255, 199, 0, 0.25); transform: translateY(-2px); }
+
+.btn-glass-gray { background-color: rgba(108, 117, 125, 0.15); color: #3e4449; }
+.btn-glass-gray:hover { background-color: rgba(108, 117, 125, 0.25); transform: translateY(-2px); }
+
+.btn-glass-red { background-color: rgba(220, 38, 38, 0.15); color: #b91c1c; }
+.btn-glass-red:hover { background-color: rgba(220, 38, 38, 0.25); transform: translateY(-2px); }
+
 .mobile-only { display: none !important; }
 .desktop-only { display: flex !important; }
 
-/* === 列印專用 (Shadow Table) === */
+/* === 列印專用 === */
 .print-only-table { display: none; width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; color: #000; }
 .print-only-table th, .print-only-table td { border: 1px solid #000 !important; padding: 10px 4px; vertical-align: middle; }
 .print-only-table th { background-color: #f0f0f0 !important; font-weight: bold; text-align: center; white-space: nowrap; -webkit-print-color-adjust: exact; print-color-adjust: exact; width: 11%; }
 .print-only-table td { text-align: center; width: 22.33%; }
 .print-simple-header { display: none; }
 
-/* === 手機版 (左右排列) === */
+/* === 電性測試報告專用 === */
+.test-result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; padding: 15px; background-color: #fcfcfc; border: 1px solid #eee; border-radius: var(--ui-radius); }
+.result-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; border: 1px solid #e0d8c8; border-radius: var(--ui-radius); background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.result-label { font-size: 15px; font-weight: bold; color: #666; margin-bottom: 8px; white-space: nowrap; }
+.result-value-input { width: 100%; text-align: center; border: none; font-size: 22px; font-weight: 800; color: #333; background: transparent; outline: none; }
+.res-pass input { color: #10b981; } .res-fail input { color: #ef4444; } 
+.table-input { width: 90%; text-align: center; border: none; background: transparent; font-size: 16px; outline: none; font-weight: 500; color: #000; border-bottom: 1px dashed #e0e0e0; }
+.table-input:focus { background-color: #fefce8; border-bottom: 1px solid #b38728; }
+
+/* === 出貨檢驗報告專用 === */
+.section-header-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-right: 5px; flex-wrap: wrap; gap: 5px; }
+.section-header-wrapper .section-title { margin-bottom: 0; }
+.standard-badge { font-size: 13px; color: #333; background-color: var(--label-bg); padding: 5px 12px; border-radius: 20px; font-weight: 600; border: 1px solid var(--border-color); letter-spacing: 0.5px; }
+.final-decision-box { margin-top: 15px; margin-bottom: 20px; padding: 15px; border: 1px solid #e5e7eb; border-radius: var(--ui-radius); background-color: #fff; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.decision-label { font-size: 16px; font-weight: 700; color: #374151; }
+.result-badge { font-size: 18px; font-weight: 800; padding: 8px 30px; border-radius: var(--ui-radius); letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease; text-align: center; min-width: 150px; box-sizing: border-box; }
+.status-pending { background-color: #f3f4f6; color: #9ca3af; border: 1px dashed #d1d5db; }
+.status-pass { background-color: #ecfdf5; color: #059669; border: 2px solid #059669; box-shadow: 0 0 5px rgba(5, 150, 105, 0.2); }
+.status-fail { background-color: #fef2f2; color: #dc2626; border: 2px solid #dc2626; box-shadow: 0 0 5px rgba(220, 38, 38, 0.2); }
+.wrapper-toggle { display: flex; align-items: center; width: 100%; position: relative; }
+.toggle-input-box { width: 100%; display: flex; align-items: center; flex: 1; }
+.reset-btn { cursor: pointer; font-size: 18px; color: #999; padding: 0 8px; line-height: 1; font-weight: bold; user-select: none; }
+.reset-btn:hover { color: red; }
+.editable-cell { min-width: 50px; display: inline-block; padding: 2px 5px; outline: none; border-bottom: 1px dashed #e0e0e0; text-align: center; background: transparent; }
+.editable-cell:focus { border-bottom: 1px solid #b38728; background-color: #fffdf5; }
+.tolerance-display { font-size: 0.85em; color: #666; margin-left: 4px; white-space: nowrap; }
+
+/* === RWD (含手機版底部按鈕優化) === */
 @media screen and (max-width: 768px) {
-    .page-container { padding: 10px 5px; padding-bottom: 80px !important; display: flex; justify-content: center; }
+    /* [優化] 加大底部 padding，避免內容被按鈕遮擋 */
+    .page-container { padding: 10px 5px 150px 5px !important; display: flex; justify-content: center; } 
     .a4-paper { padding: 15px 12px; width: 100%; max-width: 100%; min-height: auto; }
     .report-header-modern { flex-direction: column; text-align: center; gap: 10px; align-items: center !important; }
     .company-name-modern { font-size: 26px; }
@@ -100,88 +261,91 @@ body { background-color: #f5f5f5; margin: 0; padding-top: 80px; font-family: 'No
     .split-input { width: auto !important; flex: 1 !important; min-width: 50px; }
     .input-group { width: 100%; display: flex; align-items: center; }
     .unit-display-text { width: 70px !important; min-width: 70px !important; text-align: left !important; white-space: nowrap; flex-shrink: 0; }
-    .action-buttons { position: fixed; top: auto; bottom: 0; left: 0; width: 100%; margin: 0; gap: 0; flex-direction: row !important; z-index: 2000; }
-    .btn-print, .btn-pdf { flex: 1; width: 50% !important; border-radius: 0; margin: 0; height: 60px; justify-content: center; background: #fff; border-top: 1px solid #ccc; }
-    .btn-pdf { border-left: 1px solid #e5e7eb; background: #fef2f2; }
+    
+    /* [優化] 底部操作按鈕區：加入背景霧面效果與 Safe Area 支援 */
+    .action-buttons { 
+        position: fixed; top: auto; bottom: 0; left: 0; width: 100%; margin: 0; padding: 0; gap: 0; 
+        flex-direction: row !important; z-index: 2000; border-top: 1px solid #e0e0e0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        background: rgba(255, 255, 255, 0.95); /* 霧面背景 */
+        backdrop-filter: blur(10px);
+        padding-bottom: env(safe-area-inset-bottom); /* 避開 iPhone 底部橫條 */
+    }
+    .btn-print { flex: 1; width: 50% !important; border-radius: 0; margin: 0; height: 60px; justify-content: center; background: transparent; color: #333; border: none !important; box-shadow: none !important; }
+    .btn-pdf { flex: 1; width: 50% !important; border-radius: 0; margin: 0; height: 60px; justify-content: center; background: rgba(255, 240, 240, 0.5); color: #b91c1c; border: none !important; border-left: 1px solid #f0f0f0 !important; box-shadow: none !important; }
+    
     .mobile-only { display: flex !important; } .desktop-only { display: none !important; }
+    .test-result-grid { gap: 5px; padding: 5px; } 
+    .result-item { padding: 10px 2px; } 
+    .result-label { font-size: 11px; margin-bottom: 2px; } 
+    .result-value-input { font-size: 18px; } 
+    .table-input { width: 100%; } 
+    .final-decision-box { flex-direction: row; gap: 10px; } 
+    .decision-label { white-space: nowrap; } 
+    .result-badge { min-width: auto; padding: 8px 15px; } 
 }
 
-/* === 列印模式 (原生) === */
+/* === 列印模式 === */
 @media print {
-    #navbar-container, .action-buttons, .navbar, .reset-cycle-btn, .info-grid, .input-group, .reset-btn, .unit-display-text { display: none !important; }
-    .btn-pdf, .btn-print { display: none !important; }
+    #navbar-container, .navbar, .action-buttons, .reset-btn, .reset-cycle-btn, .info-grid, .input-group, .unit-display-text, .signature-control-area, .loading-overlay { display: none !important; }
+    .btn-pdf, .btn-print, .btn-glass-base { display: none !important; }
     .print-only-table { display: table !important; }
-    .final-decision-box { display: flex !important; border: 1px solid #000 !important; box-shadow: none !important; margin-top: 10px !important; margin-bottom: 10px !important; }
-    .report-header-modern { display: flex !important; border-bottom: 4px solid #b38728 !important; flex-direction: row !important; text-align: left !important; align-items: center !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .print-simple-header { display: none !important; }
+    
+    .a4-paper { 
+        width: 100%; min-height: auto !important; height: auto !important; 
+        padding: 10mm 15mm !important; box-shadow: none; margin: 0; zoom: 0.95; 
+        -moz-transform: scale(0.95); -moz-transform-origin: top center;
+    }
+    #unified-remarks-container { margin-top: 20px !important; }
+
+    .report-header-modern { display: flex !important; border-bottom: 4px solid #b38728 !important; flex-direction: row !important; text-align: left !important; align-items: center !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .report-title-badge { background: none !important; -webkit-text-fill-color: #000 !important; color: #000 !important; animation: none !important; border: 1px solid #000 !important; box-shadow: none !important; }
+    
     @page { size: A4; margin: 0; }
-    html, body { height: 100%; width: 100%; margin: 0 !important; padding: 0 !important; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .page-container { display: block; padding: 0; margin: 0; width: 100%; height: 100%; }
-    .a4-paper { width: 100%; height: 100%; padding: 10mm 15mm !important; box-shadow: none; margin: 0; zoom: 0.95; }
+    html, body { height: 100%; width: 100%; margin: 0 !important; padding: 0 !important; overflow: visible; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page-container { display: block; padding: 0; margin: 0; width: 100%; height: auto; }
+    
     .inspection-table, .inspection-table th, .inspection-table td { border: 1px solid #000 !important; }
     .remarks-section { border: 1px solid #000 !important; background: none !important; }
-    .remarks-input { border: none !important; }
     .label-box { border: 1px solid #000 !important; background: none !important; }
     .sign-title, .sign-stamp-area { border: 1px solid #000 !important; background: none !important; color: #000; }
+    .final-decision-box { display: flex !important; border: 1px solid #000 !important; box-shadow: none !important; margin-top: 10px !important; margin-bottom: 10px !important; }
+    
+    .test-result-grid { border: none; background: none; padding: 0; margin-bottom: 10px; gap: 10px; grid-template-columns: repeat(3, 1fr) !important; }
+    .result-item { border: 1px solid #000; box-shadow: none; padding: 5px; }
+    
     .print-hide-remarks, .print-hidden-row { display: none !important; }
     .input-error { border: none !important; background: transparent !important; box-shadow: none !important; animation: none !important; }
+    .status-pending { display: none; }
     
-    /* Input 在列印模式的樣式 */
-    input, .table-input, .editable-cell, .data-field {
-        border: none !important;
-        background: transparent !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        height: auto !important;
-        font-size: 14px;
-    }
+    input, .table-input, .editable-cell, .data-field, .remarks-input { border: none !important; background: transparent !important; margin: 0 !important; padding: 0 !important; height: auto !important; font-size: 14px; vertical-align: middle; }
+    .editable-cell { border-bottom: 1px dashed #000 !important; }
+    
+    .status-pass { background-color: #ecfdf5 !important; color: #059669 !important; border: 2px solid #059669 !important; } 
+    .status-fail { background-color: #fef2f2 !important; color: #dc2626 !important; border: 2px solid #dc2626 !important; } 
+
+    body.show-signatures .stamp-img { display: inline-block !important; }
 }
 
-/* === PDF 生成模式 (完全繼承列印樣式) === */
-body.printing-pdf #navbar-container, body.printing-pdf .action-buttons, body.printing-pdf .navbar, body.printing-pdf .reset-cycle-btn, body.printing-pdf .info-grid, body.printing-pdf .input-group, body.printing-pdf .reset-btn, body.printing-pdf .unit-display-text { display: none !important; }
+/* === PDF 生成模式 === */
+body.printing-pdf #navbar-container, body.printing-pdf .action-buttons, body.printing-pdf .navbar, body.printing-pdf .reset-cycle-btn, body.printing-pdf .info-grid, body.printing-pdf .input-group, body.printing-pdf .reset-btn, body.printing-pdf .unit-display-text, body.printing-pdf .btn-glass-base, body.printing-pdf .signature-control-area, body.printing-pdf .loading-overlay { display: none !important; }
+
 body.printing-pdf .print-only-table { display: table !important; }
 body.printing-pdf .final-decision-box { display: flex !important; border: 1px solid #000 !important; box-shadow: none !important; margin-top: 10px !important; margin-bottom: 10px !important; }
 body.printing-pdf .report-header-modern { display: flex !important; border-bottom: 4px solid #b38728 !important; flex-direction: row !important; text-align: left !important; align-items: center !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 body.printing-pdf .print-simple-header { display: none !important; }
 
-/* === [修正] 針對 PDF 標題往下掉的修正 === */
-body.printing-pdf .report-title-badge { 
-    background: none !important; 
-    -webkit-text-fill-color: #000 !important; 
-    color: #000 !important; 
-    animation: none !important; 
-    border: 1px solid #000 !important; 
-    box-shadow: none !important;
-    
-    /* 強制將標題往上拉，抵消 html2canvas 的誤差 */
-    position: relative !important;
-    top: -10px !important; 
-    margin: 0 !important;
-    line-height: 1 !important;
-    display: inline-block !important;
-}
+body.printing-pdf .report-title-badge { background: none !important; -webkit-text-fill-color: #000 !important; color: #000 !important; animation: none !important; border: 1px solid #000 !important; box-shadow: none !important; position: relative !important; transform: translateY(-10px) !important; margin: 0 !important; line-height: 1 !important; display: inline-block !important; }
 
 body.printing-pdf .a4-paper { width: 100%; height: 100%; padding: 10mm 15mm !important; box-shadow: none; margin: 0; zoom: 0.95; }
 body.printing-pdf .inspection-table, body.printing-pdf .inspection-table th, body.printing-pdf .inspection-table td { border: 1px solid #000 !important; }
-body.printing-pdf .remarks-section { border: 1px solid #000 !important; background: none !important; }
-body.printing-pdf .remarks-input { border: none !important; }
-body.printing-pdf .label-box { border: 1px solid #000 !important; background: none !important; }
+body.printing-pdf .remarks-section, body.printing-pdf .label-box { border: 1px solid #000 !important; background: none !important; }
 body.printing-pdf .sign-title, body.printing-pdf .sign-stamp-area { border: 1px solid #000 !important; background: none !important; color: #000; }
 body.printing-pdf .print-hide-remarks, body.printing-pdf .print-hidden-row { display: none !important; }
 body.printing-pdf .input-error { border: none !important; background: transparent !important; box-shadow: none !important; animation: none !important; }
 
-/* 讓 PDF 模式的 Input 也跟列印模式一模一樣 */
-body.printing-pdf input, 
-body.printing-pdf .table-input, 
-body.printing-pdf .editable-cell, 
-body.printing-pdf .data-field {
-    border: none !important;
-    background: transparent !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    height: auto !important;
-    font-size: 14px;
-    vertical-align: middle;
-}
+body.printing-pdf .stamp-img { display: none !important; }
+body.printing-pdf.show-signatures .stamp-img { display: inline-block !important; }
+
+body.printing-pdf input, body.printing-pdf .table-input, body.printing-pdf .editable-cell, body.printing-pdf .data-field, body.printing-pdf .remarks-input { border: none !important; background: transparent !important; margin: 0 !important; padding: 0 !important; height: auto !important; font-size: 14px; vertical-align: middle; }
 body.printing-pdf .editable-cell { border-bottom: 1px dashed #000 !important; }

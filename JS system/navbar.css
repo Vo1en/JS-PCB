@@ -26,18 +26,16 @@
     height: auto !important; 
     display: flex;
     align-items: center;
-    
-    /* 電腦版：靠左對齊 */
     justify-content: flex-start; 
     gap: 50px; 
-    
     padding: 10px 40px;
     background-color: var(--glass-bg);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-bottom: 2px solid var(--glass-border);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    z-index: 1000;
+    /* [修正] 提高層級，確保蓋過頁面按鈕 (如 action-buttons) */
+    z-index: 2000;
 }
 
 .brand-logo {
@@ -46,7 +44,8 @@
     text-decoration: none;
     padding: 5px 0;
     flex-shrink: 0;
-    z-index: 1002;
+    /* [修正] 配合 navbar 提高層級 */
+    z-index: 2002;
 }
 
 .text-logo {
@@ -71,7 +70,8 @@
     font-size: 1.8rem;
     color: var(--text-main);
     user-select: none;
-    z-index: 1002;
+    /* [修正] 配合 navbar 提高層級 */
+    z-index: 2002;
     padding: 5px; 
 }
 
@@ -129,30 +129,27 @@
     100% { background-position: 100% 50%; }
 }
 
-/* === 手機版響應式樣式 (修改重點) === */
+/* === 手機版響應式樣式 === */
 @media (max-width: 768px) {
     .navbar {
         padding: 15px 20px;
-        /* 修改 1: 讓內容置中 (這裡是為了 Logo) */
         justify-content: center; 
         gap: 0;
-        position: fixed; /* 確保定位參考點正確 */
+        position: fixed; 
     }
     
     .text-logo {
         font-size: 1.8rem !important;
     }
 
-    /* 修改 2: 漢堡選單絕對定位到左邊 */
     .hamburger {
         display: block;
-        position: absolute; /* 脫離排版流 */
-        left: 20px;         /* 固定在左側 */
-        top: 50%;           /* 垂直置中 */
+        position: absolute; 
+        left: 20px;         
+        top: 50%;           
         transform: translateY(-50%);
     }
 
-    /* 下拉選單樣式 */
     .nav-links {
         position: absolute;
         top: 100%;
