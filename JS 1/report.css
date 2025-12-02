@@ -76,17 +76,59 @@ body { background-color: #f5f5f5; margin: 0; padding-top: 80px; font-family: 'No
 /* 螢幕顯示：備註與簽名推到最下方，保持版面整齊 */
 #unified-remarks-container { margin-top: auto; width: 100%; }
 
-.remarks-section { border: 1px solid var(--line-separator); padding: 8px; border-radius: var(--ui-radius); background-color: #fcfcfc; display: flex; flex-direction: column; justify-content: flex-end; }
+.remarks-section { border: 1px solid var(--line-separator); padding: 8px; border-radius: var(--ui-radius); background-color: #fcfcfc; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 10px; }
 .label-box { background-color: var(--label-bg); color: #333; font-weight: bold; font-size: 14px; padding: 3px 10px; border-radius: var(--ui-radius); margin-bottom: 5px; border: 1px solid var(--gold-dark); }
 .remarks-input { width: 100%; border: 1px solid #e0e0e0; height: 40px !important; resize: none; border-radius: var(--ui-radius); box-sizing: border-box; }
 
-.signature-section { display: flex; justify-content: space-between; margin-top: 20px; width: 100%; }
+/* === 簽名開關控制區 (電腦版：預設顯示在簽名欄上方，靠右) === */
+.signature-control-area {
+    display: flex;
+    justify-content: flex-end; /* 靠右對齊 (核准人員上方) */
+    margin-bottom: 5px;
+    padding: 0 5px;
+}
+
+.toggle-label {
+    font-size: 13px;
+    color: #555;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    background: #eee;
+    padding: 3px 10px;
+    border-radius: 15px;
+    border: 1px solid #ccc;
+    transition: all 0.2s;
+    user-select: none;
+}
+.toggle-label:hover { background: #e0e0e0; }
+.toggle-label input { margin-right: 5px; cursor: pointer; }
+.toggle-label input:checked + span { color: #000; }
+
+/* === 簽名區塊 === */
+.signature-section { display: flex; justify-content: space-between; margin-top: 5px; width: 100%; }
 .sign-box { width: 48%; text-align: center; }
 .sign-title { background-color: var(--label-bg); padding: 6px; font-weight: bold; border: 1px solid var(--gold-dark); border-bottom: none; border-top-left-radius: var(--ui-radius); border-top-right-radius: var(--ui-radius); }
 .sign-stamp-area { height: 100px; border: 1px solid var(--gold-dark); display: flex; align-items: center; justify-content: center; border-bottom-left-radius: var(--ui-radius); border-bottom-right-radius: var(--ui-radius); }
-.stamp-img { max-height: 90%; max-width: 90%; object-fit: contain; }
 
-/* === 按鈕 (包含玻璃擬態通用樣式) === */
+/* === 簽名圖檔顯示邏輯 (修正：強制最大化 100%) === */
+.stamp-img { 
+    height: 50%;      /* 強制高度填滿容器 */
+    max-height: 100%;  /* 雙重確保 */
+    width: auto;       /* 寬度自動，保持比例 */
+    max-width: 80%;   /* 避免過寬 */
+    object-fit: contain; 
+    display: none !important; /* 預設隱藏 (空白) */
+}
+
+/* 當 Body 有 show-signatures class 時，才顯示圖片 */
+body.show-signatures .stamp-img {
+    display: inline-block !important;
+}
+
+
+/* === 按鈕 (電腦版玻璃擬態) === */
 .action-buttons { position: fixed; z-index: 1000; top: 150px; left: 50%; margin-left: calc(105mm + 60px); display: flex; flex-direction: column; gap: 15px; }
 .btn-print { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px); border: 1px solid #fff; padding: 12px 24px; border-radius: 50px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #1f2937; transition: all 0.2s; }
 .btn-print:active { transform: scale(0.98); box-shadow: none; }
@@ -149,10 +191,11 @@ body { background-color: #f5f5f5; margin: 0; padding-top: 80px; font-family: 'No
 .editable-cell:focus { border-bottom: 1px solid #b38728; background-color: #fffdf5; }
 .tolerance-display { font-size: 0.85em; color: #666; margin-left: 4px; white-space: nowrap; }
 
-/* === RWD 樣式 === */
+/* === RWD 樣式 (依據您的圖片修正) === */
 @media screen and (max-width: 768px) {
-    /* [優化] 增加頂部留白，避免被 fixed navbar 遮擋 */
-    .page-container { padding: 80px 5px 80px 5px !important; display: flex; justify-content: center; } 
+    /* [修正 1] 增加底部留白，解決簽名欄被底部固定按鈕遮擋問題 */
+    /* 140px = 60px(按鈕) + 40px(開關) + 40px(緩衝) */
+    .page-container { padding: 10px 5px 140px 5px !important; display: flex; justify-content: center; } 
     
     .a4-paper { padding: 15px 12px; width: 100%; max-width: 100%; min-height: auto; }
     .report-header-modern { flex-direction: column; text-align: center; gap: 10px; align-items: center !important; }
@@ -166,10 +209,72 @@ body { background-color: #f5f5f5; margin: 0; padding-top: 80px; font-family: 'No
     .input-group { width: 100%; display: flex; align-items: center; }
     .unit-display-text { width: 70px !important; min-width: 70px !important; text-align: left !important; white-space: nowrap; flex-shrink: 0; }
     
-    /* [優化] 手機版底部按鈕列 */
-    .action-buttons { position: fixed; top: auto; bottom: 0; left: 0; width: 100%; margin: 0; gap: 0; flex-direction: row !important; z-index: 2000; border-top: 1px solid #ccc; }
-    .btn-print, .btn-pdf { flex: 1; width: 50% !important; border-radius: 0; margin: 0; height: 60px; justify-content: center; background: #fff; border: none !important; box-shadow: none !important; }
-    .btn-pdf { background: #fef2f2; border-left: 1px solid #e5e7eb !important; }
+    /* [手機版] 簽名開關：固定在底部按鈕上方 */
+    .signature-control-area {
+        position: fixed;        /* 固定位置 */
+        bottom: 60px;          /* 位於底部按鈕列 (60px高) 的上方 */
+        left: 0;
+        width: 100%;
+        background: #f9f9f9;    /* 淺灰背景，區隔內容 */
+        border-top: 1px solid #dcdcdc;
+        margin: 0;
+        padding: 8px 0;
+        justify-content: center; /* 手機版置中對齊 */
+        z-index: 2001;          /* 確保層級高於按鈕與內容 */
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.05); /* 增加一點陰影層次 */
+    }
+    
+    /* 調整按鈕大小讓手機更好點 */
+    .toggle-label {
+        background: #fff;
+        padding: 5px 20px;
+        border: 1px solid #bbb;
+    }
+
+    /* [修正 2] 手機版底部按鈕列：完全符合圖片 */
+    .action-buttons { 
+        position: fixed; 
+        top: auto; 
+        bottom: 0; 
+        left: 0; 
+        width: 100%; 
+        margin: 0; 
+        padding: 0; 
+        gap: 0; 
+        flex-direction: row !important; 
+        z-index: 2000; 
+        border-top: 1px solid #e0e0e0;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+    
+    /* 左邊：列印 (白色底，黑色字) */
+    .btn-print { 
+        flex: 1; 
+        width: 50% !important; 
+        border-radius: 0; 
+        margin: 0; 
+        height: 60px; 
+        justify-content: center; 
+        background: #fff; 
+        color: #333;
+        border: none !important; 
+        box-shadow: none !important; 
+    }
+    
+    /* 右邊：生成 PDF (淡紅底，紅色字) */
+    .btn-pdf { 
+        flex: 1; 
+        width: 50% !important; 
+        border-radius: 0; 
+        margin: 0; 
+        height: 60px; 
+        justify-content: center; 
+        background: #fff0f0; /* 圖片中的淡粉紅 */
+        color: #b91c1c; /* 紅色字 */
+        border: none !important;
+        border-left: 1px solid #f0f0f0 !important;
+        box-shadow: none !important; 
+    }
     
     .mobile-only { display: flex !important; } .desktop-only { display: none !important; }
     
@@ -185,8 +290,8 @@ body { background-color: #f5f5f5; margin: 0; padding-top: 80px; font-family: 'No
 
 /* === 列印模式 (瀏覽器 Ctrl+P) === */
 @media print {
-    /* 隱藏不需要的元素 */
-    #navbar-container, .navbar, .action-buttons, .reset-btn, .reset-cycle-btn, .info-grid, .input-group, .unit-display-text { display: none !important; }
+    /* 隱藏不需要的元素 (加入 signature-control-area 隱藏切換開關) */
+    #navbar-container, .navbar, .action-buttons, .reset-btn, .reset-cycle-btn, .info-grid, .input-group, .unit-display-text, .signature-control-area { display: none !important; }
     .btn-pdf, .btn-print, .btn-glass-base { display: none !important; }
     
     /* 顯示列印專用表格 */
@@ -247,10 +352,13 @@ body { background-color: #f5f5f5; margin: 0; padding-top: 80px; font-family: 'No
     /* 強制顏色 */
     .status-pass { background-color: #ecfdf5 !important; color: #059669 !important; border: 2px solid #059669 !important; } 
     .status-fail { background-color: #fef2f2 !important; color: #dc2626 !important; border: 2px solid #dc2626 !important; } 
+
+    /* 列印時也支援簽名檔顯示 (如果有開) */
+    body.show-signatures .stamp-img { display: inline-block !important; }
 }
 
 /* === PDF 生成模式 (獨立於 @media print 之外，確保 html2pdf 抓得到) === */
-body.printing-pdf #navbar-container, body.printing-pdf .action-buttons, body.printing-pdf .navbar, body.printing-pdf .reset-cycle-btn, body.printing-pdf .info-grid, body.printing-pdf .input-group, body.printing-pdf .reset-btn, body.printing-pdf .unit-display-text, body.printing-pdf .btn-glass-base { display: none !important; }
+body.printing-pdf #navbar-container, body.printing-pdf .action-buttons, body.printing-pdf .navbar, body.printing-pdf .reset-cycle-btn, body.printing-pdf .info-grid, body.printing-pdf .input-group, body.printing-pdf .reset-btn, body.printing-pdf .unit-display-text, body.printing-pdf .btn-glass-base, body.printing-pdf .signature-control-area { display: none !important; }
 
 /* 顯示與結構 */
 body.printing-pdf .print-only-table { display: table !important; }
@@ -280,6 +388,11 @@ body.printing-pdf .remarks-section, body.printing-pdf .label-box { border: 1px s
 body.printing-pdf .sign-title, body.printing-pdf .sign-stamp-area { border: 1px solid #000 !important; background: none !important; color: #000; }
 body.printing-pdf .print-hide-remarks, body.printing-pdf .print-hidden-row { display: none !important; }
 body.printing-pdf .input-error { border: none !important; background: transparent !important; box-shadow: none !important; animation: none !important; }
+
+/* PDF 模式下的簽名檔邏輯 */
+body.printing-pdf .stamp-img { display: none !important; }
+body.printing-pdf.show-signatures .stamp-img { display: inline-block !important; }
+
 
 /* Input 樣式 */
 body.printing-pdf input, body.printing-pdf .table-input, body.printing-pdf .editable-cell, body.printing-pdf .data-field, body.printing-pdf .remarks-input {

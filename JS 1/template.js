@@ -7,21 +7,30 @@ window.reportData = {
     partno: "",
     qty: "",
     unit: "PNL",
-    cycle: "no", // 'no' | 'has' | ''
+    cycle: "", // 修正：預設為空字串，以強制觸發「請選擇」的驗證
     cycleInput: "",
 };
 
 document.addEventListener("DOMContentLoaded", function() {
     renderHeader();
     renderRemarks();
+    // 💡 新增：渲染獨立的簽名控制區
+    renderSignatureControl();
+    
+    // 💡 關鍵：DOM 渲染完畢後，立即檢查並啟用簽名圖檔的顯示
+    const signatureCheckbox = document.getElementById('use-signature-img');
+    if (signatureCheckbox && signatureCheckbox.checked) {
+        window.toggleSignatures(signatureCheckbox);
+    }
+    
     initTemplateLogic();
 });
 
-// === 1. 渲染 Header (支援簡易模式) ===
+// === 1. 渲染 Header (略，內容不變) ===
 function renderHeader() {
     const container = document.getElementById("unified-header-container");
     if (!container) return;
-
+    // ... (renderHeader 內容不變)
     const reportTitle = container.getAttribute("data-title") || "出貨檢驗報告";
     // [優化] 判斷是否為簡易模式 (不顯示輸入框)
     const isSimpleMode = container.getAttribute("data-simple") === "true";
@@ -128,10 +137,12 @@ function renderHeader() {
     }
 }
 
-// === 2. 渲染備註欄位 ===
+// === 2. 渲染備註欄位 (移除簽名切換功能) ===
 function renderRemarks() {
     const container = document.getElementById("unified-remarks-container");
     if (!container) return;
+    
+    // 💡 關鍵修改：移除簽名控制區，只保留備註
     container.innerHTML = `
         <div class="remarks-section">
             <div class="label-box">備註</div>
@@ -140,7 +151,38 @@ function renderRemarks() {
     `;
 }
 
-// === 3. 共用變數同步與初始化 ===
+// === 新增：渲染獨立的簽名控制區 (電腦版在簽名框上，手機版固定底部) ===
+function renderSignatureControl() {
+    // 1. 找到簽名區塊容器
+    const signatureSection = document.querySelector('.signature-section');
+    if (!signatureSection) return;
+
+    // 2. 建立控制區 DOM
+    const controlContainer = document.createElement('div');
+    controlContainer.className = 'signature-control-area';
+    controlContainer.innerHTML = `
+        <label class="toggle-label">
+            <input type="checkbox" id="use-signature-img" checked onchange="toggleSignatures(this)">
+            <span>使用簽名圖檔 (列印/PDF)</span>
+        </label>
+    `;
+
+    // 3. 插入位置：在簽名區塊 (signatureSection) 的 "前面"
+    // 這樣在電腦版就會顯示在簽名框的上方；CSS 用 flex-end 讓它靠右 (核准人員上方)
+    signatureSection.parentNode.insertBefore(controlContainer, signatureSection);
+}
+
+
+// === 簽名切換邏輯 (內容不變) ===
+window.toggleSignatures = function(checkbox) {
+    if (checkbox.checked) {
+        document.body.classList.add('show-signatures');
+    } else {
+        document.body.classList.remove('show-signatures');
+    }
+}
+
+// === 3. 共用變數同步與初始化 (略，內容不變) ===
 window.updateReportData = function(key, value) {
     if (window.reportData.hasOwnProperty(key)) {
         window.reportData[key] = value;
@@ -273,7 +315,7 @@ function initTemplateLogic() {
     }
 }
 
-// === 4. 統一列印與驗證流程 ===
+// === 4. 統一列印與驗證流程 (包含週期判斷) ===
 window.handlePrintProcess = function(pageValidator = null, onlyValidate = false) {
     let isComplete = true;
 
@@ -300,13 +342,18 @@ window.handlePrintProcess = function(pageValidator = null, onlyValidate = false)
     const cycleSelect = document.getElementById('cycle-select');
     const cycleInput = document.getElementById('cycle-input');
     
-    if (cycleSelect && (window.reportData.cycle === '' || window.reportData.cycle === '請選擇')) { // 尚未選擇
-        cycleSelect.classList.add('input-error');
-        isComplete = false;
-    } else if (window.reportData.cycle === 'has' && window.reportData.cycleInput.trim() === '') {
+    // 如果 reportData.cycle 是 'has' (有週期)，但輸入框是空的 -> 擋下
+    if (window.reportData.cycle === 'has' && window.reportData.cycleInput.trim() === '') {
         if (cycleInput) cycleInput.classList.add('input-error');
         isComplete = false;
-    } else {
+    } 
+    // 如果根本還沒選 (預設為 "") -> 擋下
+    else if (cycleSelect && (window.reportData.cycle === '' || window.reportData.cycle === '請選擇')) {
+        cycleSelect.classList.add('input-error');
+        isComplete = false;
+    } 
+    else {
+        // 驗證通過 (例如選了 'no' 或是選了 'has' 且有輸入)
         if (cycleSelect) cycleSelect.classList.remove('input-error');
         if (cycleInput) cycleInput.classList.remove('input-error');
     }
@@ -349,7 +396,7 @@ window.handlePrintProcess = function(pageValidator = null, onlyValidate = false)
     return true;
 };
 
-// === 5. 統一 PDF 生成流程 ===
+// === 5. 統一 PDF 生成流程 (略，內容不變) ===
 window.handlePDFProcess = function(pageValidator = null) {
     if (typeof html2pdf === 'undefined') {
         alert("PDF 生成元件尚未載入完成");
