@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const navbarHTML = `
         <nav class="navbar">
             <a href="index.html" class="brand-logo">
-                <span class="text-logo">駿鑫實業</span>
+                <span class="text-logo">JS PCB</span>
             </a>
             <div class="hamburger" id="hamburger-btn">
                 ☰
@@ -58,4 +58,5 @@ document.addEventListener("DOMContentLoaded", function() {
             link.classList.add("current");
         }
     });
+
 });
