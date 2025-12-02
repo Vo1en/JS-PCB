@@ -191,9 +191,11 @@
                 if (item.page.includes('inspection')) { tagClass = 'tag-inspection'; typeName = '出貨檢驗'; }
                 if (item.page.includes('test')) { tagClass = 'tag-test'; typeName = '電性測試'; }
                 
-                // 只顯示日期 MM/DD
-                const dateShort = new Date(item.timestamp).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
-
+                // 只顯示日期 MM/DD       
+            // 解析日期            
+            const d = new Date(item.timestamp);         
+            // 如果日期無效 (Invalid Date)，就顯示 "-"，否則顯示 MM/DD          
+            const dateShort = isNaN(d.getTime()) ? "-" : d.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
                 html += `
                     <tr>
                         <td>${dateShort}</td>
