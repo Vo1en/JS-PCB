@@ -13,18 +13,18 @@
 
         /* --- 高級淺色金屬配色 (Light Beige & Gold) --- */
         :root {
-            /* === 修正點：背景改為淺香檳暖色調 (Warm Beige) === */
+            /* === 背景改為淺香檳暖色調 === */
             --bg-gradient: linear-gradient(135deg, #fcfaf5 0%, #f0ebde 100%);
             
             /* 容器：亮色玻璃毛玻璃 */
             --glass-bg: rgba(255, 255, 255, 0.9);
-            --glass-border: rgba(194, 168, 120, 0.5); /* 金色邊框更明顯 */
+            --glass-border: rgba(194, 168, 120, 0.5); 
             
             /* 文字顏色 */
-            --text-main: #1f2937; /* 深藍灰 (高對比) */
-            --text-sub: #6b7280;  /* 柔和灰 */
+            --text-main: #1f2937; 
+            --text-sub: #6b7280;  
             
-            /* 金屬漸層 (模擬土金/玫瑰金反光) */
+            /* 金屬漸層 */
             --gold-gradient: linear-gradient(135deg, #c2a878 0%, #e3d1a8 50%, #9e8b6b 100%);
             --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
             
@@ -41,22 +41,18 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            color: var(--text-main); /* 確保預設文字是深色的 */
+            color: var(--text-main); 
 
-            /* === 修正點：疊加大理石紋理背景 (Subtle Marble Texture) - 增強可見度，匹配暖色底色 === */
+            /* === 疊加大理石紋理背景 === */
             background: 
-                /* Layer 1: Base soft grey gradient */
                 var(--bg-gradient),
-
-                /* Layer 2: Wide, soft, gold-tinted veins (Diagonal 1) */
                 repeating-linear-gradient(
                     135deg,
-                    rgba(194, 168, 120, 0.3), /* Gold tint */
+                    rgba(194, 168, 120, 0.3), 
                     rgba(194, 168, 120, 0.15) 4px,
                     transparent 4px,
                     transparent 500px
                 ), 
-                /* Layer 3: Wide, soft, grey vein lines (Diagonal 2) */
                 repeating-linear-gradient(
                     -45deg,
                     rgba(150, 150, 150, 0.25), 
@@ -64,19 +60,15 @@
                     transparent 4px,
                     transparent 500px
                 ),
-                /* Layer 4 & 5: Soft, subtle radial gradients for cloud-like mottling - 改為暖灰調 */
                 radial-gradient(circle at 10% 80%, rgba(200, 190, 170, 0.3) 5%, transparent 60%), 
                 radial-gradient(circle at 70% 20%, rgba(200, 190, 170, 0.3) 5%, transparent 60%), 
-                
-                /* Fallback (The base gradient) */
                 var(--bg-gradient); 
             
-            /* Define background size for the repeating linear gradients to create widely spaced veins */
             background-size: 100% 100%, 1500px 1500px, 1500px 1500px, 100% 100%, 100% 100%, 100% 100%;
             background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; 
         }
 
-        /* 背景裝飾光暈 - 讓它更淡 */
+        /* 背景裝飾光暈 */
         body::before {
             content: '';
             position: absolute;
@@ -84,7 +76,6 @@
             left: -10%;
             width: 60vw;
             height: 60vw;
-            /* 淺色背景使用淡金色光暈 */
             background: radial-gradient(circle, rgba(194, 168, 120, 0.15) 0%, rgba(0,0,0,0) 70%);
             border-radius: 50%;
             pointer-events: none;
@@ -92,14 +83,14 @@
 
         .container {
             position: relative;
-            background-color: var(--glass-bg); /* 亮色毛玻璃 */
+            background-color: var(--glass-bg); 
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             padding: 60px 40px;
             border-radius: 20px;
             box-shadow: 
-                0 15px 40px rgba(0, 0, 0, 0.15), /* 淺色背景使用柔和陰影 */
-                inset 0 0 0 1px var(--glass-border); /* 內嵌金屬邊框 */
+                0 15px 40px rgba(0, 0, 0, 0.15), 
+                inset 0 0 0 1px var(--glass-border); 
             text-align: center;
             max-width: 900px;
             width: 90%;
@@ -112,12 +103,11 @@
             line-height: 1.3;
         }
 
-        /* 第一行：品牌名稱 (奢華金屬字) */
+        /* 第一行：品牌名稱 */
         h1 span.brand {
             display: block;
             font-size: 2.8rem;
             font-weight: 800;
-            /* 金屬流光效果 (不變) */
             background: var(--gold-text-gradient);
             background-size: 200% auto;
             -webkit-background-clip: text;
@@ -126,17 +116,17 @@
             animation: shine 5s linear infinite;
         }
 
-        /* 第二行：系統名稱 (精緻霧面金) */
+        /* 第二行：系統名稱 */
         h1 span.system {
             display: block;
             font-size: 1.2rem;
-            color: #c2a878; /* 霧面金 */
+            color: #c2a878; 
             font-weight: 400;
             letter-spacing: 6px;
             text-transform: uppercase;
         }
 
-        /* 標題下方的裝飾線 (金屬髮絲紋感) */
+        /* 標題下方的裝飾線 */
         h1::after {
             content: '';
             display: block;
@@ -155,7 +145,7 @@
             margin-top: 50px;
         }
 
-        /* 卡片按鈕樣式 - 淺色金屬面板 (Light Neumorphism) */
+        /* 卡片按鈕樣式 */
         .option-card {
             display: flex;
             flex-direction: column;
@@ -164,16 +154,14 @@
             text-decoration: none;
             width: 260px;
             height: 200px;
-            /* 調整為亮白色漸層 */
             background: linear-gradient(145deg, #ffffff, #f0f4f8); 
             border-radius: 15px;
             box-shadow: 
-                5px 5px 15px rgba(0,0,0,0.1), /* 柔和淺色陰影 */
-                -2px -2px 4px rgba(255,255,255,1); /* 淺色背景上的高光 */
+                5px 5px 15px rgba(0,0,0,0.1), 
+                -2px -2px 4px rgba(255,255,255,1); 
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
             overflow: hidden;
-            /* === 邊框維持上次修正結果 (2px 淺藍灰) === */
             border: 2px solid #e2e8f0; 
             cursor: pointer;
         }
@@ -182,7 +170,6 @@
             font-size: 55px; 
             margin-bottom: 15px; 
             transition: transform 0.4s ease;
-            /* 圖示預設使用金屬漸層色 */
             background: var(--gold-gradient);
             background-clip: text;
             -webkit-background-clip: text;
@@ -193,7 +180,7 @@
         .option-title { 
             font-size: 1.3rem; 
             font-weight: 500; 
-            color: var(--text-main); /* 預設深色文字 */
+            color: var(--text-main); 
             margin-bottom: 5px;
             transition: color 0.3s;
             letter-spacing: 1px;
@@ -201,7 +188,7 @@
         
         .option-desc { 
             font-size: 0.8rem; 
-            color: var(--text-sub); /* 預設灰色文字 */
+            color: var(--text-sub); 
             font-family: 'Roboto', sans-serif;
             font-weight: 300;
             letter-spacing: 1px;
@@ -209,19 +196,16 @@
             text-transform: uppercase;
         }
 
-        /* --- 互動特效 (Hover Effects) --- */
-
-        /* 通用 Hover 狀態 */
+        /* --- 互動特效 --- */
         .option-card:hover {
             transform: translateY(-8px);
-            /* Hover 時邊框變金，這個顏色與 2px 邊框搭配會非常醒目 */
             border-color: #c2a878; 
             box-shadow: 0 15px 35px var(--card-hover-shadow);
         }
 
         .option-card:hover .option-icon {
             transform: scale(1.1);
-            -webkit-text-fill-color: #fff; /* Hover 時圖標變白 */
+            -webkit-text-fill-color: #fff; 
         }
 
         .option-card:hover .option-title {
@@ -229,7 +213,7 @@
         }
         
         .option-card:hover .option-desc {
-            color: #f7f7f7; /* 描述變亮 */
+            color: #f7f7f7; 
         }
 
         /* Order Detail (琥珀金漸層) */
@@ -237,7 +221,6 @@
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* 星宇風格：沈穩的棕金漸層 */
             background: linear-gradient(135deg, rgba(161, 142, 114, 0.9), rgba(105, 90, 66, 0.9));
             opacity: 0;
             transition: opacity 0.4s ease;
@@ -254,9 +237,6 @@
             transition: opacity 0.4s ease;
             z-index: 1;
         }
-        .card-inspection:hover .option-desc {
-            color: #fff;
-        }
 
         /* Test Report (測試報告：翡翠綠漸層) */
         .card-test::before {
@@ -268,50 +248,26 @@
             transition: opacity 0.4s ease;
             z-index: 1;
         }
-        .card-test:hover .option-desc {
-            color: #fff;
-        }
 
-        /* NEW: Specification Document (製程規範：淺藍色調漸層) */
+        /* Specification Document (製程規範：淺藍色調漸層) */
         .card-spec::before {
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* 文件/規範風格：清新的鈷藍漸層 */
             background: linear-gradient(135deg, rgba(0, 123, 194, 0.9), rgba(0, 76, 122, 0.9));
             opacity: 0;
             transition: opacity 0.4s ease;
             z-index: 1;
         }
-        .card-spec:hover .option-desc {
-            color: #fff;
-        }
-
-
-        /* Hover 時讓漸層浮現 */
-        .option-card:hover::before {
-            opacity: 1;
-        }
         
-        /* 確保內容在漸層之上 */
-        .option-card > * {
-            position: relative;
-            z-index: 2;
-        }
+        .option-card:hover::before { opacity: 1; }
+        .option-card > * { position: relative; z-index: 2; }
 
-        /* 進場動畫 */
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 金屬流光動畫 */
         @keyframes shine {
             0% { background-position: 0% 50%; }
             100% { background-position: 100% 50%; }
@@ -319,26 +275,18 @@
 
         /* 響應式調整 */
         @media (max-width: 600px) {
-            .container {
-                padding: 40px 20px;
-                width: 85%;
-                backdrop-filter: blur(20px);
-            }
-            
+            .container { padding: 40px 20px; width: 85%; backdrop-filter: blur(20px); }
             h1 span.brand { font-size: 2.2rem; }
             h1 span.system { font-size: 0.9rem; letter-spacing: 3px; }
-            
             .option-card {
                 width: 100%;
                 height: 140px;
                 flex-direction: row;
                 justify-content: flex-start;
                 padding-left: 30px;
-                /* 手機版使用全白底色 */
                 background: #ffffff;
                 box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             }
-            
             .option-icon { margin-bottom: 0; margin-right: 25px; font-size: 36px; }
             .option-info { text-align: left; }
             .option-title { font-size: 1.1rem; }
@@ -380,7 +328,7 @@
                 </div>
             </a>
             
-            <a href="https://drive.google.com/file/d/1tW2bywohN62zzBRWE1Q0_976g6Yu2xkR/view?usp=sharing" class="option-card card-spec" target="_blank">
+            <a href="https://drive.google.com/file/d/1tW2bywohN62zzBRWE1Q0_976g6Yu2xkR/view?usp=sharing" class="option-card card-spec" target="_blank" rel="noopener noreferrer">
                 <div class="option-icon">📜</div>
                 <div class="option-info">
                     <div class="option-title">製程能力與交期規範</div>

@@ -591,7 +591,6 @@
       customInput.value = ''; // 清空自訂內容
       selectEl.style.display = 'block';
       selectEl.value = '-';
-      // 確保重置後觸發連動檢查
       updateStates();
     }
   }
@@ -605,6 +604,21 @@
     generateText(); // 先生成文字
     copyText();     // 再複製文字
   }
+
+  // 💡 [新增] 當自訂輸入框失去焦點且為空時，自動切換回選單
+  document.addEventListener('DOMContentLoaded', function() {
+      // 綁定所有自訂輸入框
+      document.querySelectorAll('.custom-input-wrapper input').forEach(input => {
+          input.addEventListener('blur', function() {
+              if (this.value.trim() === '') {
+                  // ID 規則是 xxx_custom -> xxx
+                  const selectId = this.id.replace('_custom', '');
+                  resetSelect(selectId);
+              }
+          });
+      });
+      updateStates();
+  });
 
   // PCB 規格連動規則表
   const SPEC_RULES = {
@@ -858,9 +872,6 @@
         }
     }
   }
-
-  document.addEventListener('DOMContentLoaded', updateStates);
-  updateStates();
 </script>
 
 </body>
