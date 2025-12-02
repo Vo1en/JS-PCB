@@ -163,7 +163,7 @@ function renderSignatureControl() {
     controlContainer.innerHTML = `
         <label class="toggle-label">
             <input type="checkbox" id="use-signature-img" checked onchange="toggleSignatures(this)">
-            <span>使用簽名圖檔 (列印/PDF)</span>
+            <span>使用印章圖檔</span>
         </label>
     `;
 
@@ -438,4 +438,5 @@ window.handlePDFProcess = function(pageValidator = null) {
         alert("PDF 生成失敗：" + err.message);
         document.body.classList.remove('printing-pdf');
     });
+
 };
