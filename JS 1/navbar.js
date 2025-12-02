@@ -1,4 +1,20 @@
 document.addEventListener("DOMContentLoaded", function() {
+
+    // === [修正] 設定網頁標籤的小圖示 (Favicon) ===
+    // 這是從 index.html 提取的金色閃電 SVG
+    const faviconSVG = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 0L20 60H40L30 100L80 40H60L70 0Z' fill='%23c2a878'/></svg>";
+
+    // 檢查頁面是否已經有 icon，沒有的話建立一個
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    // 強制設定為金色閃電
+    link.href = faviconSVG;
+
+
     // 1. 定義導覽列 HTML 結構
     const navbarHTML = `
         <nav class="navbar">
@@ -30,15 +46,15 @@ document.addEventListener("DOMContentLoaded", function() {
     if (hamburger && navLinks) {
         hamburger.addEventListener("click", function() {
             navLinks.classList.toggle("active");
-            // 切換圖示 (選用)
+            
             if (navLinks.classList.contains("active")) {
-                hamburger.textContent = "✕"; // 變成叉叉
+                hamburger.textContent = "✕"; 
             } else {
-                hamburger.textContent = "☰"; // 變回漢堡
+                hamburger.textContent = "☰"; 
             }
         });
 
-        // 點擊連結後自動收合選單 (優化手機體驗)
+        // 點擊連結後自動收合選單
         navLinks.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 navLinks.classList.remove('active');
@@ -53,10 +69,8 @@ document.addEventListener("DOMContentLoaded", function() {
     
     links.forEach(link => {
         const href = link.getAttribute("href");
-        // 簡單比對檔名
         if (href === currentPage) {
             link.classList.add("current");
         }
     });
-
 });

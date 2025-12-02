@@ -351,6 +351,18 @@
         function initNumericInputLogic() {
             const numericInputs = document.querySelectorAll('#dim-length-input, #dim-width-input, #pnl-x, #pnl-y');
             numericInputs.forEach(input => { input.addEventListener('input', function() { this.value = this.value.replace(/[^0-9.]/g, ''); hasUserInteracted = true; }); });
+            
+            // [修正] 針對 contenteditable 欄位加入貼上純文字的處理
+            document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                el.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    // 取得純文字
+                    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+                    // 插入純文字
+                    document.execCommand('insertText', false, text);
+                });
+            });
+
             const editableCells = document.querySelectorAll('.editable-cell, .data-field');
             editableCells.forEach(cell => {
                 // 處理輸入限制

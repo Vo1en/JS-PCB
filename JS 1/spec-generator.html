@@ -7,6 +7,8 @@
   
   <link rel="stylesheet" href="report.css">
   <link rel="stylesheet" href="navbar.css"> 
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 0L20 60H40L30 100L80 40H60L70 0Z' fill='%23c2a878'/></svg>">
+
   <style>
   /* 移除 JS PCB 浮水印樣式 */
   body::before { content: none !important; }
@@ -21,7 +23,6 @@
   .main-container { width: 100%; margin: 0 auto; padding: 0; }
   .logo-wrap, h1.page-title { display: none; } 
 
-  /* 調整 field-group 樣式 */
   .info-grid-custom {
       display: grid;
       grid-template-columns: 1fr;
@@ -107,7 +108,6 @@
     flex-shrink: 0;
   }
   
-  /* A4 規格 */
   .page-container {
       width: 100%;
       display: flex;
@@ -130,7 +130,6 @@
       margin: 0; 
   }
 
-  /* 備註欄位與輸出區塊 */
   .remarks-container { margin-bottom: 20px; }
   .remarks-input { min-height: 90px !important; resize: vertical; }
 
@@ -169,9 +168,9 @@
       justify-content: center; 
       gap: 15px; 
       margin: 20px 0 20px 0; 
+      flex-wrap: wrap; /* 避免手機版爆版 */
   }
 
-  /* 手機響應式調整 */
   @media (max-width: 768px) {
       .page-container { padding: 5px; padding-bottom: 20px !important; }
       .a4-paper { width: 100%; min-height: auto; padding: 15px; box-shadow: none; margin: 0; }
@@ -538,6 +537,7 @@
             <button type="button" class="btn-glass-base btn-glass-gold" onclick="generateAndCopyText()">一鍵生成+複製</button>
             <button type="button" class="btn-glass-base btn-glass-blue" onclick="generateText()">生成文字</button>
             <button type="button" class="btn-glass-base btn-glass-gray" onclick="copyText()">複製文字</button>
+            <button type="button" class="btn-glass-base btn-glass-red" onclick="resetAllFields()">清空重填</button>
         </div>
 
         <div class="output-area">
@@ -551,8 +551,6 @@
 <script src="template.js"></script>
 
 <script>
-  
-  // 格式化數字 (數量/金額欄位)
   function formatNumber(input) {
     var value = input.value.replace(/\D/g, "");
     if (value) {
@@ -562,7 +560,6 @@
     }
   }
 
-  // 檢查是否選中自訂輸入
   function checkCustom(selectEl) {
     if (selectEl.value === 'custom') {
       var customDivId = selectEl.id + '_custom_div';
@@ -571,21 +568,23 @@
       if (customDiv) {
         selectEl.style.display = 'none';
         customDiv.style.display = 'flex';
-        if(customInput) customInput.focus();
+        // [優化] 自動聚焦到輸入框
+        if(customInput) {
+            setTimeout(() => customInput.focus(), 50);
+        }
       }
       return true;
     }
     return false;
   }
 
-  // 重置回選單
   function resetSelect(selectId) {
     var selectEl = document.getElementById(selectId);
     var customDiv = document.getElementById(selectId + '_custom_div');
     var customInput = document.getElementById(selectId + '_custom');
     if (selectEl && customDiv) {
       customDiv.style.display = 'none';
-      customInput.value = ''; // 清空自訂內容
+      customInput.value = ''; 
       selectEl.style.display = 'block';
       selectEl.value = '-';
       updateStates();
@@ -598,16 +597,40 @@
   }
   
   function generateAndCopyText() {
-    generateText(); // 先生成文字
-    copyText();     // 再複製文字
+    generateText();
+    copyText();
+  }
+
+  // [新增] 清空重填功能
+  function resetAllFields() {
+    if(!confirm('確定要清空所有欄位嗎？')) return;
+    
+    // 重置所有下拉選單與自訂輸入
+    document.querySelectorAll('select').forEach(sel => {
+        resetSelect(sel.id);
+        sel.value = (sel.id === 'qty') ? '5' : '-'; // 數量預設 5
+        if(sel.id === 'material') sel.value = 'FR-4';
+        if(sel.id === 'layers') sel.value = '雙面板';
+        if(sel.id === 'thickness') sel.value = '1.6 mm';
+        if(sel.id === 'outerCu') sel.value = '1oz';
+        if(sel.id === 'solderMask') sel.value = '綠色';
+        if(sel.id === 'legendColor') sel.value = '白字';
+        if(sel.id === 'finish') sel.value = '無鉛噴錫';
+    });
+
+    // 清空其他輸入框
+    document.querySelectorAll('input[type="text"]').forEach(inp => inp.value = "");
+    document.querySelector('.remarks-input').value = "";
+    document.getElementById("output-text").value = "";
+    
+    updateStates();
+    window.showToast("欄位已清空");
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-      // 綁定所有自訂輸入框
       document.querySelectorAll('.custom-input-wrapper input').forEach(input => {
           input.addEventListener('blur', function() {
               if (this.value.trim() === '') {
-                  // ID 規則是 xxx_custom -> xxx
                   const selectId = this.id.replace('_custom', '');
                   resetSelect(selectId);
               }
@@ -616,21 +639,17 @@
       updateStates();
   });
 
-  // PCB 規格連動規則表
   const SPEC_RULES = {
       locks: [
-          // 六層以上：表面處理強制化金 2u
           { rule: (material, layers) => ['六層板', '八層板', '十層板'].includes(layers), 
             target: 'finish', 
             action: (sel) => { sel.value = '化金 2u'; sel.disabled = true; document.getElementById('finishWarning').style.display = 'block'; } },
           
-          // 六層以上：特殊製程強制樹脂塞孔
           { rule: (material, layers) => ['六層板', '八層板', '十層板'].includes(layers), 
             target: 'special1', 
             action: (sel) => { sel.value = '樹脂塞孔'; sel.disabled = true; document.getElementById('special1Warning').style.display = 'block'; } },
       ],
       restrictions: [
-          // FR-1 板材限制
           { rule: (material) => material === 'FR-1', 
             targets: [
               { id: 'layers', disable_values: ['雙面板', '四層板', '六層板', '八層板', '十層板'], default_value: '單面板', warning: 'materialWarning' },
@@ -643,19 +662,16 @@
               { id: 'innerCu', disable_all: true, default_value: '-', warning: 'innerCuWarning' }
             ]
           },
-          // 單/雙面板不需內層銅厚
           { rule: (material, layers) => ['單面板', '雙面板'].includes(layers), 
             targets: [
               { id: 'innerCu', disable_all: true, default_value: '-', warning: 'innerCuWarning' }
             ]
           },
-          // 四層以上板厚限制
           { rule: (material, layers) => ['四層板', '六層板', '八層板', '十層板'].includes(layers), 
             targets: [
               { id: 'thickness', disable_values: ['0.4 mm'], warning: 'thicknessWarning' }
             ]
           },
-          // 八層以上板厚限制
           { rule: (material, layers) => ['八層板', '十層板'].includes(layers), 
             targets: [
               { id: 'thickness', disable_values: ['0.4 mm', '0.6 mm'], warning: 'thicknessWarning' }
@@ -663,7 +679,6 @@
           }
       ],
       defaults: [
-          // 四層板以上預設內層銅厚
           { rule: (material, layers) => layers !== '單面板' && layers !== '雙面板' && layers !== '-' && layers !== 'custom', 
             target: 'innerCu', 
             action: (sel, currentVal) => { if (currentVal === '-' || currentVal === '') sel.value = '0.5oz'; } }
@@ -837,30 +852,25 @@
     document.getElementById("output-text").value = msg;
   }
 
-  // === 修改：複製函式 (移除分享功能，只保留複製，並使用 Toast) ===
   async function copyText() {
     var output = document.getElementById("output-text");
     
     if (!output.value) {
         generateText(); 
         if (!output.value) {
-            // 使用 template.js 的全域 showToast
             window.showToast("請先完成規格輸入！", "error");
             return;
         }
     }
 
-    // 手機版相容性處理：選取文字
     output.select();
     output.setSelectionRange(0, 99999); 
     
     try {
-        // 優先嘗試新版 Clipboard API
         if (navigator.clipboard && navigator.clipboard.writeText) {
              navigator.clipboard.writeText(output.value).then(() => {
                 window.showToast("文字訊息已複製到剪貼簿！");
              }).catch(err => {
-                console.error("Clipboard API failed:", err);
                 fallbackCopy();
              });
         } else {
