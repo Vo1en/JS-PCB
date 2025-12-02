@@ -18,10 +18,7 @@
     font-family: 'Noto Sans TC', sans-serif;
   }
   
-  /* 覆寫舊的 main-container，採用新的 page-container 結構 */
   .main-container { width: 100%; margin: 0 auto; padding: 0; }
-  
-  /* 隱藏舊的標題 */
   .logo-wrap, h1.page-title { display: none; } 
 
   /* 調整 field-group 樣式 */
@@ -535,7 +532,7 @@
 
         </section>
 
-        <div id="unified-remarks-container"></div>
+        <div id="unified-remarks-container" data-hide-signature="true"></div>
         
         <div class="btn-row">
             <button type="button" class="btn-glass-base btn-glass-gold" onclick="generateAndCopyText()">一鍵生成+複製</button>
@@ -605,7 +602,6 @@
     copyText();     // 再複製文字
   }
 
-  // 💡 [新增] 當自訂輸入框失去焦點且為空時，自動切換回選單
   document.addEventListener('DOMContentLoaded', function() {
       // 綁定所有自訂輸入框
       document.querySelectorAll('.custom-input-wrapper input').forEach(input => {
@@ -622,7 +618,6 @@
 
   // PCB 規格連動規則表
   const SPEC_RULES = {
-      // 鎖定/預設 (Disabled/Default)
       locks: [
           // 六層以上：表面處理強制化金 2u
           { rule: (material, layers) => ['六層板', '八層板', '十層板'].includes(layers), 
@@ -634,7 +629,6 @@
             target: 'special1', 
             action: (sel) => { sel.value = '樹脂塞孔'; sel.disabled = true; document.getElementById('special1Warning').style.display = 'block'; } },
       ],
-      // 互斥/限制 (Exclusion/Restriction)
       restrictions: [
           // FR-1 板材限制
           { rule: (material) => material === 'FR-1', 
@@ -668,7 +662,6 @@
             ]
           }
       ],
-      // 預設值 (Defaults)
       defaults: [
           // 四層板以上預設內層銅厚
           { rule: (material, layers) => layers !== '單面板' && layers !== '雙面板' && layers !== '-' && layers !== 'custom', 
@@ -687,17 +680,14 @@
       special1: getValue("special1")
     };
     
-    // 1. 重置所有受影響的欄位狀態 (Selects & Warnings)
     document.querySelectorAll('select').forEach(sel => {
         if (sel.id.startsWith('special') || sel.id === 'layers' || sel.id === 'thickness' || sel.id === 'innerCu' || sel.id === 'finish' || sel.id === 'outerCu' || sel.id === 'goldFinger') {
             sel.disabled = false;
-            // 重新啟用所有 Option
             Array.from(sel.options).forEach(opt => opt.disabled = false);
         }
     });
     document.querySelectorAll('.warning').forEach(warn => warn.style.display = 'none');
 
-    // 2. 處理互斥/限制 (Restrictions)
     SPEC_RULES.restrictions.forEach(restriction => {
         if (restriction.rule(currentValues.material, currentValues.layers)) {
             restriction.targets.forEach(target => {
@@ -718,7 +708,6 @@
                     });
                 }
 
-                // 檢查當前值是否被禁用，如果是則切換到預設值
                 const currentOpt = sel.options[sel.selectedIndex];
                 if (currentOpt && currentOpt.disabled && sel.value !== 'custom') {
                     sel.value = target.default_value;
@@ -727,7 +716,6 @@
         }
     });
     
-    // 檢查板厚 0.4 mm 警告 (獨立於 FR-1 限制外)
     const thickness = getValue("thickness");
     if (thickness === "0.4 mm" && currentValues.material !== "FR-1") {
         const thicknessOpt = document.getElementById("thickness").options[document.getElementById("thickness").selectedIndex];
@@ -736,8 +724,6 @@
         }
     }
 
-
-    // 3. 處理鎖定/預設 (Locks & Defaults)
     SPEC_RULES.locks.forEach(lock => {
         const sel = document.getElementById(lock.target);
         if (lock.rule(currentValues.material, currentValues.layers) && !checkCustom(sel)) {
@@ -794,7 +780,6 @@
     var specialsIds = ["special1", "special2", "special3"];
     for (var i = 0; i < specialsIds.length; i++) {
       var v = getValue(specialsIds[i]);
-      // 排除被連動鎖定的特殊製程#1，如果它是預設值且特殊製程#2/3沒有其他值
       if (v && v !== "-" && v !== "請選擇") specials.push(v);
     }
     
@@ -826,7 +811,6 @@
     lines.push("數量(出貨片)：" + (qty || "-"));
 
     if (specials.length > 0) {
-      // 確保特殊製程只出現一次 (例如樹脂塞孔被鎖定又被選到)
       var uniqueSpecials = Array.from(new Set(specials));
       lines.push("特殊製程：" + uniqueSpecials.join("、"));
     }
@@ -853,23 +837,46 @@
     document.getElementById("output-text").value = msg;
   }
 
-  function copyText() {
+  // === 修改：複製函式 (移除分享功能，只保留複製，並使用 Toast) ===
+  async function copyText() {
     var output = document.getElementById("output-text");
-    if (output.value) {
-        output.select();
-        output.setSelectionRange(0, 99999); 
-        document.execCommand("copy");
-        alert("文字訊息已複製到剪貼簿！");
-    } else {
+    
+    if (!output.value) {
         generateText(); 
-        if (output.value) {
-            output.select();
-            output.setSelectionRange(0, 99999); 
-            document.execCommand("copy");
-            alert("規格已生成並複製到剪貼簿！");
-        } else {
-            alert("請先完成規格輸入！");
+        if (!output.value) {
+            // 使用 template.js 的全域 showToast
+            window.showToast("請先完成規格輸入！", "error");
+            return;
         }
+    }
+
+    // 手機版相容性處理：選取文字
+    output.select();
+    output.setSelectionRange(0, 99999); 
+    
+    try {
+        // 優先嘗試新版 Clipboard API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+             navigator.clipboard.writeText(output.value).then(() => {
+                window.showToast("文字訊息已複製到剪貼簿！");
+             }).catch(err => {
+                console.error("Clipboard API failed:", err);
+                fallbackCopy();
+             });
+        } else {
+            fallbackCopy();
+        }
+    } catch (err) {
+        fallbackCopy();
+    }
+  }
+
+  function fallbackCopy() {
+    try {
+        document.execCommand("copy");
+        window.showToast("文字訊息已複製到剪貼簿！");
+    } catch (err) {
+        window.showToast("複製失敗，請手動複製", "error");
     }
   }
 </script>

@@ -1,4 +1,4 @@
-/* template.js - 統一管理 Header, Remarks, Print, PDF 與 共用邏輯 (無自動儲存) */
+/* template.js - 統一管理 Header, Remarks, Print, PDF, Toast 與 共用邏輯 */
 
 // 統一管理報表頭資料
 window.reportData = {
@@ -7,16 +7,15 @@ window.reportData = {
     partno: "",
     qty: "",
     unit: "PNL",
-    cycle: "", 
+    cycle: "no", // 'no' | 'has' | ''
     cycleInput: "",
 };
 
 document.addEventListener("DOMContentLoaded", function() {
     renderHeader();
     renderRemarks();
-    renderSignatureControl();
     
-    // 💡 啟用簽名圖檔 (如果之前有勾選)
+    // 檢查並啟用簽名圖檔 (如果在該頁面存在)
     const signatureCheckbox = document.getElementById('use-signature-img');
     if (signatureCheckbox && signatureCheckbox.checked) {
         window.toggleSignatures(signatureCheckbox);
@@ -25,16 +24,47 @@ document.addEventListener("DOMContentLoaded", function() {
     initTemplateLogic();
 });
 
-// === 1. 渲染 Header ===
+// === 0. 全域 Toast 提示訊息系統 (取代 alert) ===
+window.showToast = function(message, type = 'success') {
+    // 移除舊的 Toast (避免堆疊)
+    const oldToast = document.querySelector('.toast-notification');
+    if (oldToast) oldToast.remove();
+
+    // 建立元素
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification ' + (type === 'error' ? 'error' : '');
+    
+    // 加入圖示 (依類型)
+    const icon = type === 'error' ? '⚠️ ' : '✅ ';
+    toast.textContent = icon + message;
+
+    document.body.appendChild(toast);
+
+    // 動畫進場
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    // 2.5秒後移除
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+}
+
+// === 1. 渲染 Header (支援簡易模式) ===
 function renderHeader() {
     const container = document.getElementById("unified-header-container");
     if (!container) return;
+
     const reportTitle = container.getAttribute("data-title") || "出貨檢驗報告";
     const isSimpleMode = container.getAttribute("data-simple") === "true";
     
+    // 初始化日期
     window.reportData.date = new Date().toISOString().split('T')[0];
     const today = window.reportData.date;
 
+    // 1. 基礎標題 HTML
     let htmlContent = `
         <header class="report-header-modern">
             <div class="header-left">
@@ -54,6 +84,7 @@ function renderHeader() {
         </div>
     `;
 
+    // 2. 只有在非簡易模式下，才加入基本資訊輸入框
     if (!isSimpleMode) {
         htmlContent += `
         <h3 class="section-title">基本資訊</h3>
@@ -124,42 +155,45 @@ function renderHeader() {
     }
 
     container.innerHTML = htmlContent;
+    
     if (!isSimpleMode) {
         window.syncToPrint('print-date', today);
     }
 }
 
-// === 2. 渲染備註欄位 ===
+// === 2. 渲染備註欄位 (分離簽名開關 + 改名 + 支援隱藏) ===
 function renderRemarks() {
     const container = document.getElementById("unified-remarks-container");
     if (!container) return;
     
-    container.innerHTML = `
+    // 檢查是否需要隱藏簽名功能
+    const hideSignature = container.getAttribute("data-hide-signature") === "true";
+
+    // 1. 備註區塊 (獨立)
+    let html = `
         <div class="remarks-section">
             <div class="label-box">備註</div>
-            <textarea id="global-remarks" class="remarks-input" rows="2" placeholder="請輸入備註..."></textarea>
+            <textarea class="remarks-input" rows="2" placeholder="請輸入備註..."></textarea>
         </div>
     `;
+
+    // 2. 電子簽章開關 (獨立於備註之外)
+    // 只有當不隱藏簽名時，才加入切換開關
+    if (!hideSignature) {
+        html += `
+            <div class="signature-control-area">
+                <label class="toggle-label">
+                    <input type="checkbox" id="use-signature-img" checked onchange="toggleSignatures(this)">
+                    <span>電子簽章</span>
+                </label>
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
 }
 
-// === 新增：渲染獨立的簽名控制區 ===
-function renderSignatureControl() {
-    const signatureSection = document.querySelector('.signature-section');
-    if (!signatureSection) return;
-
-    const controlContainer = document.createElement('div');
-    controlContainer.className = 'signature-control-area';
-    controlContainer.innerHTML = `
-        <label class="toggle-label">
-            <input type="checkbox" id="use-signature-img" checked onchange="toggleSignatures(this)">
-            <span>使用簽名圖檔 (列印/PDF)</span>
-        </label>
-    `;
-
-    signatureSection.parentNode.insertBefore(controlContainer, signatureSection);
-}
-
-// === 簽名切換邏輯 ===
+// === 新增：簽名切換邏輯 ===
 window.toggleSignatures = function(checkbox) {
     if (checkbox.checked) {
         document.body.classList.add('show-signatures');
@@ -180,6 +214,7 @@ window.syncToPrint = function(elementId, value) {
     if (el) el.textContent = value;
 };
 
+// [優化] 抽象化 PCB 規格同步邏輯
 window.syncPcbSpecsToPrint = function(pcbSectionId = 'pcb-spec-section') {
     const pcbSection = document.getElementById(pcbSectionId);
     if (!pcbSection) return;
@@ -195,11 +230,13 @@ window.syncPcbSpecsToPrint = function(pcbSectionId = 'pcb-spec-section') {
             if (val === '其他' || (inputGroup && inputGroup.style.display !== 'none')) { 
                 val = input ? input.value : ''; 
             }
+            // 移除顏色符號
             val = val.replace(/🟢|⚪|🔴|⚫|🔵/g, '').trim();
             target.textContent = val;
         }
     });
 };
+
 
 function initTemplateLogic() {
     const qtyInput = document.getElementById('qty-input');
@@ -228,14 +265,13 @@ function initTemplateLogic() {
         window.updateReportData('cycleInput', '');
         
         if (val === 'has') {
-           selectEl.style.display = 'none';
+           selectEl.style.display = 'none'; 
            selectEl.value = 'has'; 
            cycleContainer.style.display = 'flex';
            cycleInput.focus();
         } else if (val === 'no') {
            if(printCycle) printCycle.textContent = "N/A";
         }
-        
         if (typeof window.checkCompletion === 'function') window.checkCompletion();
     }
 
@@ -281,8 +317,11 @@ function initTemplateLogic() {
 window.handlePrintProcess = function(pageValidator = null, onlyValidate = false) {
     let isComplete = true;
 
-    if (typeof window.syncPcbSpecsToPrint === 'function') window.syncPcbSpecsToPrint();
+    if (typeof window.syncPcbSpecsToPrint === 'function') {
+        window.syncPcbSpecsToPrint();
+    }
 
+    // A. 基礎欄位驗證
     const basicIds = ['ui-client', 'ui-partno', 'qty-input'];
     basicIds.forEach(id => {
         const el = document.getElementById(id);
@@ -296,29 +335,34 @@ window.handlePrintProcess = function(pageValidator = null, onlyValidate = false)
         }
     });
 
+    // B. 週期欄位驗證
     const cycleSelect = document.getElementById('cycle-select');
     const cycleInput = document.getElementById('cycle-input');
     
-    if (window.reportData.cycle === 'has' && window.reportData.cycleInput.trim() === '') {
-        if (cycleInput) cycleInput.classList.add('input-error');
-        isComplete = false;
-    } else if (cycleSelect && (window.reportData.cycle === '' || window.reportData.cycle === '請選擇')) {
+    if (cycleSelect && (window.reportData.cycle === '' || window.reportData.cycle === '請選擇')) { 
         cycleSelect.classList.add('input-error');
+        isComplete = false;
+    } else if (window.reportData.cycle === 'has' && window.reportData.cycleInput.trim() === '') {
+        if (cycleInput) cycleInput.classList.add('input-error');
         isComplete = false;
     } else {
         if (cycleSelect) cycleSelect.classList.remove('input-error');
         if (cycleInput) cycleInput.classList.remove('input-error');
     }
 
+    // C. 執行頁面專屬驗證
     if (pageValidator && typeof pageValidator === 'function') {
-        if (!pageValidator()) isComplete = false;
+        if (!pageValidator()) {
+            isComplete = false;
+        }
     }
 
     if (!isComplete) {
-        alert("請填寫所有標示紅框的必填欄位！");
+        window.showToast("請填寫所有標示紅框的必填欄位！", "error");
         return false;
     }
 
+    // D. 處理備註欄位
     const remarksInput = document.querySelector('.remarks-input');
     const remarksContainer = document.getElementById('unified-remarks-container');
     if (remarksContainer) {
@@ -346,11 +390,13 @@ window.handlePrintProcess = function(pageValidator = null, onlyValidate = false)
 // === 5. 統一 PDF 生成流程 ===
 window.handlePDFProcess = function(pageValidator = null) {
     if (typeof html2pdf === 'undefined') {
-        alert("PDF 生成元件尚未載入完成");
+        window.showToast("PDF 生成元件尚未載入完成", "error");
         return;
     }
 
     if (!window.handlePrintProcess(pageValidator, true)) return;
+
+    window.showToast("正在生成 PDF，請稍候...", "success");
 
     const client = window.reportData.client || '客戶';
     const partNo = window.reportData.partno || '料號';
@@ -364,7 +410,11 @@ window.handlePDFProcess = function(pageValidator = null) {
         margin: 0,
         filename: fileName,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            scrollY: 0 
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
@@ -375,9 +425,10 @@ window.handlePDFProcess = function(pageValidator = null) {
         document.querySelectorAll('.print-hidden-row').forEach(row => row.classList.remove('print-hidden-row'));
         const remarksContainer = document.getElementById('unified-remarks-container');
         if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
+        window.showToast("PDF 下載成功！");
     }).catch(function(err) {
         console.error(err);
-        alert("PDF 生成失敗：" + err.message);
+        window.showToast("PDF 生成失敗", "error");
         document.body.classList.remove('printing-pdf');
     });
 };
