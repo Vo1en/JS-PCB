@@ -1,9 +1,9 @@
-/* template.js - 統一管理 Header, Remarks, Print, PDF, Toast 與 共用邏輯 */
+/* template.js - 2025 Optimized Version (Fixed Spec Generator Logic) */
 
 // 統一管理報表頭資料
 window.reportData = {
     client: "",
-    date: "", // 初始化為空，稍後在 DOMContentLoaded 計算當地時間
+    date: "",
     partno: "",
     qty: "",
     unit: "PNL",
@@ -12,55 +12,197 @@ window.reportData = {
 };
 
 document.addEventListener("DOMContentLoaded", function() {
-    // 1. 初始化日期 (修正時區問題)
+    // 1. 初始化日期
     const d = new Date();
-    const offset = d.getTimezoneOffset() * 60000; // 計算時區偏移毫秒數
+    const offset = d.getTimezoneOffset() * 60000;
     const localISODate = new Date(d.getTime() - offset).toISOString().split('T')[0];
     window.reportData.date = localISODate;
 
+    // 2. 渲染 Header & Remarks
     renderHeader();
     renderRemarks();
     
-    // 檢查並啟用簽名圖檔
+    // 3. 檢查並啟用簽名圖檔
     const signatureCheckbox = document.getElementById('use-signature-img');
     if (signatureCheckbox && signatureCheckbox.checked) {
         window.toggleSignatures(signatureCheckbox);
     }
     
+    // 4. 初始化邏輯
     initTemplateLogic();
+
+    // 5. 手機輸入優化
+    optimizeMobileInputs();
+
+    // 6. 檢查 URL 是否有歷史紀錄 ID，有的話讀取資料
+    checkAndLoadHistory();
 });
 
-// === 0. 全域 Toast 提示訊息系統 ===
+// === Mobile Friendly 優化 ===
+function optimizeMobileInputs() {
+    const numericSelectors = [
+        '#qty-input', '#specialAmount', '#passCount', '#openCount', '#shortCount', 
+        '#dim-length-input', '#dim-width-input', '#pnl-x', '#pnl-y', 
+        '.table-input'
+    ];
+
+    numericSelectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(el => {
+            el.setAttribute('inputmode', 'decimal');
+            if (!el.getAttribute('type')) {
+                el.setAttribute('type', 'text');
+            }
+        });
+    });
+
+    document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+        if (el.classList.contains('editable-cell') || el.classList.contains('data-field')) {
+            el.setAttribute('inputmode', 'decimal');
+        }
+    });
+}
+
+// === [修正] 歷史紀錄系統：儲存 ===
+window.saveCurrentReportToHistory = function() {
+    // 1. 抓取基本資訊
+    let reportType = document.title.replace('駿鑫 ', '');
+    if (reportType.includes('規格產生器')) reportType = '規格單';
+
+    // [修正] 規格產生器沒有客戶欄位，預設為 '-'
+    const clientInput = document.getElementById('ui-client');
+    const client = clientInput ? clientInput.value : '-'; 
+    
+    // 規格產生器用 partNo，其他報表用 ui-partno
+    const partNoInput = document.getElementById('ui-partno') || document.getElementById('partNo');
+    const partno = partNoInput ? partNoInput.value : '未命名料號';
+    
+    const filename = window.location.pathname.split('/').pop();
+
+    // 使用 ISO 字串儲存時間，避免跨裝置解析錯誤
+    const timestamp = new Date().toISOString(); 
+
+    // 2. 抓取所有欄位資料
+    const formData = {};
+    
+    // Inputs & Selects
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        if (el.id) {
+            if (el.type === 'checkbox' || el.type === 'radio') {
+                formData[el.id] = el.checked;
+            } else {
+                formData[el.id] = el.value;
+            }
+        }
+    });
+
+    // Contenteditable
+    document.querySelectorAll('[contenteditable="true"][id]').forEach(el => {
+        formData[el.id] = el.innerText;
+    });
+
+    // 3. 建立紀錄物件
+    const record = {
+        id: Date.now().toString(),
+        timestamp: timestamp, // 使用 ISO 格式
+        type: reportType,
+        page: filename,
+        client: client,
+        partno: partno,
+        data: formData
+    };
+
+    // 4. 存入 localStorage
+    let history = JSON.parse(localStorage.getItem('js_pcb_history') || '[]');
+    
+    // 簡單防重複：如果料號跟類型一樣，且時間在 1 分鐘內，視為同一筆操作更新
+    if (history.length > 0 && history[0].partno === partno && history[0].type === reportType) {
+         const lastTime = new Date(history[0].timestamp).getTime();
+         const nowTime = new Date().getTime();
+         if ((nowTime - lastTime) < 60000) {
+             history[0] = record; // 更新最新一筆
+         } else {
+             history.unshift(record);
+         }
+    } else {
+        history.unshift(record); // 新增一筆
+    }
+
+    if (history.length > 20) history = history.slice(0, 20);
+    localStorage.setItem('js_pcb_history', JSON.stringify(history));
+}
+
+// === 歷史紀錄系統：讀取 ===
+function checkAndLoadHistory() {
+    const params = new URLSearchParams(window.location.search);
+    const historyId = params.get('historyId');
+
+    if (historyId) {
+        const history = JSON.parse(localStorage.getItem('js_pcb_history') || '[]');
+        const record = history.find(r => r.id === historyId);
+
+        if (record && record.data) {
+            // 回填資料
+            Object.keys(record.data).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                        el.checked = record.data[id];
+                        el.dispatchEvent(new Event('change')); 
+                    } else if (el.isContentEditable) {
+                        el.innerText = record.data[id];
+                        el.dispatchEvent(new Event('input'));
+                    } else {
+                        el.value = record.data[id];
+                        if (el.tagName === 'SELECT') {
+                            el.dispatchEvent(new Event('change'));
+                        } else {
+                            el.dispatchEvent(new Event('input'));
+                        }
+                    }
+                }
+            });
+            
+            // 二次檢查：針對「其他/自行輸入」的下拉選單，確保隱藏的 input 有顯示出來
+            setTimeout(() => {
+                document.querySelectorAll('select').forEach(sel => {
+                    if (sel.value === 'custom' || sel.value === '其他') {
+                        sel.dispatchEvent(new Event('change'));
+                    }
+                });
+                
+                // 如果是規格產生器，載入後自動重新生成文字
+                if (typeof generateText === 'function') {
+                    generateText();
+                }
+            }, 100);
+
+            // 如果有客戶名稱就顯示，沒有就只顯示料號
+            const displayTitle = record.client && record.client !== '-' ? `${record.client} ${record.partno}` : record.partno;
+            window.showToast(`已載入 ${displayTitle} 的紀錄`);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }
+}
+
+// === 全域 Toast 提示 ===
 window.showToast = function(message, type = 'success') {
     const oldToast = document.querySelector('.toast-notification');
     if (oldToast) oldToast.remove();
-
     const toast = document.createElement('div');
     toast.className = 'toast-notification ' + (type === 'error' ? 'error' : '');
     const icon = type === 'error' ? '⚠️ ' : '✅ ';
     toast.textContent = icon + message;
-
     document.body.appendChild(toast);
-
-    requestAnimationFrame(() => {
-        toast.classList.add('show');
-    });
-
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 2500);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 2500);
 }
 
-// === 1. 渲染 Header ===
+// === Header 渲染 ===
 function renderHeader() {
     const container = document.getElementById("unified-header-container");
     if (!container) return;
-
     const reportTitle = container.getAttribute("data-title") || "出貨檢驗報告";
     const isSimpleMode = container.getAttribute("data-simple") === "true";
-    
-    // 使用已修正時區的日期
     const today = window.reportData.date;
 
     let htmlContent = `
@@ -74,7 +216,6 @@ function renderHeader() {
                 <h2 class="report-title-badge">${reportTitle}</h2>
             </div>
         </header>
-
         <div class="print-simple-header">
             <h1>駿鑫實業有限公司</h1>
             <p>新北市五股區成泰路二段197巷31號 TEL: 02-2291-1252</p>
@@ -88,15 +229,15 @@ function renderHeader() {
         <section class="info-grid">
             <div class="info-item">
                 <span class="label">客戶</span>
-                <input type="text" id="ui-client" class="input-line" placeholder="請輸入" oninput="updateReportData('client', this.value); syncToPrint('print-client', this.value); if (typeof window.checkCompletion === 'function') window.checkCompletion();">
+                <input type="text" id="ui-client" class="input-line" placeholder="請輸入" oninput="updateReportData('client', this.value); syncToPrint('print-client', this.value); if (window.checkCompletion) window.checkCompletion();">
             </div>
             <div class="info-item">
                 <span class="label">日期</span>
-                <input type="date" id="today-date" class="input-line" value="${today}" onchange="updateReportData('date', this.value); syncToPrint('print-date', this.value); if (typeof window.checkCompletion === 'function') window.checkCompletion();">
+                <input type="date" id="today-date" class="input-line" value="${today}" onchange="updateReportData('date', this.value); syncToPrint('print-date', this.value); if (window.checkCompletion) window.checkCompletion();">
             </div>
             <div class="info-item">
                 <span class="label">料號</span>
-                <input type="text" id="ui-partno" class="input-line" placeholder="請輸入" oninput="updateReportData('partno', this.value); syncToPrint('print-partno', this.value); if (typeof window.checkCompletion === 'function') window.checkCompletion();">
+                <input type="text" id="ui-partno" class="input-line" placeholder="請輸入" oninput="updateReportData('partno', this.value); syncToPrint('print-partno', this.value); if (window.checkCompletion) window.checkCompletion();">
             </div>
             <div class="info-item">
                 <span class="label">品名</span>
@@ -127,78 +268,33 @@ function renderHeader() {
                 </div>
             </div>
         </section>
-
         <table class="print-only-table">
-            <tr>
-                <th>客戶名稱</th>
-                <td id="print-client"></td>
-                <th>日　　期</th>
-                <td id="print-date">${today}</td>
-            </tr>
-            <tr>
-                <th>料　　號</th>
-                <td id="print-partno"></td>
-                <th>品　　名</th>
-                <td id="print-product-name">PCB</td>
-            </tr>
-            <tr>
-                <th>數　　量</th>
-                <td id="print-qty"></td>
-                <th>週　　期</th>
-                <td id="print-cycle"></td>
-            </tr>
-        </table>
-        `;
+            <tr><th>客戶名稱</th><td id="print-client"></td><th>日　　期</th><td id="print-date">${today}</td></tr>
+            <tr><th>料　　號</th><td id="print-partno"></td><th>品　　名</th><td id="print-product-name">PCB</td></tr>
+            <tr><th>數　　量</th><td id="print-qty"></td><th>週　　期</th><td id="print-cycle"></td></tr>
+        </table>`;
     }
-
     container.innerHTML = htmlContent;
-    
-    if (!isSimpleMode) {
-        window.syncToPrint('print-date', today);
-    }
+    if (!isSimpleMode) window.syncToPrint('print-date', today);
 }
 
-// === 2. 渲染備註欄位 ===
 function renderRemarks() {
     const container = document.getElementById("unified-remarks-container");
     if (!container) return;
-    
     const hideSignature = container.getAttribute("data-hide-signature") === "true";
-
-    let html = `
-        <div class="remarks-section">
-            <div class="label-box">備註</div>
-            <textarea class="remarks-input" rows="2" placeholder="請輸入備註..."></textarea>
-        </div>
-    `;
-
+    let html = `<div class="remarks-section"><div class="label-box">備註</div><textarea class="remarks-input" id="remarks-area" rows="2" placeholder="請輸入備註..."></textarea></div>`;
     if (!hideSignature) {
-        html += `
-            <div class="signature-control-area">
-                <label class="toggle-label">
-                    <input type="checkbox" id="use-signature-img" checked onchange="toggleSignatures(this)">
-                    <span>電子簽章</span>
-                </label>
-            </div>
-        `;
+        html += `<div class="signature-control-area"><label class="toggle-label"><input type="checkbox" id="use-signature-img" checked onchange="toggleSignatures(this)"><span>電子簽章</span></label></div>`;
     }
-
     container.innerHTML = html;
 }
 
 window.toggleSignatures = function(checkbox) {
-    if (checkbox.checked) {
-        document.body.classList.add('show-signatures');
-    } else {
-        document.body.classList.remove('show-signatures');
-    }
+    document.body.classList.toggle('show-signatures', checkbox.checked);
 }
 
-// === 3. 共用邏輯 ===
 window.updateReportData = function(key, value) {
-    if (window.reportData.hasOwnProperty(key)) {
-        window.reportData[key] = value;
-    }
+    if (window.reportData.hasOwnProperty(key)) window.reportData[key] = value;
 }
 
 window.syncToPrint = function(elementId, value) {
@@ -206,25 +302,9 @@ window.syncToPrint = function(elementId, value) {
     if (el) el.textContent = value;
 };
 
-window.syncPcbSpecsToPrint = function(pcbSectionId = 'pcb-spec-section') {
-    const pcbSection = document.getElementById(pcbSectionId);
+window.syncPcbSpecsToPrint = function() {
+    const pcbSection = document.getElementById('pcb-spec-section');
     if (!pcbSection) return;
-
-    pcbSection.querySelectorAll('.toggle-select').forEach(select => {
-        const printTargetId = select.getAttribute('data-print-target');
-        const inputGroup = document.getElementById(select.getAttribute('data-target'));
-        const input = inputGroup ? inputGroup.querySelector('input') : null;
-        const target = document.getElementById(printTargetId);
-        
-        if (target) {
-            let val = select.value;
-            if (val === '其他' || (inputGroup && inputGroup.style.display !== 'none')) { 
-                val = input ? input.value : ''; 
-            }
-            val = val.replace(/🟢|⚪|🔴|⚫|🔵/g, '').trim();
-            target.textContent = val;
-        }
-    });
 };
 
 function initTemplateLogic() {
@@ -242,45 +322,36 @@ function initTemplateLogic() {
         let rawValue = qtyInput.value.replace(/,/g, '');
         window.updateReportData('qty', rawValue);
         window.updateReportData('unit', qtyUnit.value);
-
         if(printQty) printQty.textContent = (qtyInput.value || '') + ' ' + (qtyUnit.value || '');
-        
-        if (typeof window.checkCompletion === 'function') window.checkCompletion();
-        if (typeof window.updateTestResults === 'function') window.updateTestResults();
+        if (window.checkCompletion) window.checkCompletion();
+        if (window.updateTestResults) window.updateTestResults();
     }
 
     window.handleCycleSelect = function(selectEl) {
         const val = selectEl.value;
         window.updateReportData('cycle', val);
-        window.updateReportData('cycleInput', '');
-        
         if (val === 'has') {
-           selectEl.style.display = 'none'; 
-           selectEl.value = 'has'; 
-           cycleContainer.style.display = 'flex';
-           cycleInput.focus();
+           selectEl.style.display = 'none'; selectEl.value = 'has'; 
+           cycleContainer.style.display = 'flex'; cycleInput.focus();
         } else if (val === 'no') {
            if(printCycle) printCycle.textContent = "N/A";
         }
-        if (typeof window.checkCompletion === 'function') window.checkCompletion();
+        if (window.checkCompletion) window.checkCompletion();
     }
 
     window.handleCycleInput = function(inputEl) {
         window.updateReportData('cycleInput', inputEl.value);
         if(printCycle) printCycle.textContent = inputEl.value;
-        if (typeof window.checkCompletion === 'function') window.checkCompletion();
+        if (window.checkCompletion) window.checkCompletion();
     }
     
     if(resetBtn) {
         resetBtn.addEventListener('click', function() {
-            window.updateReportData('cycle', '');
-            window.updateReportData('cycleInput', '');
-            cycleInput.value = "";
-            cycleContainer.style.display = 'none';
-            cycleSelect.style.display = 'block';
-            cycleSelect.value = '';
+            window.updateReportData('cycle', ''); window.updateReportData('cycleInput', '');
+            cycleInput.value = ""; cycleContainer.style.display = 'none';
+            cycleSelect.style.display = 'block'; cycleSelect.value = '';
             if(printCycle) printCycle.textContent = "";
-            if (typeof window.checkCompletion === 'function') window.checkCompletion();
+            if (window.checkCompletion) window.checkCompletion();
         });
     }
 
@@ -294,84 +365,74 @@ function initTemplateLogic() {
     }
 }
 
-// === 4. 列印流程 ===
+// === Print Logic ===
 window.handlePrintProcess = function(pageValidator = null, onlyValidate = false) {
     let isComplete = true;
-
-    if (typeof window.syncPcbSpecsToPrint === 'function') {
-        window.syncPcbSpecsToPrint();
-    }
+    if (window.syncPcbSpecsToPrint) window.syncPcbSpecsToPrint();
 
     const basicIds = ['ui-client', 'ui-partno', 'qty-input'];
     basicIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            if (el.value.trim() === '') {
-                el.classList.add('input-error');
-                isComplete = false;
-            } else {
-                el.classList.remove('input-error');
-            }
+            if (el.value.trim() === '') { el.classList.add('input-error'); isComplete = false; } 
+            else { el.classList.remove('input-error'); }
         }
     });
 
     const cycleSelect = document.getElementById('cycle-select');
     const cycleInput = document.getElementById('cycle-input');
-    
     if (cycleSelect && (window.reportData.cycle === '' || window.reportData.cycle === '請選擇' || window.reportData.cycle === null)) { 
-        cycleSelect.classList.add('input-error');
-        isComplete = false;
+        cycleSelect.classList.add('input-error'); isComplete = false;
     } else if (window.reportData.cycle === 'has' && window.reportData.cycleInput.trim() === '') {
-        if (cycleInput) cycleInput.classList.add('input-error');
-        isComplete = false;
+        if (cycleInput) cycleInput.classList.add('input-error'); isComplete = false;
     } else {
         if (cycleSelect) cycleSelect.classList.remove('input-error');
         if (cycleInput) cycleInput.classList.remove('input-error');
     }
 
-    if (pageValidator && typeof pageValidator === 'function') {
-        if (!pageValidator()) isComplete = false;
-    }
+    if (pageValidator && !pageValidator()) isComplete = false;
 
     if (!isComplete) {
         window.showToast("請填寫所有標示紅框的必填欄位！", "error");
+        setTimeout(() => {
+            const firstError = document.querySelector('.input-error');
+            if (firstError) { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (firstError.tagName === 'INPUT') firstError.focus(); }
+        }, 100);
         return false;
     }
 
     const remarksInput = document.querySelector('.remarks-input');
     const remarksContainer = document.getElementById('unified-remarks-container');
     if (remarksContainer) {
-        if (remarksInput && remarksInput.value.trim() === '') {
-            remarksContainer.classList.add('print-hide-remarks');
-        } else {
-            remarksContainer.classList.remove('print-hide-remarks');
-        }
+        if (remarksInput && remarksInput.value.trim() === '') remarksContainer.classList.add('print-hide-remarks');
+        else remarksContainer.classList.remove('print-hide-remarks');
     }
 
     if (onlyValidate) return true;
 
-    window.print();
+    if (typeof window.saveCurrentReportToHistory === 'function') {
+        window.saveCurrentReportToHistory();
+    }
 
+    window.print();
     setTimeout(() => {
         document.querySelectorAll('.print-hidden-row').forEach(row => row.classList.remove('print-hidden-row'));
         if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
         const nominalSpecA = document.getElementById('spec-hole1-nominal');
         if (nominalSpecA) nominalSpecA.classList.remove('input-error');
     }, 500);
-
     return true;
 };
 
-// === 5. PDF 生成流程 (Timeout 優化 + Loading Overlay) ===
+// === PDF Logic ===
 window.handlePDFProcess = function(pageValidator = null) {
-    if (typeof html2pdf === 'undefined') {
-        window.showToast("PDF 生成元件尚未載入完成", "error");
-        return;
-    }
-
+    if (typeof html2pdf === 'undefined') { window.showToast("PDF 生成元件尚未載入完成", "error"); return; }
     if (!window.handlePrintProcess(pageValidator, true)) return;
 
-    // 建立並顯示 Loading 遮罩
+    if (typeof window.saveCurrentReportToHistory === 'function') {
+        window.saveCurrentReportToHistory();
+    }
+
     const overlay = document.createElement('div');
     overlay.className = 'loading-overlay active';
     overlay.innerHTML = '<div class="spinner"></div><div style="margin-top:15px;font-weight:bold;color:#b38728;font-size:16px;">正在生成 PDF，請稍候...</div>';
@@ -382,42 +443,34 @@ window.handlePDFProcess = function(pageValidator = null) {
     const reportTitle = document.getElementById('unified-header-container').getAttribute('data-title') || '報告';
     const safePartNo = partNo.replace(/[\/\\:*?"<>|]/g, '_');
     const fileName = `${client} ${safePartNo} ${reportTitle}.pdf`;
-
     const element = document.querySelector('.a4-paper');
 
     const opt = {
         margin: 0,
         filename: fileName,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            scrollY: 0,
+            letterRendering: true,
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     document.body.classList.add('printing-pdf');
 
-    // 延遲執行生成，確保 Loading 動畫有機會渲染
     setTimeout(() => {
         html2pdf().set(opt).from(element).save().then(function() {
             document.body.classList.remove('printing-pdf');
-            
-            // 移除遮罩
-            if(document.body.contains(overlay)) {
-                document.body.removeChild(overlay);
-            }
-
+            if(document.body.contains(overlay)) document.body.removeChild(overlay);
             document.querySelectorAll('.print-hidden-row').forEach(row => row.classList.remove('print-hidden-row'));
             const remarksContainer = document.getElementById('unified-remarks-container');
             if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
-            
             window.showToast("PDF 下載成功！");
         }).catch(function(err) {
             console.error(err);
-            
-            // 發生錯誤也要移除遮罩
-            if(document.body.contains(overlay)) {
-                document.body.removeChild(overlay);
-            }
-            
+            if(document.body.contains(overlay)) document.body.removeChild(overlay);
             window.showToast("PDF 生成失敗", "error");
             document.body.classList.remove('printing-pdf');
         });

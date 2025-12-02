@@ -222,7 +222,7 @@
             <div class="info-item-custom">
                 <span class="label">料號</span>
                 <div class="info-content-wrap">
-                    <input type="text" id="partNo" class="input-line-custom" placeholder="請輸入料號" />
+                    <input type="text" id="partNo" class="input-line-custom" placeholder="(選填) 輸入時，方便歷史紀錄查詢" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase();" />
                 </div>
             </div>
 
@@ -535,7 +535,7 @@
         
         <div class="btn-row">
             <button type="button" class="btn-glass-base btn-glass-gold" onclick="generateAndCopyText()">一鍵生成+複製</button>
-            <button type="button" class="btn-glass-base btn-glass-blue" onclick="generateText()">生成文字</button>
+            <button type="button" class="btn-glass-base btn-glass-blue" onclick="generateTextAndSave()">生成文字</button>
             <button type="button" class="btn-glass-base btn-glass-gray" onclick="copyText()">複製文字</button>
             <button type="button" class="btn-glass-base btn-glass-red" onclick="resetAllFields()">清空重填</button>
         </div>
@@ -568,7 +568,7 @@
       if (customDiv) {
         selectEl.style.display = 'none';
         customDiv.style.display = 'flex';
-        // [優化] 自動聚焦到輸入框
+        // 自動聚焦
         if(customInput) {
             setTimeout(() => customInput.focus(), 50);
         }
@@ -596,19 +596,33 @@
     updateStates();
   }
   
+  // [修改] 生成文字 + 複製 + 存檔 (若有料號)
   function generateAndCopyText() {
     generateText();
-    copyText();
+    // 只要有望有填料號就儲存紀錄，不需客戶名稱
+    if (getValue("partNo")) {
+        if(typeof saveCurrentReportToHistory === 'function') saveCurrentReportToHistory();
+    }
+    copyText(true); // 傳入 true 避免 copyText 再次重複儲存
   }
 
-  // [新增] 清空重填功能
+  // [新增] 專門給「生成文字」按鈕用的函式，也會觸發存檔
+  function generateTextAndSave() {
+    generateText();
+    if (getValue("partNo")) {
+        if(typeof saveCurrentReportToHistory === 'function') saveCurrentReportToHistory();
+        window.showToast("規格已生成並儲存");
+    }
+  }
+
+  // [修改] 清空重填功能
   function resetAllFields() {
     if(!confirm('確定要清空所有欄位嗎？')) return;
     
     // 重置所有下拉選單與自訂輸入
     document.querySelectorAll('select').forEach(sel => {
         resetSelect(sel.id);
-        sel.value = (sel.id === 'qty') ? '5' : '-'; // 數量預設 5
+        sel.value = (sel.id === 'qty') ? '5' : '-'; 
         if(sel.id === 'material') sel.value = 'FR-4';
         if(sel.id === 'layers') sel.value = '雙面板';
         if(sel.id === 'thickness') sel.value = '1.6 mm';
@@ -618,7 +632,7 @@
         if(sel.id === 'finish') sel.value = '無鉛噴錫';
     });
 
-    // 清空其他輸入框
+    // 清空其他輸入框 (包含料號)
     document.querySelectorAll('input[type="text"]').forEach(inp => inp.value = "");
     document.querySelector('.remarks-input').value = "";
     document.getElementById("output-text").value = "";
@@ -852,7 +866,7 @@
     document.getElementById("output-text").value = msg;
   }
 
-  async function copyText() {
+  async function copyText(skipSave = false) {
     var output = document.getElementById("output-text");
     
     if (!output.value) {
@@ -861,6 +875,11 @@
             window.showToast("請先完成規格輸入！", "error");
             return;
         }
+    }
+
+    // [修改] 只有當料號存在時才儲存 (省略客戶檢查)
+    if (!skipSave && getValue("partNo")) {
+         if(typeof saveCurrentReportToHistory === 'function') saveCurrentReportToHistory();
     }
 
     output.select();
