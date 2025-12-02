@@ -305,9 +305,9 @@
                     <div class="info-content-wrap">
                         <select id="innerCu" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
-                            <option>0.5oz</option>
-                            <option>1oz</option>
-                            <option>2oz</option>
+                            <option>0.5 oz</option>
+                            <option>1 oz</option>
+                            <option>2 oz</option>
                             <option value="custom">自行輸入</option>
                         </select>
                         <div id="innerCu_custom_div" class="custom-input-wrapper">
@@ -327,9 +327,9 @@
                     <div class="info-content-wrap">
                         <select id="outerCu" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
-                            <option selected>1oz</option>
-                            <option>2oz</option>
-                            <option>3oz</option>
+                            <option selected>1 oz</option>
+                            <option>2 oz</option>
+                            <option>3 oz</option>
                             <option value="custom">自行輸入</option>
                         </select>
                         <div id="outerCu_custom_div" class="custom-input-wrapper">
@@ -626,7 +626,7 @@
         if(sel.id === 'material') sel.value = 'FR-4';
         if(sel.id === 'layers') sel.value = '雙面板';
         if(sel.id === 'thickness') sel.value = '1.6 mm';
-        if(sel.id === 'outerCu') sel.value = '1oz';
+        if(sel.id === 'outerCu') sel.value = '1 oz';
         if(sel.id === 'solderMask') sel.value = '綠色';
         if(sel.id === 'legendColor') sel.value = '白字';
         if(sel.id === 'finish') sel.value = '無鉛噴錫';
@@ -668,7 +668,7 @@
             targets: [
               { id: 'layers', disable_values: ['雙面板', '四層板', '六層板', '八層板', '十層板'], default_value: '單面板', warning: 'materialWarning' },
               { id: 'thickness', disable_values: ['0.4 mm', '0.6 mm', '0.8 mm', '1.0 mm', '1.2 mm', '2.0 mm', '2.4 mm', '3.0 mm', '3.2 mm'], default_value: '1.6 mm' },
-              { id: 'outerCu', disable_values: ['2oz', '3oz'], default_value: '1oz' },
+              { id: 'outerCu', disable_values: ['2 oz', '3 oz'], default_value: '1 oz' },
               { id: 'goldFinger', disable_all: true, default_value: '-' },
               { id: 'special1', disable_all: true, default_value: '-' },
               { id: 'special2', disable_all: true, default_value: '-' },
@@ -695,7 +695,7 @@
       defaults: [
           { rule: (material, layers) => layers !== '單面板' && layers !== '雙面板' && layers !== '-' && layers !== 'custom', 
             target: 'innerCu', 
-            action: (sel, currentVal) => { if (currentVal === '-' || currentVal === '') sel.value = '0.5oz'; } }
+            action: (sel, currentVal) => { if (currentVal === '-' || currentVal === '') sel.value = '0.5 oz'; } }
       ]
   };
 
@@ -913,6 +913,7 @@
 </body>
 
 </html>
+
 
 
 
