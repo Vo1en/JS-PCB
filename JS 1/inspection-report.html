@@ -234,8 +234,17 @@
             const widthInput = document.getElementById('dim-width-input');
             const lengthNominal = document.getElementById('spec-length-nominal');
             const widthNominal = document.getElementById('spec-width-nominal');
-            if (lengthInput && lengthNominal) lengthNominal.textContent = lengthInput.value || '';
-            if (widthInput && widthNominal) widthNominal.textContent = widthInput.value || '';
+            
+            // 格式化為小數點第二位
+            const fmt = (v) => {
+                if(!v) return '';
+                const n = parseFloat(v);
+                return isNaN(n) ? v : n.toFixed(2);
+            };
+
+            if (lengthInput && lengthNominal) lengthNominal.textContent = fmt(lengthInput.value);
+            if (widthInput && widthNominal) widthNominal.textContent = fmt(widthInput.value);
+            
             populateAllInspectionData();
         }
 
@@ -397,6 +406,27 @@
             document.getElementById('pnl-x')?.addEventListener('input', syncArray);
             document.getElementById('pnl-y')?.addEventListener('input', syncArray);
             
+            // === 新增：自動格式化規格值為小數點兩位 ===
+            const specInputs = document.querySelectorAll('[id^="spec-"][id$="-nominal"]');
+            specInputs.forEach(el => {
+                el.addEventListener('blur', function() {
+                    const val = parseFloat(this.innerText);
+                    if (!isNaN(val)) {
+                        // 如果是整數或小數，強制轉為兩位小數 (例如 1 -> 1.00)
+                        this.innerText = val.toFixed(2);
+                        // 觸發數據重新生成 (確保公差計算基礎是新的數值)
+                        populateAllInspectionData();
+                    }
+                });
+                // 讓 Enter 鍵也能觸發 blur (優化體驗)
+                el.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.blur();
+                    }
+                });
+            });
+
             // 確保基本資訊的變動也會觸發檢查
             setTimeout(() => { 
                 const basicInfoGrid = document.querySelector('#unified-header-container .info-grid'); 

@@ -7,7 +7,7 @@ window.reportData = {
     partno: "",
     qty: "",
     unit: "PNL",
-    cycle: "no", // 'no' | 'has' | ''
+    cycle: "", // 修正：預設為空字串，強制觸發驗證檢查
     cycleInput: "",
 };
 
@@ -283,13 +283,13 @@ function initTemplateLogic() {
     
     if(resetBtn) {
         resetBtn.addEventListener('click', function() {
-            window.updateReportData('cycle', 'no');
+            window.updateReportData('cycle', ''); // Reset to empty to force check
             window.updateReportData('cycleInput', '');
             cycleInput.value = "";
             cycleContainer.style.display = 'none';
             cycleSelect.style.display = 'block';
-            cycleSelect.value = 'no'; 
-            if(printCycle) printCycle.textContent = "N/A";
+            cycleSelect.value = ''; // Reset select to empty
+            if(printCycle) printCycle.textContent = "";
             if (typeof window.checkCompletion === 'function') window.checkCompletion();
         });
     }
@@ -339,7 +339,8 @@ window.handlePrintProcess = function(pageValidator = null, onlyValidate = false)
     const cycleSelect = document.getElementById('cycle-select');
     const cycleInput = document.getElementById('cycle-input');
     
-    if (cycleSelect && (window.reportData.cycle === '' || window.reportData.cycle === '請選擇')) { 
+    // 如果 cycle 為空字串，代表未選擇 (請選擇是 hidden disabled，value 也是空)
+    if (cycleSelect && (window.reportData.cycle === '' || window.reportData.cycle === '請選擇' || window.reportData.cycle === null)) { 
         cycleSelect.classList.add('input-error');
         isComplete = false;
     } else if (window.reportData.cycle === 'has' && window.reportData.cycleInput.trim() === '') {
