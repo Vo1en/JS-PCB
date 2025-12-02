@@ -6,6 +6,7 @@
   <title>規格產生器</title>
   
   <link rel="stylesheet" href="JS system/report.css">
+  <link rel="stylesheet" href="JS system/navbar.css"> 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 0L20 60H40L30 100L80 40H60L70 0Z' fill='%23c2a878'/></svg>">
 
   <style>
@@ -16,13 +17,19 @@
   body {
     background-color: #f5f5f5;
     margin: 0;
-    /* 確保 body 頂部無間距 */
-    padding-top: 0px; 
     font-family: 'Noto Sans TC', sans-serif;
+    /* [修改 1] 縮短頂部距離，從 80px 改為 20px */
+    padding-top: 10px; 
   }
   
+  /* [修改 1] 調整 RWD 頂部距離，從 5px 改為 10px */
+  @media (max-width: 768px) {
+      .page-container { padding: 10px 5px 20px 5px !important; }
+      .a4-paper { padding: 15px 12px; }
+  }
+
   .main-container { width: 100%; margin: 0 auto; padding: 0; }
-  .logo-wrap { display: none; }
+  .logo-wrap, h1.page-title { display: none; } 
 
   .info-grid-custom {
       display: grid;
@@ -50,8 +57,7 @@
       text-align: center;
       margin-right: 8px;
       flex-shrink: 0;
-      /* [已修正] Label 邊框改為金色 */
-      border: 1px solid var(--gold-dark);
+      border: 1px solid var(--border-color, #e0d8c8);
   }
   
   .info-content-wrap {
@@ -114,8 +120,7 @@
       width: 100%;
       display: flex;
       justify-content: center;
-      /* 確保 page-container 的頂部間距很小，讓 A4 貼近瀏覽器頂部 */
-      padding: 5px 20px; 
+      /* padding: 20px; -> 改為在 body 設置 padding-top */
       padding-bottom: 40px; 
       box-sizing: border-box;
   }
@@ -124,7 +129,6 @@
       width: 210mm; 
       min-height: 297mm; 
       background: var(--bg-page);
-      /* [已修正] 恢復 A4 紙張頂部內間距為 15mm，確保標題有足夠空間 */
       padding: 15mm 15mm; 
       box-shadow: 0 5px 15px rgba(0,0,0,0.15);
       box-sizing: border-box;
@@ -172,46 +176,12 @@
       justify-content: center; 
       gap: 15px; 
       margin: 20px 0 20px 0; 
-      flex-wrap: wrap;
+      flex-wrap: wrap; /* 避免手機版爆版 */
   }
-
-  /* 新增客製化的頁面標題樣式 (流金效果) */
-  .custom-page-title {
-      /* 調整電腦版標題大小 */
-      font-size: 36px; 
-      background-color: #fcfcfc; 
-      border: 1px solid var(--border-color); 
-      padding: 8px 25px; 
-      border-radius: var(--ui-radius, 8px); 
-      margin: 0 auto 25px auto; 
-      font-weight: 700; 
-      color: transparent; 
-      background: var(--gold-text-gradient); 
-      background-size: 200% auto; 
-      -webkit-background-clip: text; 
-      -webkit-text-fill-color: transparent; 
-      animation: shine 5s linear infinite; 
-      display: block;
-      line-height: 1.2;
-      text-align: center;
-      max-width: fit-content;
-  }
-  
-  @keyframes shine { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-
 
   @media (max-width: 768px) {
-      .page-container { 
-          /* 確保手機版 page-container 頂部間距最小 */
-          padding: 0px; 
-          padding-bottom: 20px !important; 
-      }
-      .a4-paper { 
-          width: 100%; min-height: auto; 
-          /* [已修正] 恢復手機版 A4 紙張頂部內間距到 30px */
-          padding: 30px 40px; 
-          box-shadow: none; margin: 0; 
-      }
+      .page-container { padding: 10px 5px 20px 5px !important; }
+      .a4-paper { width: 100%; min-height: auto; padding: 15px; box-shadow: none; margin: 0; }
       
       #output-text { width: 90% !important; margin: 0 auto !important; }
 
@@ -241,24 +211,27 @@
       
       .info-content-wrap { width: auto !important; flex-grow: 1 !important; }
       .btn-row { flex-direction: column; align-items: stretch; }
-
-      .custom-page-title {
-          /* 調整手機版標題大小 */
-          font-size: 28px;
-          margin: 0 auto 15px auto;
-          padding: 8px 15px;
-      }
   }
 
 </style>
 </head>
 <body>
 
+<div id="navbar-container"></div>
+<script>
+    // 為了移除導航欄，我們不再載入 navbar.js。
+    // 在此處加入空的 script 標籤佔位，或直接刪除腳本引用。
+</script>
+
 <div class="page-container">
     <div class="a4-paper">
         
-        <h2 class="custom-page-title">規格產生器</h2>
-
+        <div id="unified-header-container" data-title="規格產生器" data-simple="true" style="display: none;"></div>
+        
+        <div style="text-align: center; margin: 10px 0 25px 0;">
+            <h3 class="report-title-badge" style="font-size: 40px; padding: 5px 20px; border-width: 1px;">規格產生器</h3>
+        </div>
+        
         <section class="info-grid-custom">
             
             <div class="info-item-custom">
@@ -296,8 +269,8 @@
                     <div class="info-content-wrap">
                         <select id="layers" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
-                            <option selected>雙面板</option>
                             <option>單面板</option>
+                            <option selected>雙面板</option>
                             <option>四層板</option>
                             <option>六層板</option>
                             <option>八層板</option>
@@ -564,7 +537,7 @@
                 </div>
             </div>
             
-            </section>
+        </section>
 
         <div id="unified-remarks-container" data-hide-signature="true"></div>
         
@@ -583,7 +556,7 @@
     </div>
 </div>
 
-<script src="template.js"></script>
+<script src="JS system/template.js"></script>
 
 <script>
   function formatNumber(input) {
@@ -603,6 +576,7 @@
       if (customDiv) {
         selectEl.style.display = 'none';
         customDiv.style.display = 'flex';
+        // 自動聚焦
         if(customInput) {
             setTimeout(() => customInput.focus(), 50);
         }
@@ -630,14 +604,17 @@
     updateStates();
   }
   
+  // [修改] 生成文字 + 複製 + 存檔 (若有料號)
   function generateAndCopyText() {
     generateText();
+    // 只要有望有填料號就儲存紀錄，不需客戶名稱
     if (getValue("partNo")) {
         if(typeof saveCurrentReportToHistory === 'function') saveCurrentReportToHistory();
     }
-    copyText(true);
+    copyText(true); // 傳入 true 避免 copyText 再次重複儲存
   }
 
+  // [新增] 專門給「生成文字」按鈕用的函式，也會觸發存檔
   function generateTextAndSave() {
     generateText();
     if (getValue("partNo")) {
@@ -646,9 +623,11 @@
     }
   }
 
+  // [修改] 清空重填功能
   function resetAllFields() {
     if(!confirm('確定要清空所有欄位嗎？')) return;
     
+    // 重置所有下拉選單與自訂輸入
     document.querySelectorAll('select').forEach(sel => {
         resetSelect(sel.id);
         sel.value = (sel.id === 'qty') ? '5' : '-'; 
@@ -661,8 +640,8 @@
         if(sel.id === 'finish') sel.value = '無鉛噴錫';
     });
 
+    // 清空其他輸入框 (包含料號)
     document.querySelectorAll('input[type="text"]').forEach(inp => inp.value = "");
-
     document.querySelector('.remarks-input').value = "";
     document.getElementById("output-text").value = "";
     
@@ -811,7 +790,7 @@
         var val = trim(customInput.value);
         return val || ""; 
       }
-    } 
+    }
     
     var v = trim(el.value);
     return v || "";
@@ -829,7 +808,7 @@
     var finish = getValue("finish");
     var goldFinger = getValue("goldFinger");
     var qty = getValue("qty");
-
+    
     var specials = [];
     var specialsIds = ["special1", "special2", "special3"];
     for (var i = 0; i < specialsIds.length; i++) {
@@ -898,6 +877,7 @@
         }
     }
 
+    // [修改] 只有當料號存在時才儲存 (省略客戶檢查)
     if (!skipSave && getValue("partNo")) {
          if(typeof saveCurrentReportToHistory === 'function') saveCurrentReportToHistory();
     }
@@ -933,4 +913,3 @@
 </body>
 
 </html>
-
