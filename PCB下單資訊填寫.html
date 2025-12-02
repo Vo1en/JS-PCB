@@ -3,147 +3,105 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PCB 規格產生器</title>
+  <title>駿鑫 規格產生器</title>
   
-  <link rel="stylesheet" href="JS system/report.css">
-  <link rel="stylesheet" href="navbar.css"> <style>
-  /* --- 引入字型 (複製自 index.html) --- */
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
+  <link rel="stylesheet" href="./js system/report.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 0L20 60H40L30 100L80 40H60L70 0Z' fill='%23c2a878'/></svg>">
 
-  /* --- 金屬配色變數 (複製自 index.html) --- */
+  <style>
+  /* 內嵌流金特效所需的 CSS */
   :root {
-      --text-main: #1f2937;
-      --gold-gradient: linear-gradient(135deg, #c2a878 0%, #e3d1a8 50%, #9e8b6b 100%);
-      --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-      
-      /* [新增/修正] 確保 A4 內頁背景色設定為白色 */
-      --bg-page: #ffffff; 
-      
-      /* 確保 report.css 的變數可以在此處使用（如未載入，則使用預設值） */
+      /* 金色系主色調 */
       --gold-dark: #b38728;
+      --border-color: #a8a8a8;
       --label-bg: #f5f5f5;
-      --border-color: #c2a878;
+      --bg-page: #ffffff;
+      --ui-radius: 8px;
+
+      /* 流金特效漸層 */
+      --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
   }
-    
+
+  /* 流金特效動畫 */
+  @keyframes shine { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+
   /* 移除 JS PCB 浮水印樣式 */
   body::before { content: none !important; }
 
   /* 針對新的報表結構調整主要容器 */
   body {
-    background-color: #f5f5f5; /* 頁面外底色：淺灰色 */
-    padding-top: 0px; /* PC/行動版頂部填充 0px */
+    background-color: #f5f5f5;
     margin: 0;
     font-family: 'Noto Sans TC', sans-serif;
+    /* 調整頂部空間：覆蓋 report.css 預設的 padding-top: 80px，使其更小 */
+    padding-top: 20px !important;
   }
   
-  /* 覆寫舊的 main-container，採用新的 page-container 結構 */
-  .main-container {
-      width: 100%;
-      margin: 0 auto;
-      padding: 0;
-  }
-  
-  /* [原修改] 隱藏所有舊的標題區塊 */
-  .logo-wrap, h1.page-title, #unified-header-container { display: none !important; } 
+  .main-container { width: 100%; margin: 0 auto; padding: 0; }
+  .logo-wrap, h1.page-title { display: none; } 
 
-  /* =============== 新增：流動金屬風格標題 CSS (參考 index.html) =============== */
-  
-  /* 顯式標題容器樣式 */
-  .explicit-page-title {
-      color: var(--text-main);
-      margin: 0 0 35px 0; /* 調整與下方輸入框的距離 */
-      line-height: 1.3;
+  /* --- 規格產生器標題樣式 --- */
+  .custom-header {
       text-align: center;
-      padding-top: 10px; /* 增加頂部空間 */
+      margin-bottom: 25px;
+      /* 標題大小調整 */
+      font-size: 38px;
+      font-weight: bold;
+      color: #333;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
   }
 
-  /* 第一行：品牌名稱 (流動金屬字) */
-  .explicit-page-title .brand {
-      display: block;
-      font-size: 2.2rem;
-      font-weight: 800;
-      /* 金屬流光效果 (複製 index.html) */
-      background: var(--gold-text-gradient);
+  /* 留金樣式：移除邊框和背景，加大字體 */
+  .custom-header-gold {
+      color: transparent;
+      background: var(--gold-text-gradient); 
       background-size: 200% auto;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
-      animation: shine 5s linear infinite;
-      font-family: 'Noto Sans TC', sans-serif;
+      animation: shine 5s linear infinite; 
+      display: inline-block;
+      line-height: 1.2;
+      /* 加大字體 */
+      font-size: 38px;
+      /* 移除左右 padding 和邊框/背景 */
+      padding: 5px 0;
+      border: none; /* 移除邊框 */
+      border-radius: 0; 
+      background-color: transparent; /* 移除背景 */
   }
+  /* --- 規格產生器標題樣式 結束 --- */
 
-  /* 第二行：系統名稱 (精緻霧面金) */
-  .explicit-page-title .system-sub {
-      display: block;
-      font-size: 1.2rem;
-      color: #c2a878; /* 霧面金 */
-      font-weight: 400;
-      letter-spacing: 6px;
-      text-transform: uppercase;
-      font-family: 'Roboto', sans-serif;
-  }
 
-  /* 標題下方的裝飾線 (金屬髮絲紋感) */
-  .explicit-page-title::after {
-      content: '';
-      display: block;
-      width: 80px;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #c2a878, transparent);
-      margin: 20px auto 0;
-      opacity: 0.8;
-  }
-
-  /* 金屬流光動畫 (複製自 index.html) */
-  @keyframes shine {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
-  }
-  
-  /* =============== 結束：流動金屬風格標題 CSS =============== */
-  
-  /* 調整 field-group 樣式以符合新的 report.css 結構 */
   .info-grid-custom {
       display: grid;
-      /* 一行一個項目 */
       grid-template-columns: 1fr;
-      gap: 8px; /* 項目間距 */
+      gap: 8px; 
       margin-bottom: 25px; 
   }
 
   .info-item-custom {
       display: flex;
       align-items: center;
-      /* 沿用 report.css 的邊線和高度設定 */
       border-bottom: 1px solid #ddd;
       padding-bottom: 2px;
       height: 34px; 
   }
 
-  /* ------------------- ↓↓↓ 最終修正區塊：直接採用 report.css 樣式並覆蓋寬度 ↓↓↓ ------------------- */
-  /* 統一 Label 樣式：直接複製 report.css 中 .info-item .label 的屬性 (背景、顏色、外框) */
   .info-item-custom .label {
-      /* 來自 report.css (使用變數，並確保其存在於 :root) */
-      background-color: var(--label-bg);
+      background-color: var(--label-bg, #f0ebde);
       color: #333;
       font-weight: 700;
       font-size: 14px;
       padding: 3px 10px;
       border-radius: 4px;
-      
-      /* 保留 PCB 頁面獨有的寬度 (85px，覆蓋 report.css 的 70px) */
       width: 85px; 
-      
       text-align: center;
       margin-right: 8px;
       flex-shrink: 0;
-      
-      /* 來自 report.css (使用變數，確保外框是金色) */
-      border: 1px solid var(--border-color); 
+      border: 1px solid var(--border-color, #e0d8c8);
   }
-  /* ------------------- ↑↑↑ 最終修正區塊：直接採用 report.css 樣式並覆蓋寬度 ↑↑↑ ------------------- */
   
-  /* 統一內容區的 input/select/div 樣式 */
   .info-content-wrap {
       flex-grow: 1;
       display: flex;
@@ -151,24 +109,15 @@
       gap: 8px;
   }
 
-  /* [重要修改] 警告訊息的樣式調整，使其與內容數值垂直對齊 */
   .warning {
-      color: #ef4444; /* report.css input-error 的紅色 */
+      color: #ef4444; 
       font-size: 13px;
-      
-      /* 1. 水平定位：推開 Label (85px) 和 Label/Input間距 (8px) = 93px */
       margin-left: 93px; 
-      
-      /* 2. 垂直微調：稍微上提一點點，讓警告文字與上面的文字基準線對齊 */
       margin-top: 5px; 
-      
-      /* 3. 文本對齊：模擬 input-line-custom 的 padding-left: 8px，讓警告文字與輸入框內文字對齊 */
       padding-left: 35px; 
-      
-      margin-bottom: -5px; /* 增加與下一個項目的間距 */
+      margin-bottom: -5px; 
   }
 
-  /* 統一表單元素的樣式 */
   .input-line-custom {
       border: 1px solid #ccc;
       background-color: #fff;
@@ -186,7 +135,6 @@
       box-shadow: 0 0 0 3px rgba(179, 135, 40, 0.1);
   }
   
-  /* 自訂輸入框容器樣式 */
   .custom-input-wrapper {
     display: none;
     width: 100%;
@@ -202,7 +150,6 @@
     font-size: 14px;
   }
   
-  /* 覆寫舊的按鈕樣式 */
   .reset-btn {
     width: 24px;
     height: 24px;
@@ -211,54 +158,31 @@
     flex-shrink: 0;
   }
   
-  /* ========================================= */
-  /* [A4 規格主要修改區] */
-  /* 參考 report.css 的 A4 規格，實現 A4 頁面佈局 */
   .page-container {
       width: 100%;
       display: flex;
       justify-content: center;
-      /* 確保內容有邊距，避免貼邊 */
       padding: 20px; 
       padding-bottom: 40px; 
       box-sizing: border-box;
   }
 
   .a4-paper {
-      /* 鎖定為 A4 寬度 */
       width: 210mm; 
-      /* 至少一個 A4 高度 */
       min-height: 297mm; 
       background: var(--bg-page);
-      /* 邊距調整為 mm */
       padding: 15mm 15mm; 
       box-shadow: 0 5px 15px rgba(0,0,0,0.15);
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       position: relative;
-      /* 移除原有的 margin，讓 flex 容器置中 */
       margin: 0; 
   }
-  /* ========================================= */
 
-  /* 隱藏 template.js 渲染的基本資訊區塊 */
-  #unified-header-container .info-grid { 
-      display: none !important; 
-  }
-  h3.section-title { display: none; } /* 隱藏原本的 PCB 規格標題 */
+  .remarks-container { margin-bottom: 20px; }
+  .remarks-input { min-height: 90px !important; resize: vertical; }
 
-  /* [變更 3] 備註欄位縮小至 4 行 */
-  .remarks-container {
-      margin-bottom: 20px;
-  }
-  
-  .remarks-input {
-      min-height: 90px !important; /* 調整至約 4 行的高度 */
-      resize: vertical;
-  }
-
-  /* [變更 4] 輸出區塊樣式調整，增加長度 */
   .output-area {
     margin-top: 20px;
     padding: 15px;
@@ -268,23 +192,19 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
 
-  /* [變更 4] 增加輸出文字欄位長度 */
   #output-text {
-    /* ***以下是根據您的要求修改的部分*** */
-    width: 90%; /* (修改) 減少寬度以在左右產生間距 */
-    min-height: 400px; /* 增加高度以容納更多資訊 */
+    width: 90%; 
+    min-height: 400px; 
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
     line-height: 1.6;
     resize: vertical;
-    /* (新增) 水平置中，讓左右間距固定 */
     display: block;
     margin: 0 auto;
   }
 
-  /* [變更 5] 輸出欄位標籤樣式 */
   .output-label {
       font-size: 14px;
       font-weight: 700;
@@ -293,152 +213,63 @@
       display: block;
   }
 
-  /* 按鈕位置與顏色調整 */
   .btn-row {
       display: flex;
-      justify-content: center; /* 按鈕置中 */
-      gap: 15px; /* 調整間距以容納新按鈕 */
-      margin: 20px 0 20px 0; /* 調整與上下區塊的間距 */
+      justify-content: center; 
+      gap: 15px; 
+      margin: 20px 0 20px 0; 
+      flex-wrap: wrap; /* 避免手機版爆版 */
   }
 
-  /* =============== Glassmorphism 按鈕樣式開始 =============== */
-  .btn-copy, .btn-generate, .btn-one-click {
-      padding: 10px 25px;
-      border: 1px solid rgba(255, 255, 255, 0.4); /* 透明白色邊框 */
-      border-radius: 999px; /* 圓角膠囊按鈕 */
-      cursor: pointer;
-      font-weight: 700;
-      transition: all 0.2s;
-      
-      /* 核心玻璃效果 */
-      background-color: rgba(255, 255, 255, 0.15); /* 輕微透明背景 */
-      backdrop-filter: blur(5px); /* 模糊背景，產生玻璃感 */
-      -webkit-backdrop-filter: blur(5px); /* 兼容性處理 */
-      
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), /* 底部陰影 */
-                  inset 0 1px 1px rgba(255, 255, 255, 0.5); /* 頂部高光 */
-      
-      color: #212121; /* 按鈕文字顏色 */
-  }
-
-  /* 針對不同按鈕給予不同的背景色調 */
-  .btn-generate {
-      /* 生成規格文字：較亮的藍色調 */
-      background-color: rgba(0, 122, 255, 0.15);
-      color: #004d99;
-  }
-  .btn-generate:hover {
-      background-color: rgba(0, 122, 255, 0.25);
-      transform: translateY(-2px);
-  }
-  
-  .btn-one-click {
-      /* 一鍵生成並複製：金色/黃色調 */
-      background-color: rgba(255, 199, 0, 0.15);
-      color: #806600;
-  }
-  .btn-one-click:hover {
-      background-color: rgba(255, 199, 0, 0.25);
-      transform: translateY(-2px);
-  }
-
-  .btn-copy {
-      /* 複製規格文字：灰色調 */
-      background-color: rgba(108, 117, 125, 0.15);
-      color: #3e4449;
-  }
-  .btn-copy:hover {
-      background-color: rgba(108, 117, 125, 0.25);
-      transform: translateY(-2px);
-  }
-  /* =============== Glassmorphism 按鈕樣式結束 =============== */
-
-  .btn-print { display: none; } 
-
-
-  /* 手機響應式調整 (Label 置中) */
   @media (max-width: 768px) {
-      /* [A4 規格修改 - 手機版] 確保手機版也能正確顯示 */
-      .page-container {
-          padding: 5px 5px; /* <--- 修改點：將頂部填充明確設為 15px */
-          padding-bottom: 5px !important; 
-      }
-      .a4-paper {
-          width: 100%;
-          min-height: auto;
-          padding: 15px;
-          box-shadow: none;
-          margin: 0;
-      }
+      .page-container { padding: 5px; padding-bottom: 20px !important; }
+      .a4-paper { width: 100%; min-height: auto; padding: 15px; box-shadow: none; margin: 0; }
       
-    /* ***以下是根據您的要求修改的部分*** */
-    #output-text {
-        width: 90% !important; /* (修改) 調整手機版寬度 */
-        margin: 0 auto !important; /* (新增) 確保手機版也置中 */
-    }
+      #output-text { width: 90% !important; margin: 0 auto !important; }
 
-      /* 修正警告訊息的水平定位，讓它對齊輸入框 */
       .warning {
           margin-left: 93px !important; 
           margin-top: 5px; 
-          padding-left: 35px !important; /* 確保與輸入框內文字對齊 */
+          padding-left: 35px !important; 
           margin-bottom: -5px;
       }
       
       .info-item-custom {
-          /* **關鍵修改：確保水平排列的優先級最高** */
           display: flex !important;
           flex-direction: row !important; 
           align-items: center !important;
-          height: auto; /* 允許內容撐開高度 */
+          height: auto; 
           padding-bottom: 5px;
           border-bottom: 1px solid #ddd;
       }
 
       .info-item-custom .label {
-          /* 確保標籤寬度固定，不被壓縮或換行 */
           width: 85px !important; 
           margin-right: 8px !important;
           margin-bottom: 0px !important;
           flex-shrink: 0 !important;
           text-align: center; 
-          
-          /* 確保在手機版也維持顏色/背景/邊框 */
       }
       
-      .info-content-wrap {
-          width: auto !important;
-          flex-grow: 1 !important;
-      }
-
-      .btn-row {
-          flex-direction: column;
-          align-items: stretch;
-      }
+      .info-content-wrap { width: auto !important; flex-grow: 1 !important; }
+      .btn-row { flex-direction: column; align-items: stretch; }
   }
 
 </style>
 </head>
 <body>
 
-<div id="navbar-container"></div>
-<script src="navbar.js"></script>
-
 <div class="page-container">
     <div class="a4-paper">
         
-        <h2 class="explicit-page-title">
-            <span class="brand">PCB 規格產生器</span>
-        </h2>
-
-        <div id="unified-header-container"></div>
+        <h2 class="custom-header custom-header-gold">規格產生器</h2>
         
         <section class="info-grid-custom">
             
             <div class="info-item-custom">
                 <span class="label">料號</span>
                 <div class="info-content-wrap">
-                    <input type="text" id="partNo" class="input-line-custom" placeholder="請輸入料號" />
+                    <input type="text" id="partNo" class="input-line-custom" placeholder="(選填)" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase();" />
                 </div>
             </div>
 
@@ -492,16 +323,16 @@
                     <div class="info-content-wrap">
                         <select id="thickness" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
-                            <option>0.4 mm</option>
-                            <option>0.6 mm</option>
-                            <option>0.8 mm</option>
-                            <option>1.0 mm</option>
-                            <option>1.2 mm</option>
-                            <option selected>1.6 mm</option>
-                            <option>2.0 mm</option>
-                            <option>2.4 mm</option>
-                            <option>3.0 mm</option>
-                            <option>3.2 mm</option>
+                            <option value="0.4 mm">0.4 mm</option>
+                            <option value="0.6 mm">0.6 mm</option>
+                            <option value="0.8 mm">0.8 mm</option>
+                            <option value="1.0 mm">1.0 mm</option>
+                            <option value="1.2 mm">1.2 mm</option>
+                            <option value="1.6 mm" selected>1.6 mm</option>
+                            <option value="2.0 mm">2.0 mm</option>
+                            <option value="2.4 mm">2.4 mm</option>
+                            <option value="3.0 mm">3.0 mm</option>
+                            <option value="3.2 mm">3.2 mm</option>
                             <option value="custom">自行輸入</option>
                         </select>
                         <div id="thickness_custom_div" class="custom-input-wrapper">
@@ -519,7 +350,7 @@
                 <div class="info-item-custom">
                     <span class="label">內層銅厚</span>
                     <div class="info-content-wrap">
-                        <select id="innerCu" class="input-line-custom" onchange="checkCustom(this)">
+                        <select id="innerCu" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
                             <option>0.5oz</option>
                             <option>1oz</option>
@@ -541,7 +372,7 @@
                 <div class="info-item-custom">
                     <span class="label">外層銅厚</span>
                     <div class="info-content-wrap">
-                        <select id="outerCu" class="input-line-custom" onchange="checkCustom(this)">
+                        <select id="outerCu" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
                             <option selected>1oz</option>
                             <option>2oz</option>
@@ -560,7 +391,7 @@
                 <div class="info-item-custom">
                     <span class="label">防焊顏色</span>
                     <div class="info-content-wrap">
-                        <select id="solderMask" class="input-line-custom" onchange="checkCustom(this)">
+                        <select id="solderMask" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
                             <option value="綠色" selected>🟢 綠色</option>
                             <option value="藍色">🔵 藍色</option>
@@ -583,7 +414,7 @@
                 <div class="info-item-custom">
                     <span class="label">文字顏色</span>
                     <div class="info-content-wrap">
-                        <select id="legendColor" class="input-line-custom" onchange="checkCustom(this)">
+                        <select id="legendColor" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
                             <option value="白字" selected>⚪ 白字</option>
                             <option value="黑字">⚫ 黑字</option>
@@ -602,7 +433,7 @@
                 <div class="info-item-custom">
                     <span class="label">表面處理</span>
                     <div class="info-content-wrap">
-                        <select id="finish" class="input-line-custom" onchange="checkCustom(this)">
+                        <select id="finish" class="input-line-custom" onchange="onSelectChange(this)">
                             <option value="-">-</option>
                             <option value="有鉛噴錫">有鉛噴錫</option>
                             <option value="無鉛噴錫" selected>無鉛噴錫</option>
@@ -630,7 +461,7 @@
                 <div class="info-item-custom">
                     <span class="label">金(錫)手指</span>
                     <div class="info-content-wrap">
-                        <select id="goldFinger" class="input-line-custom" onchange="checkCustom(this)">
+                        <select id="goldFinger" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
                             <option>斜邊30°</option>
                             <option>斜邊45°</option>
@@ -648,7 +479,7 @@
                 <div class="info-item-custom">
                     <span class="label">數量(出貨片)</span>
                     <div class="info-content-wrap">
-                        <select id="qty" class="input-line-custom" onchange="checkCustom(this)">
+                        <select id="qty" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
                             <option selected>5</option>
                             <option>10</option>
@@ -676,7 +507,7 @@
                 <div class="info-item-custom">
                     <span class="label">特殊製程#1</span>
                     <div class="info-content-wrap">
-                        <select id="special1" class="input-line-custom" onchange="checkCustom(this)">
+                        <select id="special1" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
                             <option>半孔</option>
                             <option>塞孔</option>
@@ -700,7 +531,7 @@
                 <div class="info-item-custom">
                     <span class="label">特殊製程#2</span>
                     <div class="info-content-wrap">
-                        <select id="special2" class="input-line-custom" onchange="checkCustom(this)">
+                        <select id="special2" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
                             <option>半孔</option>
                             <option>塞孔</option>
@@ -721,7 +552,7 @@
                 <div class="info-item-custom">
                     <span class="label">特殊製程#3</span>
                     <div class="info-content-wrap">
-                        <select id="special3" class="input-line-custom" onchange="checkCustom(this)">
+                        <select id="special3" class="input-line-custom" onchange="onSelectChange(this)">
                             <option>-</option>
                             <option>半孔</option>
                             <option>塞孔</option>
@@ -738,14 +569,15 @@
                 </div>
             </div>
             
-            </section>
+        </section>
 
-        <div id="unified-remarks-container"></div>
+        <div id="unified-remarks-container" data-hide-signature="true"></div>
         
         <div class="btn-row">
-            <button type="button" class="btn-one-click" onclick="generateAndCopyText()">一鍵生成+複製</button>
-            <button type="button" class="btn-generate" onclick="generateText()">生成文字</button>
-            <button type="button" class="btn-copy" onclick="copyText()">複製文字</button>
+            <button type="button" class="btn-glass-base btn-glass-gold" onclick="generateAndCopyText()">一鍵生成+複製</button>
+            <button type="button" class="btn-glass-base btn-glass-blue" onclick="generateTextAndSave()">生成文字</button>
+            <button type="button" class="btn-glass-base btn-glass-gray" onclick="copyText()">複製文字</button>
+            <button type="button" class="btn-glass-base btn-glass-red" onclick="resetAllFields()">清空重填</button>
         </div>
 
         <div class="output-area">
@@ -756,12 +588,9 @@
     </div>
 </div>
 
-
-<script src="template.js"></script>
+<script src="./js system/template.js"></script>
 
 <script>
-  
-  // 格式化數字 (數量/金額欄位)
   function formatNumber(input) {
     var value = input.value.replace(/\D/g, "");
     if (value) {
@@ -771,7 +600,6 @@
     }
   }
 
-  // 檢查是否選中自訂輸入
   function checkCustom(selectEl) {
     if (selectEl.value === 'custom') {
       var customDivId = selectEl.id + '_custom_div';
@@ -780,26 +608,26 @@
       if (customDiv) {
         selectEl.style.display = 'none';
         customDiv.style.display = 'flex';
-        if(customInput) customInput.focus();
+        // 自動聚焦
+        if(customInput) {
+            setTimeout(() => customInput.focus(), 50);
+        }
       }
+      return true;
     }
+    return false;
   }
 
-  // 重置回選單
   function resetSelect(selectId) {
     var selectEl = document.getElementById(selectId);
     var customDiv = document.getElementById(selectId + '_custom_div');
     var customInput = document.getElementById(selectId + '_custom');
     if (selectEl && customDiv) {
       customDiv.style.display = 'none';
-      customInput.value = ''; // 清空自訂內容
+      customInput.value = ''; 
       selectEl.style.display = 'block';
       selectEl.value = '-';
-      if (selectEl.onchange) {
-        onSelectChange(selectEl);
-      } else {
-         updateStates();
-      }
+      updateStates();
     }
   }
 
@@ -808,175 +636,176 @@
     updateStates();
   }
   
-  // [新增函式] 一鍵生成並複製
+  // [修改] 生成文字 + 複製 + 存檔 (若有料號)
   function generateAndCopyText() {
-    generateText(); // 先生成文字
-    copyText();     // 再複製文字
+    generateText();
+    // 只要有望有填料號就儲存紀錄，不需客戶名稱
+    if (getValue("partNo")) {
+        if(typeof saveCurrentReportToHistory === 'function') saveCurrentReportToHistory();
+    }
+    copyText(true); // 傳入 true 避免 copyText 再次重複儲存
   }
 
-  // PCB 規格連動規則 (保留原邏輯，完全不變)
-  function updateStates() {
-    var layer        = getValue("layers"); 
-    var layersSel    = document.getElementById("layers");
-    var innerSelect  = document.getElementById("innerCu");
-    var innerWarn    = document.getElementById("innerCuWarning");
-    var thicknessSel = document.getElementById("thickness");
-    var thicknessWarn= document.getElementById("thicknessWarning");
-    var outerCuSel   = document.getElementById("outerCu");
-    var finishSelect = document.getElementById("finish");
-    var finishWarn   = document.getElementById("finishWarning");
-    var special1Sel  = document.getElementById("special1");
-    var special1Warn = document.getElementById("special1Warning");
-    var special2Sel  = document.getElementById("special2");
-    var special3Sel  = document.getElementById("special3");
-    var goldFingerSel= document.getElementById("goldFinger");
-    var materialSel  = document.getElementById("material");
-    var materialWarn = document.getElementById("materialWarning");
-    var material     = getValue("material"); 
-
-    var i, opt;
-
-    if (thicknessWarn) {
-      thicknessWarn.style.display = "none";
+  // [新增] 專門給「生成文字」按鈕用的函式，也會觸發存檔
+  function generateTextAndSave() {
+    generateText();
+    if (getValue("partNo")) {
+        if(typeof saveCurrentReportToHistory === 'function') saveCurrentCurrentReportToHistory();
+        window.showToast("規格已生成並儲存");
     }
+  }
 
-    if (materialSel && materialWarn) {
-      if (material === "FR-1") {
-        materialWarn.style.display = "block";
-      } else {
-        materialWarn.style.display = "none";
-      }
-    }
-
-    for (i = 0; i < thicknessSel.options.length; i++) { thicknessSel.options[i].disabled = false; }
-    for (i = 0; i < outerCuSel.options.length; i++) { outerCuSel.options[i].disabled = false; }
-    for (i = 0; i < layersSel.options.length; i++) { layersSel.options[i].disabled = false; }
-    goldFingerSel.disabled = false;
-    special1Sel.disabled = false;
-    special2Sel.disabled = false;
-    special3Sel.disabled = false;
-    special1Warn.style.display = "none";
-    finishSelect.disabled = false;
-    finishWarn.style.display = "none";
-
-    if (material === "FR-1") {
-      for (i = 0; i < layersSel.options.length; i++) {
-        opt = layersSel.options[i];
-        if (opt.value !== "-" && opt.value !== "單面板" && opt.value !== "custom") {
-          opt.disabled = true;
-        }
-      }
-      if (layer !== "單面板" && layersSel.value !== "custom") {
-        layersSel.value = "單面板";
-        layer = "單面板";
-      }
-
-      for (i = 0; i < thicknessSel.options.length; i++) {
-        opt = thicknessSel.options[i];
-        opt.disabled = (opt.value !== "1.6 mm" && opt.value !== "-" && opt.value !== "custom");
-      }
-      if (thicknessSel.value !== "1.6 mm" && thicknessSel.value !== "custom") {
-        thicknessSel.value = "1.6 mm";
-      }
-
-      for (i = 0; i < outerCuSel.options.length; i++) {
-        opt = outerCuSel.options[i];
-        opt.disabled = (opt.value !== "1oz" && opt.value !== "-" && opt.value !== "custom");
-      }
-      if (outerCuSel.value !== "1oz" && outerCuSel.value !== "custom") {
-        outerCuSel.value = "1oz";
-      }
-
-      goldFingerSel.value = "-";
-      goldFingerSel.disabled = true;
-
-      special1Sel.value = "-";
-      special2Sel.value = "-";
-      special3Sel.value = "-";
-      special1Sel.disabled = true;
-      special2Sel.disabled = true;
-      special3Sel.disabled = true;
-
-      innerSelect.disabled = true;
-      innerSelect.value = "-";
-      innerWarn.style.display = "block";
-
-      if (thicknessWarn) thicknessWarn.style.display = "none";
-
-      return;
-    }
-
-    if (layer === "單面板" || layer === "雙面板") {
-      innerSelect.disabled = true;
-      innerSelect.value = "-";
-      innerWarn.style.display = "block";
-    } else if (
-      layer === "四層板" ||
-      layer === "六層板" ||
-      layer === "八層板" ||
-      layer === "十層板"
-    ) {
-      innerSelect.disabled = false;
-      innerWarn.style.display = "none";
-      if ((getValue("innerCu") === "-" || getValue("innerCu") === "") && innerSelect.value !== "custom") {
-        innerSelect.value = "0.5oz";
-      }
-    } else {
-      innerSelect.disabled = false;
-      innerWarn.style.display = "none";
-    }
-
-    if (
-      layer === "四層板" ||
-      layer === "六層板" ||
-      layer === "八層板" ||
-      layer === "十層板"
-    ) {
-      for (i = 0; i < thicknessSel.options.length; i++) {
-        opt = thicknessSel.options[i];
-        if (opt.value === "0.4 mm") opt.disabled = true;
-      }
-    }
-
-    if (layer === "八層板" || layer === "十層板") {
-      for (i = 0; i < thicknessSel.options.length; i++) {
-        opt = thicknessSel.options[i];
-        if (opt.value === "0.6 mm") opt.disabled = true;
-      }
-    }
+  // [修改] 清空重填功能
+  function resetAllFields() {
+    if(!confirm('確定要清空所有欄位嗎？')) return;
     
-    var currentThicknessOpt = thicknessSel.options[thicknessSel.selectedIndex];
-    if (currentThicknessOpt && currentThicknessOpt.disabled && thicknessSel.value !== "custom") {
-      thicknessSel.value = "1.6 mm"; 
+    // 重置所有下拉選單與自訂輸入
+    document.querySelectorAll('select').forEach(sel => {
+        resetSelect(sel.id);
+        sel.value = (sel.id === 'qty') ? '5' : '-'; 
+        if(sel.id === 'material') sel.value = 'FR-4';
+        if(sel.id === 'layers') sel.value = '雙面板';
+        if(sel.id === 'thickness') sel.value = '1.6 mm';
+        if(sel.id === 'outerCu') sel.value = '1oz';
+        if(sel.id === 'solderMask') sel.value = '綠色';
+        if(sel.id === 'legendColor') sel.value = '白字';
+        if(sel.id === 'finish') sel.value = '無鉛噴錫';
+    });
+
+    // 清空其他輸入框 (包含料號)
+    document.querySelectorAll('input[type="text"]').forEach(inp => inp.value = "");
+    document.querySelector('.remarks-input').value = "";
+    document.getElementById("output-text").value = "";
+    
+    updateStates();
+    window.showToast("欄位已清空");
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.custom-input-wrapper input').forEach(input => {
+          input.addEventListener('blur', function() {
+              if (this.value.trim() === '') {
+                  const selectId = this.id.replace('_custom', '');
+                  resetSelect(selectId);
+              }
+          });
+      });
+      updateStates();
+  });
+
+  const SPEC_RULES = {
+      locks: [
+          { rule: (material, layers) => ['六層板', '八層板', '十層板'].includes(layers), 
+            target: 'finish', 
+            action: (sel) => { sel.value = '化金 2u'; sel.disabled = true; document.getElementById('finishWarning').style.display = 'block'; } },
+          
+          { rule: (material, layers) => ['六層板', '八層板', '十層板'].includes(layers), 
+            target: 'special1', 
+            action: (sel) => { sel.value = '樹脂塞孔'; sel.disabled = true; document.getElementById('special1Warning').style.display = 'block'; } },
+      ],
+      restrictions: [
+          { rule: (material) => material === 'FR-1', 
+            targets: [
+              { id: 'layers', disable_values: ['雙面板', '四層板', '六層板', '八層板', '十層板'], default_value: '單面板', warning: 'materialWarning' },
+              { id: 'thickness', disable_values: ['0.4 mm', '0.6 mm', '0.8 mm', '1.0 mm', '1.2 mm', '2.0 mm', '2.4 mm', '3.0 mm', '3.2 mm'], default_value: '1.6 mm' },
+              { id: 'outerCu', disable_values: ['2oz', '3oz'], default_value: '1oz' },
+              { id: 'goldFinger', disable_all: true, default_value: '-' },
+              { id: 'special1', disable_all: true, default_value: '-' },
+              { id: 'special2', disable_all: true, default_value: '-' },
+              { id: 'special3', disable_all: true, default_value: '-' },
+              { id: 'innerCu', disable_all: true, default_value: '-', warning: 'innerCuWarning' }
+            ]
+          },
+          { rule: (material, layers) => ['單面板', '雙面板'].includes(layers), 
+            targets: [
+              { id: 'innerCu', disable_all: true, default_value: '-', warning: 'innerCuWarning' }
+            ]
+          },
+          { rule: (material, layers) => ['四層板', '六層板', '八層板', '十層板'].includes(layers), 
+            targets: [
+              { id: 'thickness', disable_values: ['0.4 mm'], warning: 'thicknessWarning' }
+            ]
+          },
+          { rule: (material, layers) => ['八層板', '十層板'].includes(layers), 
+            targets: [
+              { id: 'thickness', disable_values: ['0.4 mm', '0.6 mm'], warning: 'thicknessWarning' }
+            ]
+          }
+      ],
+      defaults: [
+          { rule: (material, layers) => layers !== '單面板' && layers !== '雙面板' && layers !== '-' && layers !== 'custom', 
+            target: 'innerCu', 
+            action: (sel, currentVal) => { if (currentVal === '-' || currentVal === '') sel.value = '0.5oz'; } }
+      ]
+  };
+
+  function updateStates() {
+    const currentValues = {
+      material: getValue("material"),
+      layers: getValue("layers"),
+      thickness: getValue("thickness"),
+      innerCu: getValue("innerCu"),
+      finish: getValue("finish"),
+      special1: getValue("special1")
+    };
+    
+    document.querySelectorAll('select').forEach(sel => {
+        if (sel.id.startsWith('special') || sel.id === 'layers' || sel.id === 'thickness' || sel.id === 'innerCu' || sel.id === 'finish' || sel.id === 'outerCu' || sel.id === 'goldFinger') {
+            sel.disabled = false;
+            Array.from(sel.options).forEach(opt => opt.disabled = false);
+        }
+    });
+    document.querySelectorAll('.warning').forEach(warn => warn.style.display = 'none');
+
+    SPEC_RULES.restrictions.forEach(restriction => {
+        if (restriction.rule(currentValues.material, currentValues.layers)) {
+            restriction.targets.forEach(target => {
+                const sel = document.getElementById(target.id);
+                if (!sel || checkCustom(sel)) return;
+
+                if (target.warning) {
+                    const warnEl = document.getElementById(target.warning);
+                    if (warnEl) warnEl.style.display = 'block';
+                }
+
+                if (target.disable_all) {
+                    sel.disabled = true;
+                } else if (target.disable_values) {
+                    target.disable_values.forEach(val => {
+                        const opt = sel.querySelector(`option[value="${val}"]`);
+                        if (opt) opt.disabled = true;
+                    });
+                }
+
+                const currentOpt = sel.options[sel.selectedIndex];
+                if (currentOpt && currentOpt.disabled && sel.value !== 'custom') {
+                    sel.value = target.default_value;
+                }
+            });
+        }
+    });
+    
+    const thickness = getValue("thickness");
+    if (thickness === "0.4 mm" && currentValues.material !== "FR-1") {
+        const thicknessOpt = document.getElementById("thickness").options[document.getElementById("thickness").selectedIndex];
+        if (thicknessOpt && !thicknessOpt.disabled) {
+            document.getElementById('thicknessWarning').style.display = 'block';
+        }
     }
 
-    var thickness = getValue("thickness");
-    if (
-      thicknessWarn &&
-      thickness === "0.4 mm" &&
-      currentThicknessOpt &&
-      !currentThicknessOpt.disabled
-    ) {
-      thicknessWarn.style.display = "block";
-    } else if (thicknessWarn) {
-      thicknessWarn.style.display = "none";
-    }
+    SPEC_RULES.locks.forEach(lock => {
+        const sel = document.getElementById(lock.target);
+        if (lock.rule(currentValues.material, currentValues.layers) && !checkCustom(sel)) {
+            lock.action(sel);
+        }
+    });
 
-    if (layer === "六層板" || layer === "八層板" || layer === "十層板") {
-      if (finishSelect.value !== "custom") {
-        finishSelect.value = "化金 2u";
-        finishSelect.disabled = true;
-        finishWarn.style.display = "block";
-      }
-    }
-
-    if (layer === "六層板" || layer === "八層板" || layer === "十層板") {
-      if (special1Sel.value !== "custom") {
-        special1Sel.value = "樹脂塞孔";
-        special1Sel.disabled = true;
-        special1Warn.style.display = "block";
-      }
-    }
+    SPEC_RULES.defaults.forEach(defaultRule => {
+        const sel = document.getElementById(defaultRule.target);
+        if (defaultRule.rule(currentValues.material, currentValues.layers) && !checkCustom(sel)) {
+            defaultRule.action(sel, getValue(defaultRule.target));
+        }
+    });
   }
 
   function trim(str) {
@@ -993,13 +822,18 @@
         var val = trim(customInput.value);
         return val || ""; 
       }
-    } 
+    } else if (id === 'specialAmount') {
+      // 訂單金額已移除
+      return "";
+    }
     
     var v = trim(el.value);
+    // 移除不必要的提示字 (雖然 placeholder 應該不會被抓到)
+    if (v === '(選填)') return ""; 
+    
     return v || "";
   }
   
-  // 生成規格文字
   function generateText() {
     var partNo = getValue("partNo");
     var material = getValue("material");
@@ -1012,7 +846,6 @@
     var finish = getValue("finish");
     var goldFinger = getValue("goldFinger");
     var qty = getValue("qty");
-    // 移除 specialAmount 
     
     var specials = [];
     var specialsIds = ["special1", "special2", "special3"];
@@ -1049,11 +882,10 @@
     lines.push("數量(出貨片)：" + (qty || "-"));
 
     if (specials.length > 0) {
-      lines.push("特殊製程：" + specials.join("、"));
+      var uniqueSpecials = Array.from(new Set(specials));
+      lines.push("特殊製程：" + uniqueSpecials.join("、"));
     }
     
-    // 移除訂單金額輸出
-
     var msg = lines.join("\n");
     
     var now = new Date();
@@ -1071,43 +903,51 @@
     
     document.getElementById("output-text").value = msg;
   }
-  
-  // [新增函式] 一鍵生成複製
-  function generateAndCopyText() {
-    generateText(); // 先生成文字
-    copyText();     // 再複製文字
-  }
 
-
-  // 複製文字
-  function copyText() {
+  async function copyText(skipSave = false) {
     var output = document.getElementById("output-text");
-    if (output.value) {
-        output.select();
-        output.setSelectionRange(0, 99999); 
-        document.execCommand("copy");
-        alert("文字訊息已複製到剪貼簿！");
-    } else {
-        // 如果輸出欄位是空的，先生成一次
+    
+    if (!output.value) {
         generateText(); 
-        if (output.value) {
-            output.select();
-            output.setSelectionRange(0, 99999); 
-            document.execCommand("copy");
-            alert("規格已生成並複製到剪貼簿！");
-        } else {
-            alert("請先完成規格輸入！");
+        if (!output.value) {
+            window.showToast("請先完成規格輸入！", "error");
+            return;
         }
+    }
+
+    // [修改] 只有當料號存在時才儲存 (省略客戶檢查)
+    if (!skipSave && getValue("partNo")) {
+         if(typeof saveCurrentReportToHistory === 'function') saveCurrentReportToHistory();
+    }
+
+    output.select();
+    output.setSelectionRange(0, 99999); 
+    
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+             navigator.clipboard.writeText(output.value).then(() => {
+                window.showToast("文字訊息已複製到剪貼簿！");
+             }).catch(err => {
+                fallbackCopy();
+             });
+        } else {
+            fallbackCopy();
+        }
+    } catch (err) {
+        fallbackCopy();
     }
   }
 
-
-  document.addEventListener('DOMContentLoaded', updateStates);
-  updateStates();
+  function fallbackCopy() {
+    try {
+        document.execCommand("copy");
+        window.showToast("文字訊息已複製到剪貼簿！");
+    } catch (err) {
+        window.showToast("複製失敗，請手動複製", "error");
+    }
+  }
 </script>
 
 </body>
+
 </html>
-
-
-
