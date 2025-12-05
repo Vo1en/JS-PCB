@@ -427,6 +427,24 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="field-group-wrap">
+                <div class="info-item-custom">
+                    <span class="label">測試</span>
+                    <div class="info-content-wrap">
+                        <select id="testMethod" class="input-line-custom" onchange="onSelectChange(this)">
+                            <option>-</option>
+                            <option selected>全測</option>
+                            <option>抽測</option>
+                            <option value="custom">自行輸入</option>
+                        </select>
+                        <div id="testMethod_custom_div" class="custom-input-wrapper">
+                            <input type="text" id="testMethod_custom" placeholder="請自行輸入測試方式" class="input-line-custom" />
+                            <button type="button" class="reset-btn" onclick="resetSelect('testMethod')" title="切換回選單">×</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="field-group-wrap">
                 <div class="info-item-custom">
@@ -628,6 +646,7 @@
         if(sel.id === 'solderMask') sel.value = '綠色';
         if(sel.id === 'legendColor') sel.value = '白字';
         if(sel.id === 'finish') sel.value = '無鉛噴錫';
+        if(sel.id === 'testMethod') sel.value = '全測';
     });
 
     // 清空其他輸入框 (包含料號)
@@ -708,7 +727,7 @@
     };
     
     document.querySelectorAll('select').forEach(sel => {
-        if (sel.id.startsWith('special') || sel.id === 'layers' || sel.id === 'thickness' || sel.id === 'innerCu' || sel.id === 'finish' || sel.id === 'outerCu' || sel.id === 'goldFinger') {
+        if (sel.id.startsWith('special') || sel.id === 'layers' || sel.id === 'thickness' || sel.id === 'innerCu' || sel.id === 'finish' || sel.id === 'outerCu' || sel.id === 'goldFinger' || sel.id === 'testMethod') {
             sel.disabled = false;
             Array.from(sel.options).forEach(opt => opt.disabled = false);
         }
@@ -800,6 +819,7 @@
     var legendColor = getValue("legendColor");
     var finish = getValue("finish");
     var goldFinger = getValue("goldFinger");
+    var testMethod = getValue("testMethod");
     var qty = getValue("qty");
     var specialAmount = getValue("specialAmount");
     
@@ -833,6 +853,10 @@
 
     if (goldFinger && goldFinger !== "-" && goldFinger !== "請選擇") {
       lines.push("金(錫)手指：" + goldFinger);
+    }
+
+    if (testMethod && testMethod !== "-" && testMethod !== "請選擇") {
+      lines.push("測試：" + testMethod);
     }
 
     lines.push("數量(出貨片)：" + (qty || "-"));
@@ -911,9 +935,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
