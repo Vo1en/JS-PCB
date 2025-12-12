@@ -7,6 +7,27 @@
     <link rel="stylesheet" href="navbar.css">
     <link rel="stylesheet" href="report.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* 新增按鈕的樣式 */
+        .btn-add-row {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            color: #333;
+            padding: 2px 10px;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 10px;
+        }
+        .btn-add-row:hover {
+            background-color: #e0e0e0;
+            border-color: #999;
+        }
+        @media print {
+            .btn-add-row { display: none; }
+        }
+    </style>
 </head>
 <body>
     <div id="navbar-container"></div>
@@ -59,7 +80,15 @@
             </section>
 
             <table class="print-only-table" id="print-pcb-specs"><tr><th>板　　材</th><td id="print-material"></td><th>層　　別</th><td id="print-layer"></td><th>板　　厚</th><td id="print-thickness"></td></tr><tr><th>銅　　厚</th><td id="print-copper"></td><th>防　　焊</th><td id="print-mask"></td><th>文　　字</th><td id="print-legend"></td></tr><tr><th>焊　　盤</th><td id="print-surface"></td><th>出貨尺寸</th><td id="print-dim"></td><th>排版規格</th><td id="print-array"></td></tr></table>
-            <div class="section-header-wrapper"><h3 class="section-title">檢驗數據</h3><span class="standard-badge">抽樣標準: MIL-STD-105D</span></div>
+            
+            <div class="section-header-wrapper">
+                <div style="display:flex; align-items:center;">
+                    <h3 class="section-title">檢驗數據</h3>
+                    <button type="button" class="btn-add-row" onclick="addHoleRow()">+ 新增孔徑</button>
+                </div>
+                <span class="standard-badge">抽樣標準: MIL-STD-105D</span>
+            </div>
+            
             <div class="table-wrapper">
                 <table class="inspection-table" id="inspection-data-table">
                     <thead><tr><th style="min-width: 80px;">項目</th><th style="min-width: 100px;">規格 (mm)</th><th>樣本 A</th><th>樣本 B</th><th>樣本 C</th><th>樣本 D</th><th>樣本 E</th><th style="min-width: 60px;">判定</th></tr></thead>
@@ -100,6 +129,55 @@
     <script>
         let hasUserInteracted = false;
 
+        // 新增孔徑列的功能
+        function addHoleRow() {
+            const tbody = document.querySelector('#inspection-data-table tbody');
+            const holeRows = tbody.querySelectorAll('tr[id^="row-hole-"]');
+            const count = holeRows.length;
+            const newIndex = count + 1;
+            // 計算新字母：A(65) + count。例如 count=3 (原有3行)，下一個是 65+3=68 (D)
+            const nextChar = String.fromCharCode(65 + count);
+            
+            // 複製模板 (使用 row-hole-1)
+            const template = document.getElementById('row-hole-1');
+            const newRow = template.cloneNode(true);
+            
+            // 更新 ID
+            newRow.id = `row-hole-${newIndex}`;
+            
+            // 更新標籤 (第一格)
+            newRow.cells[0].textContent = `孔徑 ${nextChar}`;
+            
+            // 更新規格輸入格 ID 並清空
+            const specCell = newRow.cells[1].querySelector('.editable-cell');
+            specCell.id = `spec-hole${newIndex}-nominal`;
+            specCell.textContent = '';
+            
+            // 清空數據格
+            const dataCells = newRow.querySelectorAll('.data-field');
+            dataCells.forEach(cell => {
+                cell.textContent = '';
+                cell.removeAttribute('id'); // 資料格不需要特定ID
+            });
+            
+            // 清空判定格
+            const judgeCell = newRow.querySelector('.judgment-field');
+            judgeCell.textContent = '';
+            judgeCell.style.color = '';
+
+            // 移除隱藏樣式 (如果複製到被隱藏的行)
+            newRow.classList.remove('print-hidden-row');
+
+            // 插入表格
+            tbody.appendChild(newRow);
+            
+            // 為新行綁定事件
+            bindEventsToRow(newRow);
+            
+            // 重新檢查
+            checkCompletion();
+        }
+
         // 頁面專屬：檢查 PCB 規格與檢驗數據是否填寫完成
         function checkInspectionCompletion() {
             let isComplete = true;
@@ -107,7 +185,6 @@
             // 檢查 PCB 規格區塊
             const pcbSection = document.getElementById('pcb-spec-section');
             if (pcbSection) {
-                // 檢查下拉選單 (含 toggle input)
                 const selects = pcbSection.querySelectorAll('.toggle-select');
                 selects.forEach(sel => {
                     const wrapper = sel.closest('.wrapper-toggle');
@@ -133,7 +210,6 @@
                     }
                 });
 
-                // 檢查純文字輸入框 (尺寸/排版)
                 const numericInputs = pcbSection.querySelectorAll('#dim-length-input, #dim-width-input, #pnl-x, #pnl-y');
                 numericInputs.forEach(inp => {
                     if (inp.value.trim() === '') {
@@ -144,38 +220,32 @@
                     }
                 });
                 
-                // 尺寸和排版同步到列印表格
                 syncDimensions();
                 syncArray();
             }
 
-            // 檢查檢驗數據區塊
+            // [修改] 移除對孔徑規格的強制檢查
+            // 以前這裡會檢查 nominalSpecA 是否為空，現在允許為空
             const nominalSpecA = document.getElementById('spec-hole1-nominal');
-            if (nominalSpecA && nominalSpecA.textContent.trim() === '') {
-                nominalSpecA.classList.add('input-error');
-                isComplete = false;
-            } else if (nominalSpecA) {
+            if (nominalSpecA) {
                 nominalSpecA.classList.remove('input-error');
             }
 
-            // 隱藏未使用的孔徑行
+            // 隱藏未使用的孔徑行 (列印準備)
             prepareRowsForPrint();
 
             return isComplete;
         }
 
-        // 獨立函數：同步 PCB 規格到列印表格
         function syncPcbSpecToPrint(selectEl, value) {
             const printTargetId = selectEl.getAttribute('data-print-target');
             const target = document.getElementById(printTargetId);
             if (target) {
-                // 移除顏色符號
                 const cleanValue = value.replace(/🟢|⚪|🔴|⚫|🔵/g, '').trim();
                 target.textContent = cleanValue;
             }
         }
         
-        // 獨立函數：同步尺寸到列印表格
         function syncDimensions() {
             const len = document.getElementById('dim-length-input')?.value || '';
             const wid = document.getElementById('dim-width-input')?.value || '';
@@ -183,7 +253,6 @@
             if(dimTarget) dimTarget.textContent = (len && wid) ? `${len} x ${wid} mm` : '';
         }
         
-        // 獨立函數：同步排版到列印表格
         function syncArray() {
             const px = document.getElementById('pnl-x')?.value || '';
             const py = document.getElementById('pnl-y')?.value || '';
@@ -210,22 +279,20 @@
                 });
             });
             
-            // 初始同步 PCB 規格到列印表格
             document.querySelectorAll('.toggle-select').forEach(select => { syncPcbSpecToPrint(select, select.value); });
         }
 
         function prepareRowsForPrint() {
-            const holeRows = [ document.getElementById('row-hole-1'), document.getElementById('row-hole-2'), document.getElementById('row-hole-3') ];
+            // [修改] 動態選取所有孔徑行
+            const holeRows = document.querySelectorAll('tr[id^="row-hole-"]');
             holeRows.forEach(row => {
-                if (row) {
-                    const nominalSpec = row.querySelector('.editable-cell:not(.data-field)');
-                    let isSpecEmpty = nominalSpec?.textContent.trim() === '';
-                    if (nominalSpec && !isSpecEmpty) { 
-                        let content = nominalSpec.textContent.replace(/[^0-9.]/g, '').trim(); 
-                        if (content === '' || parseFloat(content) === 0) isSpecEmpty = true; 
-                    }
-                    if (isSpecEmpty) row.classList.add('print-hidden-row'); else row.classList.remove('print-hidden-row');
+                const nominalSpec = row.querySelector('.editable-cell:not(.data-field)');
+                let isSpecEmpty = nominalSpec?.textContent.trim() === '';
+                if (nominalSpec && !isSpecEmpty) { 
+                    let content = nominalSpec.textContent.replace(/[^0-9.]/g, '').trim(); 
+                    if (content === '' || parseFloat(content) === 0) isSpecEmpty = true; 
                 }
+                if (isSpecEmpty) row.classList.add('print-hidden-row'); else row.classList.remove('print-hidden-row');
             });
         }
 
@@ -235,7 +302,6 @@
             const lengthNominal = document.getElementById('spec-length-nominal');
             const widthNominal = document.getElementById('spec-width-nominal');
             
-            // 格式化為小數點第二位
             const fmt = (v) => {
                 if(!v) return '';
                 const n = parseFloat(v);
@@ -261,36 +327,50 @@
 
         function generateRandomData(nominal, tolerance, rowIndex) {
             let val = nominal;
-            // 尺寸 (0, 1) 的隨機性較大
+            // 尺寸 (0, 1) 隨機
             if (rowIndex === 0 || rowIndex === 1) {
-                // 90% 機率在規格內，10% 機率輕微偏離
                 if (Math.random() < 0.90) { val = nominal + (Math.random() * tolerance * 0.5) - (tolerance * 0.25); } else { val = nominal + (Math.random() * 0.10) * (Math.random() < 0.5 ? 1 : -1); }
             } else {
-                // 孔徑 (2, 3, 4) 隨機性較小，更靠近標稱值 (公差 0.05)
+                // 孔徑
                 val = nominal + (Math.random() * 0.04) + 0.01; 
             }
-            // 四捨五入到小數點後三位，然後固定兩位顯示
             return (Math.round(val * 1000) / 1000).toFixed(2);
         }
 
-        function populateRowData(rowIndex, nominalId) {
-            const parsed = parseSpec(nominalId);
-            const tbody = document.getElementById('inspection-data-table').querySelector('tbody');
-            const row = tbody.rows[rowIndex];
-            if (!row) return;
-            const judgementCell = row.querySelector('.judgment-field');
-            const dataCells = row.querySelectorAll('.data-field');
-            if (!parsed) { dataCells.forEach(cell => cell.textContent = ''); judgementCell.textContent = ''; return; }
-            dataCells.forEach(cell => { cell.textContent = generateRandomData(parsed.nominal, parsed.tolerance, rowIndex); });
+        function populateRowData(rowElement) {
+            const specCell = rowElement.querySelector('td:nth-child(2) .editable-cell');
+            if (!specCell) return;
+            const parsed = parseSpec(specCell.id);
+            
+            const judgementCell = rowElement.querySelector('.judgment-field');
+            const dataCells = rowElement.querySelectorAll('.data-field');
+            
+            if (!parsed) { 
+                // 若無規格則清空數據
+                dataCells.forEach(cell => cell.textContent = ''); 
+                judgementCell.textContent = ''; 
+                return; 
+            }
+            
+            // 判斷是第幾行來決定隨機邏輯 (長寬是前兩行)
+            const isDimension = rowElement.getAttribute('data-item') === 'length' || rowElement.getAttribute('data-item') === 'width';
+            const rowIndex = isDimension ? 0 : 2; 
+
+            dataCells.forEach(cell => { 
+                cell.textContent = generateRandomData(parsed.nominal, parsed.tolerance, rowIndex); 
+            });
             judgementCell.textContent = 'OK'; judgementCell.style.color = 'green';
         }
 
         function populateAllInspectionData() {
-            populateRowData(0, 'spec-length-nominal');
-            populateRowData(1, 'spec-width-nominal');
-            populateRowData(2, 'spec-hole1-nominal');
-            populateRowData(3, 'spec-hole2-nominal');
-            populateRowData(4, 'spec-hole3-nominal');
+            // 長寬
+            populateRowData(document.querySelector('tr[data-item="length"]'));
+            populateRowData(document.querySelector('tr[data-item="width"]'));
+            
+            // [修改] 動態填寫所有孔徑行
+            document.querySelectorAll('tr[id^="row-hole-"]').forEach(row => {
+                populateRowData(row);
+            });
             checkCompletion(); 
         }
 
@@ -304,18 +384,14 @@
 
         function checkCompletion() {
             let isComplete = true;
-            // 基礎資訊檢查 (從 template.js 的 reportData 檢查)
             if (window.reportData.client.trim() === "" || window.reportData.partno.trim() === "") isComplete = false;
             
-            // PCB 規格檢查
             const pcbSection = document.getElementById('pcb-spec-section');
             if (pcbSection) {
-                // 檢查所有下拉選單
                 pcbSection.querySelectorAll('.toggle-select').forEach(select => {
                     const isInputVisible = select.style.display === 'none';
                     if (!isInputVisible && (select.value === "" || select.value === "請選擇")) { isComplete = false; }
                 });
-                // 檢查所有輸入框 (包括隱藏的 toggle input 和尺寸排版)
                 pcbSection.querySelectorAll('input[type="text"]').forEach(input => {
                     if (input.closest('.toggle-input-box') && input.closest('.toggle-input-box').style.display === 'flex' && input.value.trim() === "") {
                         isComplete = false;
@@ -325,20 +401,13 @@
                 });
             }
             
-            // 數據檢查 (孔徑 A 規格必須輸入)
-            const nominalSpecA = document.getElementById('spec-hole1-nominal');
-            let isHoleASpecEmpty = nominalSpecA?.textContent.trim() === '';
-            if (isHoleASpecEmpty) { isComplete = false; }
-            
-            // 數據檢查 (至少一筆數據)
-            const holeADataFields = document.getElementById('row-hole-1')?.querySelectorAll('.data-field');
-            if (isComplete && holeADataFields) {
-                const isHoleADataEmpty = Array.from(holeADataFields).every(field => field.textContent.trim() === '');
-                if (isHoleADataEmpty) isComplete = false;
-            }
+            // [修改] 這裡已經移除了對孔徑數據的強制檢查
+            // 只要有數據，就顯示合格，不卡控必須要有數據才能列印
 
             // 更新判定 Badge
             const badgeEl = document.getElementById('final-decision-badge');
+            // 邏輯修改：只要必填資料(客戶、料號、PCB規格)完整，就顯示合格
+            // 不再因為孔徑沒填就顯示等待
             if (isComplete) { 
                 badgeEl.textContent = "PASSED / 合格"; 
                 badgeEl.className = "result-badge status-pass"; 
@@ -348,54 +417,75 @@
             }
         }
 
+        // 抽取綁定事件的邏輯，以便動態行使用
+        function bindEventsToRow(row) {
+            // 規格輸入觸發
+            const specInput = row.querySelector('td:nth-child(2) .editable-cell');
+            if (specInput) {
+                specInput.addEventListener('input', populateAllInspectionData);
+                // 格式化 logic
+                specInput.addEventListener('blur', function() {
+                    const val = parseFloat(this.innerText);
+                    if (!isNaN(val)) {
+                        this.innerText = val.toFixed(2);
+                        populateAllInspectionData();
+                    }
+                });
+                specInput.addEventListener('keydown', function(e) { if(e.key==='Enter'){e.preventDefault();this.blur();} });
+                specInput.addEventListener('paste', handlePaste);
+            }
+
+            // 數據輸入觸發
+            const dataInputs = row.querySelectorAll('.data-field');
+            dataInputs.forEach(cell => {
+                cell.addEventListener('input', function(e) { checkJudgement(this); handleInputRestrict(e, this); });
+                cell.addEventListener('keydown', handleKeyRestrict);
+                cell.addEventListener('paste', handlePaste);
+            });
+        }
+
+        // 共用的輸入限制處理器
+        function handleInputRestrict(e, el) {
+            if (e.isComposing) return; 
+            const text = el.innerText; 
+            const clean = text.replace(/[^0-9.]/g, ''); 
+            if (text !== clean) { 
+                el.innerText = clean; 
+                try { 
+                    const range = document.createRange(); 
+                    const sel = window.getSelection(); 
+                    range.selectNodeContents(el); 
+                    range.collapse(false); 
+                    sel.removeAllRanges(); 
+                    sel.addRange(range); 
+                } catch(e) {} 
+            } 
+            hasUserInteracted = true; 
+        }
+
+        function handleKeyRestrict(e) {
+            const allowedKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "."]; 
+            if (!isNaN(parseInt(e.key)) || allowedKeys.includes(e.key)) { 
+                if (e.key === '.' && this.innerText.includes('.')) e.preventDefault(); 
+                return; 
+            } 
+            if (e.ctrlKey || e.metaKey) return; 
+            e.preventDefault(); 
+        }
+
+        function handlePaste(e) {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+            document.execCommand('insertText', false, text);
+        }
+
         function initNumericInputLogic() {
             const numericInputs = document.querySelectorAll('#dim-length-input, #dim-width-input, #pnl-x, #pnl-y');
             numericInputs.forEach(input => { input.addEventListener('input', function() { this.value = this.value.replace(/[^0-9.]/g, ''); hasUserInteracted = true; }); });
             
-            // [修正] 針對 contenteditable 欄位加入貼上純文字的處理
-            document.querySelectorAll('[contenteditable="true"]').forEach(el => {
-                el.addEventListener('paste', function(e) {
-                    e.preventDefault();
-                    // 取得純文字
-                    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-                    // 插入純文字
-                    document.execCommand('insertText', false, text);
-                });
-            });
-
-            const editableCells = document.querySelectorAll('.editable-cell, .data-field');
-            editableCells.forEach(cell => {
-                // 處理輸入限制
-                cell.addEventListener('input', function(e) { 
-                    if (e.isComposing) return; 
-                    const text = this.innerText; 
-                    // 允許數字和點
-                    const clean = text.replace(/[^0-9.]/g, ''); 
-                    if (text !== clean) { 
-                        this.innerText = clean; 
-                        // 讓光標留在末尾
-                        try { 
-                            const range = document.createRange(); 
-                            const sel = window.getSelection(); 
-                            range.selectNodeContents(this); 
-                            range.collapse(false); 
-                            sel.removeAllRanges(); 
-                            sel.addRange(range); 
-                        } catch(e) {} 
-                    } 
-                    hasUserInteracted = true; 
-                });
-                // 阻止非數字輸入
-                cell.addEventListener('keydown', function(e) { 
-                    const allowedKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "."]; 
-                    if (!isNaN(parseInt(e.key)) || allowedKeys.includes(e.key)) { 
-                        if (e.key === '.' && this.innerText.includes('.')) e.preventDefault(); 
-                        return; 
-                    } 
-                    // 允許 Ctrl/Cmd 相關操作 (複製貼上等)
-                    if (e.ctrlKey || e.metaKey) return; 
-                    e.preventDefault(); 
-                });
+            // 初始綁定現有表格
+            document.querySelectorAll('#inspection-data-table tr').forEach(row => {
+                if(row.querySelector('.editable-cell')) bindEventsToRow(row);
             });
         }
 
@@ -403,50 +493,23 @@
             initToggleLogic(); 
             initNumericInputLogic(); 
             
-            // 綁定所有 input 和 change 事件到 checkCompletion
             const pcbInputs = document.querySelectorAll('#pcb-spec-section input, #pcb-spec-section select');
             pcbInputs.forEach(el => { el.addEventListener('input', checkCompletion); el.addEventListener('change', checkCompletion); });
             document.querySelectorAll('.reset-btn').forEach(btn => { btn.addEventListener('click', () => setTimeout(checkCompletion, 50)); });
             
-            // 綁定數據輸入觸發
             document.querySelectorAll('#inspection-data-table').forEach(table => { table.addEventListener('input', checkCompletion); });
-            document.querySelectorAll('[id^="spec-hole"]').forEach(el => { el.addEventListener('input', populateAllInspectionData); });
             
-            // 尺寸更新也需要同步到列印表格
             document.getElementById('dim-length-input')?.addEventListener('input', syncDimensions);
             document.getElementById('dim-width-input')?.addEventListener('input', syncDimensions);
             document.getElementById('pnl-x')?.addEventListener('input', syncArray);
             document.getElementById('pnl-y')?.addEventListener('input', syncArray);
             
-            // === 新增：自動格式化規格值為小數點兩位 ===
-            const specInputs = document.querySelectorAll('[id^="spec-"][id$="-nominal"]');
-            specInputs.forEach(el => {
-                el.addEventListener('blur', function() {
-                    const val = parseFloat(this.innerText);
-                    if (!isNaN(val)) {
-                        // 如果是整數或小數，強制轉為兩位小數 (例如 1 -> 1.00)
-                        this.innerText = val.toFixed(2);
-                        // 觸發數據重新生成 (確保公差計算基礎是新的數值)
-                        populateAllInspectionData();
-                    }
-                });
-                // 讓 Enter 鍵也能觸發 blur (優化體驗)
-                el.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        this.blur();
-                    }
-                });
-            });
-
-            // 確保基本資訊的變動也會觸發檢查
             setTimeout(() => { 
                 const basicInfoGrid = document.querySelector('#unified-header-container .info-grid'); 
                 if (basicInfoGrid) { 
                     basicInfoGrid.addEventListener('input', checkCompletion); 
                     basicInfoGrid.addEventListener('change', checkCompletion); 
                 } 
-                // 初始載入時檢查一次 (因為 template.js 已經初始化)
                 checkCompletion();
             }, 500); 
         });
