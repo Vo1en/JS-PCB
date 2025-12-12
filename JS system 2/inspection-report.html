@@ -6,10 +6,7 @@
     <title>駿鑫 出貨檢驗報告</title>
     <link rel="stylesheet" href="navbar.css">
     <link rel="stylesheet" href="report.css">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <style>
         /* 新增按鈕的樣式 */
         .btn-add-row {
@@ -45,24 +42,9 @@
             border-color: #e57373;
         }
 
-        /* 區塊保護樣式：防止標題與表格分家 */
-        .section-block {
-            /* 盡量不要在內部換頁，若空間不足會整塊移到下一頁 */
-            page-break-inside: avoid; 
-            break-inside: avoid;
-            margin-bottom: 20px; 
-        }
-
-        /* 確保表頭背景為白色，避免蓋章時透明重疊 */
-        #unified-header-container {
-            background-color: #ffffff;
-            width: 100%; 
-        }
-
         @media print {
             /* 列印時隱藏操作按鈕 */
             .btn-add-row, .btn-del-row { display: none; }
-            .section-block { break-inside: avoid; }
         }
     </style>
 </head>
@@ -75,7 +57,7 @@
                 <svg class="icon-printer" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
                 列印
             </button>
-            <button class="btn-pdf" onclick="generateProfessionalPDF(checkInspectionCompletion)">
+            <button class="btn-pdf" onclick="handlePDFProcess(checkInspectionCompletion)">
                 <svg class="icon-printer" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
                 生成 PDF
             </button>
@@ -83,66 +65,61 @@
 
         <div class="a4-paper">
             <div id="unified-header-container" data-title="出貨檢驗報告"></div>
+            <h3 class="section-title">PCB 規格</h3>
+            <section class="info-grid grid-pcb" id="pcb-spec-section">
+                <div class="info-item span-standard"><span class="label">板材</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="material-input-group" data-print-target="print-material" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="FR-4">FR-4</option><option value="FR-1">FR-1</option><option value="鋁基板">鋁基板</option><option value="銅基板">銅基板</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="material-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入板材" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">層別</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="layer-input-group" data-print-target="print-layer" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="單面板">單面板</option><option value="雙面板">雙面板</option><option value="四層板">四層板</option><option value="六層板">六層板</option><option value="八層板">八層板</option><option value="十層板">十層板</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="layer-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入層別" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">板厚</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="thickness-input-group" data-print-target="print-thickness" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="0.4 mm">0.4 mm</option><option value="0.6 mm">0.6 mm</option><option value="0.8 mm">0.8 mm</option><option value="1.0 mm">1.0 mm</option><option value="1.2 mm">1.2 mm</option><option value="1.6 mm">1.6 mm</option><option value="2.0 mm">2.0 mm</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="thickness-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入板厚" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">銅厚</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="copper-input-group" data-print-target="print-copper" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="1 oz">1 oz</option><option value="2 oz">2 oz</option><option value="3 oz">3 oz</option><option value="4 oz">4 oz</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="copper-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入銅厚" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">防焊</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="mask-input-group" data-print-target="print-mask" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="綠色">🟢 綠色</option><option value="白色">⚪ 白色</option><option value="紅色">🔴 紅色</option><option value="黑色">⚫ 黑色</option><option value="藍色">🔵 藍色</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="mask-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入顏色" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">文字</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="legend-input-group" data-print-target="print-legend" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="白色">⚪ 白色</option><option value="黑色">⚫ 黑色</option><option value="無文字">無文字</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="legend-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入顏色" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                <div class="info-item span-standard"><span class="label">焊盤</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="surface-input-group" data-print-target="print-surface" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="有鉛噴錫">有鉛噴錫</option><option value="無鉛噴錫">無鉛噴錫</option><option value="化金 1u">化金 1u"</option><option value="化金 2u">化金 2u"</option><option value="化金 3u">化金 3u"</option><option value="硬金 3u">硬金 3u"</option><option value="硬金 5u">硬金 5u"</option><option value="OSP">OSP</option><option value="裸銅">裸銅</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="surface-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入處理" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
+                
+                <div class="info-item desktop-spacer"></div>
+
+                <div class="info-item span-half">
+                    <span class="label">尺寸</span>
+                    <div class="input-group" style="gap: 5px;">
+                        <input type="text" id="dim-length-input" class="input-line split-input" placeholder="長" oninput="updateSpecs(); checkCompletion(); syncDimensions();">
+                        <span>x</span>
+                        <input type="text" id="dim-width-input" class="input-line split-input" placeholder="寬" oninput="updateSpecs(); checkCompletion(); syncDimensions();">
+                        <span class="unit-display-text" style="font-size: 12px; color: #666; white-space: nowrap;">mm</span>
+                    </div>
+                </div>
+
+                <div class="info-item span-half">
+                    <span class="label">排版</span>
+                    <div class="input-group" style="gap: 5px;">
+                        <input type="text" id="pnl-x" class="input-line split-input" placeholder="X" oninput="checkCompletion(); syncArray();">
+                        <span>x</span>
+                        <input type="text" id="pnl-y" class="input-line split-input" placeholder="Y" oninput="checkCompletion(); syncArray();">
+                        <span class="unit-display-text" style="flex-shrink: 0; width: 65px; font-size: 12px; font-weight: 600; text-align: center;">PCS / PNL</span>
+                    </div>
+                </div>
+            </section>
+
+            <table class="print-only-table" id="print-pcb-specs"><tr><th>板　　材</th><td id="print-material"></td><th>層　　別</th><td id="print-layer"></td><th>板　　厚</th><td id="print-thickness"></td></tr><tr><th>銅　　厚</th><td id="print-copper"></td><th>防　　焊</th><td id="print-mask"></td><th>文　　字</th><td id="print-legend"></td></tr><tr><th>焊　　盤</th><td id="print-surface"></td><th>出貨尺寸</th><td id="print-dim"></td><th>排版規格</th><td id="print-array"></td></tr></table>
             
-            <div class="section-block">
-                <h3 class="section-title">PCB 規格</h3>
-                <section class="info-grid grid-pcb" id="pcb-spec-section">
-                    <div class="info-item span-standard"><span class="label">板材</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="material-input-group" data-print-target="print-material" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="FR-4">FR-4</option><option value="FR-1">FR-1</option><option value="鋁基板">鋁基板</option><option value="銅基板">銅基板</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="material-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入板材" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
-                    <div class="info-item span-standard"><span class="label">層別</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="layer-input-group" data-print-target="print-layer" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="單面板">單面板</option><option value="雙面板">雙面板</option><option value="四層板">四層板</option><option value="六層板">六層板</option><option value="八層板">八層板</option><option value="十層板">十層板</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="layer-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入層別" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
-                    <div class="info-item span-standard"><span class="label">板厚</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="thickness-input-group" data-print-target="print-thickness" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="0.4 mm">0.4 mm</option><option value="0.6 mm">0.6 mm</option><option value="0.8 mm">0.8 mm</option><option value="1.0 mm">1.0 mm</option><option value="1.2 mm">1.2 mm</option><option value="1.6 mm">1.6 mm</option><option value="2.0 mm">2.0 mm</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="thickness-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入板厚" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
-                    <div class="info-item span-standard"><span class="label">銅厚</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="copper-input-group" data-print-target="print-copper" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="1 oz">1 oz</option><option value="2 oz">2 oz</option><option value="3 oz">3 oz</option><option value="4 oz">4 oz</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="copper-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入銅厚" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
-                    <div class="info-item span-standard"><span class="label">防焊</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="mask-input-group" data-print-target="print-mask" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="綠色">🟢 綠色</option><option value="白色">⚪ 白色</option><option value="紅色">🔴 紅色</option><option value="黑色">⚫ 黑色</option><option value="藍色">🔵 藍色</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="mask-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入顏色" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
-                    <div class="info-item span-standard"><span class="label">文字</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="legend-input-group" data-print-target="print-legend" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="白色">⚪ 白色</option><option value="黑色">⚫ 黑色</option><option value="無文字">無文字</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="legend-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入顏色" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
-                    <div class="info-item span-standard"><span class="label">焊盤</span><div class="input-group wrapper-toggle"><select class="unit-select toggle-select" data-target="surface-input-group" data-print-target="print-surface" onchange="checkCompletion()"><option value="" disabled selected hidden>請選擇</option><option value="有鉛噴錫">有鉛噴錫</option><option value="無鉛噴錫">無鉛噴錫</option><option value="化金 1u">化金 1u"</option><option value="化金 2u">化金 2u"</option><option value="化金 3u">化金 3u"</option><option value="硬金 3u">硬金 3u"</option><option value="硬金 5u">硬金 5u"</option><option value="OSP">OSP</option><option value="裸銅">裸銅</option><option value="其他">其他 (輸入)</option></select><div class="input-group toggle-input-box" id="surface-input-group" style="display: none;"><input type="text" class="input-line" placeholder="輸入處理" oninput="checkCompletion()"><span class="reset-btn" title="切回選單">×</span></div></div></div>
-                    
-                    <div class="info-item desktop-spacer"></div>
-
-                    <div class="info-item span-half">
-                        <span class="label">尺寸</span>
-                        <div class="input-group" style="gap: 5px;">
-                            <input type="text" id="dim-length-input" class="input-line split-input" placeholder="長" oninput="updateSpecs(); checkCompletion(); syncDimensions();">
-                            <span>x</span>
-                            <input type="text" id="dim-width-input" class="input-line split-input" placeholder="寬" oninput="updateSpecs(); checkCompletion(); syncDimensions();">
-                            <span class="unit-display-text" style="font-size: 12px; color: #666; white-space: nowrap;">mm</span>
-                        </div>
-                    </div>
-
-                    <div class="info-item span-half">
-                        <span class="label">排版</span>
-                        <div class="input-group" style="gap: 5px;">
-                            <input type="text" id="pnl-x" class="input-line split-input" placeholder="X" oninput="checkCompletion(); syncArray();">
-                            <span>x</span>
-                            <input type="text" id="pnl-y" class="input-line split-input" placeholder="Y" oninput="checkCompletion(); syncArray();">
-                            <span class="unit-display-text" style="flex-shrink: 0; width: 65px; font-size: 12px; font-weight: 600; text-align: center;">PCS / PNL</span>
-                        </div>
-                    </div>
-                </section>
-
-                <table class="print-only-table" id="print-pcb-specs"><tr><th>板　　材</th><td id="print-material"></td><th>層　　別</th><td id="print-layer"></td><th>板　　厚</th><td id="print-thickness"></td></tr><tr><th>銅　　厚</th><td id="print-copper"></td><th>防　　焊</th><td id="print-mask"></td><th>文　　字</th><td id="print-legend"></td></tr><tr><th>焊　　盤</th><td id="print-surface"></td><th>出貨尺寸</th><td id="print-dim"></td><th>排版規格</th><td id="print-array"></td></tr></table>
+            <div class="section-header-wrapper">
+                <div style="display:flex; align-items:center;">
+                    <h3 class="section-title">檢驗數據</h3>
+                    <button type="button" class="btn-add-row" onclick="addHoleRow()" data-html2canvas-ignore="true">+ 新增孔徑</button>
+                    <button type="button" class="btn-del-row" onclick="deleteLastHoleRow()" data-html2canvas-ignore="true">- 刪除孔徑</button>
+                </div>
+                <span class="standard-badge">抽樣標準: MIL-STD-105D</span>
             </div>
             
-            <div class="section-block">
-                <div class="section-header-wrapper">
-                    <div style="display:flex; align-items:center;">
-                        <h3 class="section-title">檢驗數據</h3>
-                        <button type="button" class="btn-add-row" onclick="addHoleRow()" data-html2canvas-ignore="true">+ 新增孔徑</button>
-                        <button type="button" class="btn-del-row" onclick="deleteLastHoleRow()" data-html2canvas-ignore="true">- 刪除孔徑</button>
-                    </div>
-                    <span class="standard-badge">抽樣標準: MIL-STD-105D</span>
-                </div>
-                
-                <div class="table-wrapper">
-                    <table class="inspection-table" id="inspection-data-table">
-                        <thead><tr><th style="min-width: 80px;">項目</th><th style="min-width: 100px;">規格 (mm)</th><th>樣本 A</th><th>樣本 B</th><th>樣本 C</th><th>樣本 D</th><th>樣本 E</th><th style="min-width: 60px;">判定</th></tr></thead>
-                        <tbody>
-                            <tr data-item="length"><td>長度</td><td><span contenteditable="true" class="editable-cell" id="spec-length-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.2">0.2</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td class="judgment-field" style="font-weight:bold;"></td> </tr>
-                            <tr data-item="width"><td>寬度</td><td><span contenteditable="true" class="editable-cell" id="spec-width-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.2">0.2</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td class="judgment-field" style="font-weight:bold;"></td> </tr>
-                            <tr id="row-hole-1"><td>孔徑 A</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole1-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
-                            <tr id="row-hole-2"><td>孔徑 B</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole2-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
-                            <tr id="row-hole-3"><td>孔徑 C</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole3-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-wrapper">
+                <table class="inspection-table" id="inspection-data-table">
+                    <thead><tr><th style="min-width: 80px;">項目</th><th style="min-width: 100px;">規格 (mm)</th><th>樣本 A</th><th>樣本 B</th><th>樣本 C</th><th>樣本 D</th><th>樣本 E</th><th style="min-width: 60px;">判定</th></tr></thead>
+                    <tbody>
+                        <tr data-item="length"><td>長度</td><td><span contenteditable="true" class="editable-cell" id="spec-length-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.2">0.2</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td class="judgment-field" style="font-weight:bold;"></td> </tr>
+                        <tr data-item="width"><td>寬度</td><td><span contenteditable="true" class="editable-cell" id="spec-width-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.2">0.2</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td> <td class="judgment-field" style="font-weight:bold;"></td> </tr>
+                        <tr id="row-hole-1"><td>孔徑 A</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole1-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
+                        <tr id="row-hole-2"><td>孔徑 B</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole2-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
+                        <tr id="row-hole-3"><td>孔徑 C</td><td><span contenteditable="true" class="editable-cell placeholder-text" id="spec-hole3-nominal" inputmode="decimal" oninput="populateAllInspectionData()"></span> <span class="tolerance-display"> ± <span class="spec-tolerance" data-tolerance="0.05">0.05</span></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td><span class="editable-cell data-field" contenteditable="true" inputmode="decimal" oninput="checkJudgement(this)"></span></td><td class="judgment-field" style="font-weight:bold;"></td></tr>
+                    </tbody>
+                </table>
             </div>
 
             <div class="final-decision-box"><span class="decision-label">判定結果:</span><div id="final-decision-badge" class="result-badge status-pending">等待數據...</div></div>
@@ -172,21 +149,21 @@
     <script>
         let hasUserInteracted = false;
         
-        // 全域變數：用來儲存孔徑行的模板，避免刪光後無法新增
+        // 【新增】全域變數：用來儲存孔徑行的模板，避免刪光後無法新增
         let holeRowTemplate = null;
 
-        // 新增孔徑列的功能 (使用備份模板)
+        // 新增孔徑列的功能 (修改版：使用備份模板)
         function addHoleRow() {
             const tbody = document.querySelector('#inspection-data-table tbody');
             const holeRows = tbody.querySelectorAll('tr[id^="row-hole-"]');
             const count = holeRows.length;
             const newIndex = count + 1;
             
-            // 計算新字母
+            // 計算新字母：如果刪光了 (count=0)，那就是 65+0='A'
             const nextChar = String.fromCharCode(65 + count);
             
-            // 從全域變數複製模板
-            if (!holeRowTemplate) return;
+            // 【修改】從全域變數複製模板，而不是從 DOM 抓取 (因為可能已經被刪光了)
+            if (!holeRowTemplate) return; // 安全檢查
             const newRow = holeRowTemplate.cloneNode(true);
             
             // 更新 ID
@@ -225,15 +202,22 @@
             checkCompletion();
         }
 
-        // 刪除最後一列孔徑的功能 (允許刪除全部)
+        // 刪除最後一列孔徑的功能 (修改版：允許刪除全部)
         function deleteLastHoleRow() {
             const tbody = document.querySelector('#inspection-data-table tbody');
             const holeRows = tbody.querySelectorAll('tr[id^="row-hole-"]');
             
+            // 【修改】邏輯改為：只要有列就可以刪除 (包含孔徑 A)
             if (holeRows.length > 0) {
+                // 取得最後一列並移除
                 const lastRow = holeRows[holeRows.length - 1];
                 lastRow.remove();
+                
+                // 移除後重新檢查頁面狀態
                 checkCompletion();
+            } else {
+                // 已經刪光了，無需動作
+                // alert("已無孔徑可刪除"); 
             }
         }
 
@@ -283,6 +267,8 @@
                 syncArray();
             }
 
+            // [注意] 即使刪除了所有孔徑行，只要必填欄位完成，仍視為完成
+            // 如果 spec-hole1-nominal 不存在 (因為被刪除了)，程式也不會報錯
             const nominalSpecA = document.getElementById('spec-hole1-nominal');
             if (nominalSpecA) {
                 nominalSpecA.classList.remove('input-error');
@@ -292,73 +278,6 @@
             prepareRowsForPrint();
 
             return isComplete;
-        }
-
-        // 【進階功能】生成帶有固定頁首的 PDF (Header Stamping)
-        async function generateProfessionalPDF(checkFunction) {
-            // 1. 執行原本的檢查邏輯
-            if (checkFunction && !checkFunction()) {
-                alert("請確認所有必填欄位與檢驗數據皆已完成！");
-                return;
-            }
-
-            // 顯示 Loading 狀態
-            const pdfBtn = document.querySelector('.btn-pdf');
-            const originalText = pdfBtn.innerHTML;
-            pdfBtn.innerText = "生成中...";
-            pdfBtn.disabled = true;
-
-            try {
-                const content = document.querySelector('.a4-paper');
-                const headerEl = document.getElementById('unified-header-container');
-
-                // 2. 先對「表頭」進行單獨截圖
-                // scale: 2 確保文字清晰
-                const headerCanvas = await html2canvas(headerEl, { scale: 2, useCORS: true });
-                const headerImgData = headerCanvas.toDataURL('image/png');
-                
-                // 計算表頭在 PDF 中的高度 (A4 寬度約 210mm，扣除左右邊距約剩 190mm)
-                const pdfContentWidth = 190; 
-                const headerHeightMM = (headerCanvas.height / headerCanvas.width) * pdfContentWidth;
-
-                // 3. 暫時隱藏原始 HTML 中的表頭，避免第一頁重複
-                const originalDisplay = headerEl.style.display;
-                headerEl.style.display = 'none';
-
-                // 4. 設定 PDF 參數，設定上邊距(margin)為表頭高度
-                const opt = {
-                    margin:       [headerHeightMM + 5, 10, 10, 10], // 上方留白給表頭
-                    filename:     `${window.reportData?.partno || 'Report'}_Inspection.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
-
-                // 5. 生成 PDF 並加工
-                html2pdf().from(content).set(opt).toPdf().get('pdf').then(function (pdf) {
-                    // 取得總頁數
-                    const totalPages = pdf.internal.getNumberOfPages();
-
-                    // 6. 對每一頁蓋上表頭印章
-                    for (let i = 1; i <= totalPages; i++) {
-                        pdf.setPage(i);
-                        pdf.addImage(headerImgData, 'PNG', 10, 5, pdfContentWidth, headerHeightMM);
-                    }
-                }).save().then(() => {
-                    // 7. 恢復現場
-                    headerEl.style.display = originalDisplay;
-                    pdfBtn.innerHTML = originalText;
-                    pdfBtn.disabled = false;
-                });
-
-            } catch (error) {
-                console.error("PDF 生成失敗:", error);
-                alert("生成 PDF 時發生錯誤，請重試");
-                const headerEl = document.getElementById('unified-header-container');
-                if(headerEl) headerEl.style.display = '';
-                pdfBtn.innerHTML = originalText;
-                pdfBtn.disabled = false;
-            }
         }
 
         function syncPcbSpecToPrint(selectEl, value) {
@@ -407,6 +326,7 @@
         }
 
         function prepareRowsForPrint() {
+            // [修改] 動態選取所有孔徑行
             const holeRows = document.querySelectorAll('tr[id^="row-hole-"]');
             holeRows.forEach(row => {
                 const nominalSpec = row.querySelector('.editable-cell:not(.data-field)');
@@ -450,9 +370,11 @@
 
         function generateRandomData(nominal, tolerance, rowIndex) {
             let val = nominal;
+            // 尺寸 (0, 1) 隨機
             if (rowIndex === 0 || rowIndex === 1) {
                 if (Math.random() < 0.90) { val = nominal + (Math.random() * tolerance * 0.5) - (tolerance * 0.25); } else { val = nominal + (Math.random() * 0.10) * (Math.random() < 0.5 ? 1 : -1); }
             } else {
+                // 孔徑
                 val = nominal + (Math.random() * 0.04) + 0.01; 
             }
             return (Math.round(val * 1000) / 1000).toFixed(2);
@@ -467,11 +389,13 @@
             const dataCells = rowElement.querySelectorAll('.data-field');
             
             if (!parsed) { 
+                // 若無規格則清空數據
                 dataCells.forEach(cell => cell.textContent = ''); 
                 judgementCell.textContent = ''; 
                 return; 
             }
             
+            // 判斷是第幾行來決定隨機邏輯 (長寬是前兩行)
             const isDimension = rowElement.getAttribute('data-item') === 'length' || rowElement.getAttribute('data-item') === 'width';
             const rowIndex = isDimension ? 0 : 2; 
 
@@ -482,9 +406,11 @@
         }
 
         function populateAllInspectionData() {
+            // 長寬
             populateRowData(document.querySelector('tr[data-item="length"]'));
             populateRowData(document.querySelector('tr[data-item="width"]'));
             
+            // [修改] 動態填寫所有孔徑行
             document.querySelectorAll('tr[id^="row-hole-"]').forEach(row => {
                 populateRowData(row);
             });
@@ -518,6 +444,7 @@
                 });
             }
 
+            // 更新判定 Badge
             const badgeEl = document.getElementById('final-decision-badge');
             if (isComplete) { 
                 badgeEl.textContent = "PASSED / 合格"; 
@@ -528,10 +455,13 @@
             }
         }
 
+        // 抽取綁定事件的邏輯，以便動態行使用
         function bindEventsToRow(row) {
+            // 規格輸入觸發
             const specInput = row.querySelector('td:nth-child(2) .editable-cell');
             if (specInput) {
                 specInput.addEventListener('input', populateAllInspectionData);
+                // 格式化 logic
                 specInput.addEventListener('blur', function() {
                     const val = parseFloat(this.innerText);
                     if (!isNaN(val)) {
@@ -543,6 +473,7 @@
                 specInput.addEventListener('paste', handlePaste);
             }
 
+            // 數據輸入觸發
             const dataInputs = row.querySelectorAll('.data-field');
             dataInputs.forEach(cell => {
                 cell.addEventListener('input', function(e) { checkJudgement(this); handleInputRestrict(e, this); });
@@ -551,6 +482,7 @@
             });
         }
 
+        // 共用的輸入限制處理器
         function handleInputRestrict(e, el) {
             if (e.isComposing) return; 
             const text = el.innerText; 
@@ -589,12 +521,14 @@
             const numericInputs = document.querySelectorAll('#dim-length-input, #dim-width-input, #pnl-x, #pnl-y');
             numericInputs.forEach(input => { input.addEventListener('input', function() { this.value = this.value.replace(/[^0-9.]/g, ''); hasUserInteracted = true; }); });
             
+            // 初始綁定現有表格
             document.querySelectorAll('#inspection-data-table tr').forEach(row => {
                 if(row.querySelector('.editable-cell')) bindEventsToRow(row);
             });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // 【新增】在初始化時，備份第一行孔徑作為模板
             const firstHoleRow = document.getElementById('row-hole-1');
             if (firstHoleRow) {
                 holeRowTemplate = firstHoleRow.cloneNode(true);

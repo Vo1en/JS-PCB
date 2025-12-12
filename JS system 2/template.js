@@ -1,4 +1,4 @@
-/* template.js - 2025 Optimized Version (Fixed Spec Generator Logic) */
+/* template.js - 2025 Optimized Version (Fixed Spec Generator Logic & PDF Paging) */
 
 // 統一管理報表頭資料
 window.reportData = {
@@ -424,55 +424,79 @@ window.handlePrintProcess = function(pageValidator = null, onlyValidate = false)
     return true;
 };
 
-// === PDF Logic ===
+// === PDF Logic (已優化分頁) ===
 window.handlePDFProcess = function(pageValidator = null) {
     if (typeof html2pdf === 'undefined') { window.showToast("PDF 生成元件尚未載入完成", "error"); return; }
+    
+    // 1. 執行基礎驗證 (驗證失敗則停止)
     if (!window.handlePrintProcess(pageValidator, true)) return;
 
+    // 2. 自動存檔
     if (typeof window.saveCurrentReportToHistory === 'function') {
         window.saveCurrentReportToHistory();
     }
 
+    // 3. 顯示 Loading 遮罩
     const overlay = document.createElement('div');
     overlay.className = 'loading-overlay active';
-    overlay.innerHTML = '<div class="spinner"></div><div style="margin-top:15px;font-weight:bold;color:#b38728;font-size:16px;">正在生成 PDF，請稍候...</div>';
+    overlay.innerHTML = '<div class="spinner"></div><div style="margin-top:15px;font-weight:bold;color:#b38728;font-size:16px;">正在優化排版並生成 PDF...</div>';
     document.body.appendChild(overlay);
 
+    // 4. 設定檔名
     const client = window.reportData.client || '客戶';
     const partNo = window.reportData.partno || '料號';
     const reportTitle = document.getElementById('unified-header-container').getAttribute('data-title') || '報告';
     const safePartNo = partNo.replace(/[\/\\:*?"<>|]/g, '_');
     const fileName = `${client} ${safePartNo} ${reportTitle}.pdf`;
+    
+    // 5. 抓取要轉換的元素
     const element = document.querySelector('.a4-paper');
 
+    // === [關鍵修改] PDF 設定 ===
     const opt = {
-        margin: 0,
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true, 
-            scrollY: 0,
+        margin:       [5, 5, 5, 5], // 上, 右, 下, 左 (mm) - 留一點邊距避免貼邊
+        filename:     fileName,
+        image:        { type: 'jpeg', quality: 0.98 }, // 圖片品質
+        html2canvas:  { 
+            scale: 2,       // 提高解析度 (2=兩倍清晰)
+            useCORS: true,  // 允許跨域圖片
+            scrollY: 0,     // 修正滾動偏移
             letterRendering: true,
+            windowWidth: 1000 // [新增] 強制渲染寬度，避免 RWD 跑版
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        
+        // ★ 重點：分頁設定 ★
+        pagebreak: { 
+            mode: ['avoid-all', 'css', 'legacy'], // 啟用所有避開模式 (讀取 CSS break-inside: avoid)
+            before: '.page-break-before',         // (選用) 遇到此 class 強制換頁
+            after:  '.page-break-after',          // (選用) 遇到此 class 後強制換頁
+            avoid:  ['tr', '.signature-section', '.final-decision-box'] // 強制這些元素不被切斷
+        }
     };
 
+    // 6. 套用 PDF 專用樣式標記
     document.body.classList.add('printing-pdf');
 
+    // 7. 執行轉換
     setTimeout(() => {
         html2pdf().set(opt).from(element).save().then(function() {
+            // 成功後清理
             document.body.classList.remove('printing-pdf');
             if(document.body.contains(overlay)) document.body.removeChild(overlay);
+            
+            // 恢復被隱藏的列 (如果有)
             document.querySelectorAll('.print-hidden-row').forEach(row => row.classList.remove('print-hidden-row'));
             const remarksContainer = document.getElementById('unified-remarks-container');
             if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
+            
             window.showToast("PDF 下載成功！");
         }).catch(function(err) {
+            // 失敗處理
             console.error(err);
             if(document.body.contains(overlay)) document.body.removeChild(overlay);
             window.showToast("PDF 生成失敗", "error");
             document.body.classList.remove('printing-pdf');
         });
-    }, 800);
+    }, 800); // 稍微延遲以確保畫面渲染完成
 };
