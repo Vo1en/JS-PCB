@@ -24,8 +24,27 @@
             background-color: #e0e0e0;
             border-color: #999;
         }
+
+        /* 刪除按鈕的樣式 */
+        .btn-del-row {
+            background-color: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+            padding: 2px 10px;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 5px;
+        }
+        .btn-del-row:hover {
+            background-color: #ffcdd2;
+            border-color: #e57373;
+        }
+
         @media print {
-            .btn-add-row { display: none; }
+            /* 列印時隱藏操作按鈕 */
+            .btn-add-row, .btn-del-row { display: none; }
         }
     </style>
 </head>
@@ -85,6 +104,7 @@
                 <div style="display:flex; align-items:center;">
                     <h3 class="section-title">檢驗數據</h3>
                     <button type="button" class="btn-add-row" onclick="addHoleRow()">+ 新增孔徑</button>
+                    <button type="button" class="btn-del-row" onclick="deleteLastHoleRow()">- 刪除孔徑</button>
                 </div>
                 <span class="standard-badge">抽樣標準: MIL-STD-105D</span>
             </div>
@@ -128,19 +148,23 @@
 
     <script>
         let hasUserInteracted = false;
+        
+        // 【新增】全域變數：用來儲存孔徑行的模板，避免刪光後無法新增
+        let holeRowTemplate = null;
 
-        // 新增孔徑列的功能
+        // 新增孔徑列的功能 (修改版：使用備份模板)
         function addHoleRow() {
             const tbody = document.querySelector('#inspection-data-table tbody');
             const holeRows = tbody.querySelectorAll('tr[id^="row-hole-"]');
             const count = holeRows.length;
             const newIndex = count + 1;
-            // 計算新字母：A(65) + count。例如 count=3 (原有3行)，下一個是 65+3=68 (D)
+            
+            // 計算新字母：如果刪光了 (count=0)，那就是 65+0='A'
             const nextChar = String.fromCharCode(65 + count);
             
-            // 複製模板 (使用 row-hole-1)
-            const template = document.getElementById('row-hole-1');
-            const newRow = template.cloneNode(true);
+            // 【修改】從全域變數複製模板，而不是從 DOM 抓取 (因為可能已經被刪光了)
+            if (!holeRowTemplate) return; // 安全檢查
+            const newRow = holeRowTemplate.cloneNode(true);
             
             // 更新 ID
             newRow.id = `row-hole-${newIndex}`;
@@ -157,7 +181,7 @@
             const dataCells = newRow.querySelectorAll('.data-field');
             dataCells.forEach(cell => {
                 cell.textContent = '';
-                cell.removeAttribute('id'); // 資料格不需要特定ID
+                cell.removeAttribute('id'); 
             });
             
             // 清空判定格
@@ -165,7 +189,7 @@
             judgeCell.textContent = '';
             judgeCell.style.color = '';
 
-            // 移除隱藏樣式 (如果複製到被隱藏的行)
+            // 移除隱藏樣式
             newRow.classList.remove('print-hidden-row');
 
             // 插入表格
@@ -176,6 +200,25 @@
             
             // 重新檢查
             checkCompletion();
+        }
+
+        // 刪除最後一列孔徑的功能 (修改版：允許刪除全部)
+        function deleteLastHoleRow() {
+            const tbody = document.querySelector('#inspection-data-table tbody');
+            const holeRows = tbody.querySelectorAll('tr[id^="row-hole-"]');
+            
+            // 【修改】邏輯改為：只要有列就可以刪除 (包含孔徑 A)
+            if (holeRows.length > 0) {
+                // 取得最後一列並移除
+                const lastRow = holeRows[holeRows.length - 1];
+                lastRow.remove();
+                
+                // 移除後重新檢查頁面狀態
+                checkCompletion();
+            } else {
+                // 已經刪光了，無需動作
+                // alert("已無孔徑可刪除"); 
+            }
         }
 
         // 頁面專屬：檢查 PCB 規格與檢驗數據是否填寫完成
@@ -224,8 +267,8 @@
                 syncArray();
             }
 
-            // [修改] 移除對孔徑規格的強制檢查
-            // 以前這裡會檢查 nominalSpecA 是否為空，現在允許為空
+            // [注意] 即使刪除了所有孔徑行，只要必填欄位完成，仍視為完成
+            // 如果 spec-hole1-nominal 不存在 (因為被刪除了)，程式也不會報錯
             const nominalSpecA = document.getElementById('spec-hole1-nominal');
             if (nominalSpecA) {
                 nominalSpecA.classList.remove('input-error');
@@ -400,14 +443,9 @@
                     }
                 });
             }
-            
-            // [修改] 這裡已經移除了對孔徑數據的強制檢查
-            // 只要有數據，就顯示合格，不卡控必須要有數據才能列印
 
             // 更新判定 Badge
             const badgeEl = document.getElementById('final-decision-badge');
-            // 邏輯修改：只要必填資料(客戶、料號、PCB規格)完整，就顯示合格
-            // 不再因為孔徑沒填就顯示等待
             if (isComplete) { 
                 badgeEl.textContent = "PASSED / 合格"; 
                 badgeEl.className = "result-badge status-pass"; 
@@ -490,6 +528,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // 【新增】在初始化時，備份第一行孔徑作為模板
+            const firstHoleRow = document.getElementById('row-hole-1');
+            if (firstHoleRow) {
+                holeRowTemplate = firstHoleRow.cloneNode(true);
+            }
+
             initToggleLogic(); 
             initNumericInputLogic(); 
             
