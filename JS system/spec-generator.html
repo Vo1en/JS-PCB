@@ -630,31 +630,12 @@
     }
   }
 
-  // [修改] 清空重填功能
+  // [修改] 清空重填功能：改為重新整理頁面 (並移除 URL 參數以防讀取歷史紀錄)
   function resetAllFields() {
     if(!confirm('確定要清空所有欄位嗎？')) return;
     
-    // 重置所有下拉選單與自訂輸入
-    document.querySelectorAll('select').forEach(sel => {
-        resetSelect(sel.id);
-        sel.value = (sel.id === 'qty') ? '5' : '-'; 
-        if(sel.id === 'material') sel.value = 'FR-4';
-        if(sel.id === 'layers') sel.value = '雙面板';
-        if(sel.id === 'thickness') sel.value = '1.6 mm';
-        if(sel.id === 'outerCu') sel.value = '1 oz';
-        if(sel.id === 'solderMask') sel.value = '綠色';
-        if(sel.id === 'legendColor') sel.value = '白字';
-        if(sel.id === 'finish') sel.value = '無鉛噴錫';
-        if(sel.id === 'testMethod') sel.value = '全測';
-    });
-
-    // 清空其他輸入框 (包含料號)
-    document.querySelectorAll('input[type="text"]').forEach(inp => inp.value = "");
-    document.querySelector('.remarks-input').value = "";
-    document.getElementById("output-text").value = "";
-    
-    updateStates();
-    window.showToast("欄位已清空");
+    // 使用 pathname 導向，確保移除 ?historyId 等參數，實現完全清空
+    window.location.href = window.location.pathname;
   }
 
   document.addEventListener('DOMContentLoaded', function() {
