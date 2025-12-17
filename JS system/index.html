@@ -67,6 +67,10 @@
         .card-inspection::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(73, 113, 149, 0.9), rgba(52, 78, 100, 0.9)); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
         .card-test::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(60, 150, 110, 0.9), rgba(40, 100, 75, 0.9)); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
         .card-spec::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0, 123, 194, 0.9), rgba(0, 76, 122, 0.9)); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
+        
+        /* [新增] 標籤系統的樣式 (紫色漸層) */
+        .card-label::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(124, 58, 237, 0.9), rgba(76, 29, 149, 0.9)); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
+
         .option-card:hover::before { opacity: 1; }
         .option-card > * { position: relative; z-index: 2; }
 
@@ -198,6 +202,14 @@
                 </div>
             </a>
             
+            <a href="http://192.168.0.114:8000" class="option-card card-label">
+                <div class="option-icon">🏷️</div>
+                <div class="option-info">
+                    <div class="option-title">客戶標籤</div>
+                    <div class="option-desc">Label Print</div>
+                </div>
+            </a>
+
             <a href="https://drive.google.com/file/d/1tW2bywohN62zzBRWE1Q0_976g6Yu2xkR/view?usp=sharing" class="option-card card-spec" target="_blank">
                 <div class="option-icon">📜</div>
                 <div class="option-info">
