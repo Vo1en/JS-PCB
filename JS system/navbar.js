@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
 
     // === [修正] 設定網頁標籤的小圖示 (Favicon) ===
-    // 這是從 index.html 提取的金色閃電 SVG
     const faviconSVG = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 0L20 60H40L30 100L80 40H60L70 0Z' fill='%23c2a878'/></svg>";
 
     // 檢查頁面是否已經有 icon，沒有的話建立一個
@@ -16,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
     // 1. 定義導覽列 HTML 結構
+    // [新增] 在 nav-links 中加入 "客戶標籤" 指向 192.168.0.114:8000
     const navbarHTML = `
         <nav class="navbar">
             <a href="index.html" class="brand-logo">
@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <a href="spec-generator.html" class="nav-item">規格產生器</a>
                 <a href="inspection-report.html" class="nav-item">出貨檢驗報告</a>
                 <a href="test-report.html" class="nav-item">電性測試報告</a>
+                <a href="http://192.168.0.114:8000" class="nav-item">客戶標籤</a>
             </div>
         </nav>
     `;
