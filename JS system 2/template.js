@@ -1,4 +1,4 @@
-/* template.js - 2025 Optimized Version (Fixed Spec Generator Logic & PDF Paging) */
+/* template.js - 2025 Optimized Version (Fixed Spec Generator Logic) */
 
 // 統一管理報表頭資料
 window.reportData = {
@@ -7,11 +7,11 @@ window.reportData = {
     partno: "",
     qty: "",
     unit: "PNL",
-    cycle: "", 
+    cycle: "",
     cycleInput: "",
 };
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     // 1. 初始化日期
     const d = new Date();
     const offset = d.getTimezoneOffset() * 60000;
@@ -21,13 +21,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // 2. 渲染 Header & Remarks
     renderHeader();
     renderRemarks();
-    
+
     // 3. 檢查並啟用簽名圖檔
     const signatureCheckbox = document.getElementById('use-signature-img');
     if (signatureCheckbox && signatureCheckbox.checked) {
         window.toggleSignatures(signatureCheckbox);
     }
-    
+
     // 4. 初始化邏輯
     initTemplateLogic();
 
@@ -41,8 +41,8 @@ document.addEventListener("DOMContentLoaded", function() {
 // === Mobile Friendly 優化 ===
 function optimizeMobileInputs() {
     const numericSelectors = [
-        '#qty-input', '#specialAmount', '#passCount', '#openCount', '#shortCount', 
-        '#dim-length-input', '#dim-width-input', '#pnl-x', '#pnl-y', 
+        '#qty-input', '#specialAmount', '#passCount', '#openCount', '#shortCount',
+        '#dim-length-input', '#dim-width-input', '#pnl-x', '#pnl-y',
         '.table-input'
     ];
 
@@ -63,27 +63,27 @@ function optimizeMobileInputs() {
 }
 
 // === [修正] 歷史紀錄系統：儲存 ===
-window.saveCurrentReportToHistory = function() {
+window.saveCurrentReportToHistory = function () {
     // 1. 抓取基本資訊
     let reportType = document.title.replace('駿鑫 ', '');
     if (reportType.includes('規格產生器')) reportType = '規格單';
 
     // [修正] 規格產生器沒有客戶欄位，預設為 '-'
     const clientInput = document.getElementById('ui-client');
-    const client = clientInput ? clientInput.value : '-'; 
-    
+    const client = clientInput ? clientInput.value : '-';
+
     // 規格產生器用 partNo，其他報表用 ui-partno
     const partNoInput = document.getElementById('ui-partno') || document.getElementById('partNo');
     const partno = partNoInput ? partNoInput.value : '未命名料號';
-    
+
     const filename = window.location.pathname.split('/').pop();
 
     // 使用 ISO 字串儲存時間，避免跨裝置解析錯誤
-    const timestamp = new Date().toISOString(); 
+    const timestamp = new Date().toISOString();
 
     // 2. 抓取所有欄位資料
     const formData = {};
-    
+
     // Inputs & Selects
     document.querySelectorAll('input, select, textarea').forEach(el => {
         if (el.id) {
@@ -113,16 +113,16 @@ window.saveCurrentReportToHistory = function() {
 
     // 4. 存入 localStorage
     let history = JSON.parse(localStorage.getItem('js_pcb_history') || '[]');
-    
+
     // 簡單防重複：如果料號跟類型一樣，且時間在 1 分鐘內，視為同一筆操作更新
     if (history.length > 0 && history[0].partno === partno && history[0].type === reportType) {
-         const lastTime = new Date(history[0].timestamp).getTime();
-         const nowTime = new Date().getTime();
-         if ((nowTime - lastTime) < 60000) {
-             history[0] = record; // 更新最新一筆
-         } else {
-             history.unshift(record);
-         }
+        const lastTime = new Date(history[0].timestamp).getTime();
+        const nowTime = new Date().getTime();
+        if ((nowTime - lastTime) < 60000) {
+            history[0] = record; // 更新最新一筆
+        } else {
+            history.unshift(record);
+        }
     } else {
         history.unshift(record); // 新增一筆
     }
@@ -147,7 +147,7 @@ function checkAndLoadHistory() {
                 if (el) {
                     if (el.type === 'checkbox' || el.type === 'radio') {
                         el.checked = record.data[id];
-                        el.dispatchEvent(new Event('change')); 
+                        el.dispatchEvent(new Event('change'));
                     } else if (el.isContentEditable) {
                         el.innerText = record.data[id];
                         el.dispatchEvent(new Event('input'));
@@ -161,7 +161,7 @@ function checkAndLoadHistory() {
                     }
                 }
             });
-            
+
             // 二次檢查：針對「其他/自行輸入」的下拉選單，確保隱藏的 input 有顯示出來
             setTimeout(() => {
                 document.querySelectorAll('select').forEach(sel => {
@@ -169,7 +169,7 @@ function checkAndLoadHistory() {
                         sel.dispatchEvent(new Event('change'));
                     }
                 });
-                
+
                 // 如果是規格產生器，載入後自動重新生成文字
                 if (typeof generateText === 'function') {
                     generateText();
@@ -185,7 +185,7 @@ function checkAndLoadHistory() {
 }
 
 // === 全域 Toast 提示 ===
-window.showToast = function(message, type = 'success') {
+window.showToast = function (message, type = 'success') {
     const oldToast = document.querySelector('.toast-notification');
     if (oldToast) oldToast.remove();
     const toast = document.createElement('div');
@@ -289,20 +289,20 @@ function renderRemarks() {
     container.innerHTML = html;
 }
 
-window.toggleSignatures = function(checkbox) {
+window.toggleSignatures = function (checkbox) {
     document.body.classList.toggle('show-signatures', checkbox.checked);
 }
 
-window.updateReportData = function(key, value) {
+window.updateReportData = function (key, value) {
     if (window.reportData.hasOwnProperty(key)) window.reportData[key] = value;
 }
 
-window.syncToPrint = function(elementId, value) {
+window.syncToPrint = function (elementId, value) {
     const el = document.getElementById(elementId);
     if (el) el.textContent = value;
 };
 
-window.syncPcbSpecsToPrint = function() {
+window.syncPcbSpecsToPrint = function () {
     const pcbSection = document.getElementById('pcb-spec-section');
     if (!pcbSection) return;
 };
@@ -322,51 +322,51 @@ function initTemplateLogic() {
         let rawValue = qtyInput.value.replace(/,/g, '');
         window.updateReportData('qty', rawValue);
         window.updateReportData('unit', qtyUnit.value);
-        if(printQty) printQty.textContent = (qtyInput.value || '') + ' ' + (qtyUnit.value || '');
+        if (printQty) printQty.textContent = (qtyInput.value || '') + ' ' + (qtyUnit.value || '');
         if (window.checkCompletion) window.checkCompletion();
         if (window.updateTestResults) window.updateTestResults();
     }
 
-    window.handleCycleSelect = function(selectEl) {
+    window.handleCycleSelect = function (selectEl) {
         const val = selectEl.value;
         window.updateReportData('cycle', val);
         if (val === 'has') {
-           selectEl.style.display = 'none'; selectEl.value = 'has'; 
-           cycleContainer.style.display = 'flex'; cycleInput.focus();
+            selectEl.style.display = 'none'; selectEl.value = 'has';
+            cycleContainer.style.display = 'flex'; cycleInput.focus();
         } else if (val === 'no') {
-           if(printCycle) printCycle.textContent = "N/A";
+            if (printCycle) printCycle.textContent = "N/A";
         }
         if (window.checkCompletion) window.checkCompletion();
     }
 
-    window.handleCycleInput = function(inputEl) {
+    window.handleCycleInput = function (inputEl) {
         window.updateReportData('cycleInput', inputEl.value);
-        if(printCycle) printCycle.textContent = inputEl.value;
+        if (printCycle) printCycle.textContent = inputEl.value;
         if (window.checkCompletion) window.checkCompletion();
     }
-    
-    if(resetBtn) {
-        resetBtn.addEventListener('click', function() {
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
             window.updateReportData('cycle', ''); window.updateReportData('cycleInput', '');
             cycleInput.value = ""; cycleContainer.style.display = 'none';
             cycleSelect.style.display = 'block'; cycleSelect.value = '';
-            if(printCycle) printCycle.textContent = "";
+            if (printCycle) printCycle.textContent = "";
             if (window.checkCompletion) window.checkCompletion();
         });
     }
 
     if (qtyInput && qtyUnit) {
-        qtyInput.addEventListener('input', function() {
-             let rawValue = this.value.replace(/,/g, '').replace(/\D/g, '');
-             this.value = rawValue ? parseInt(rawValue).toLocaleString('en-US') : '';
-             updateQty();
+        qtyInput.addEventListener('input', function () {
+            let rawValue = this.value.replace(/,/g, '').replace(/\D/g, '');
+            this.value = rawValue ? parseInt(rawValue).toLocaleString('en-US') : '';
+            updateQty();
         });
         qtyUnit.addEventListener('change', updateQty);
     }
 }
 
 // === Print Logic ===
-window.handlePrintProcess = function(pageValidator = null, onlyValidate = false) {
+window.handlePrintProcess = function (pageValidator = null, onlyValidate = false) {
     let isComplete = true;
     if (window.syncPcbSpecsToPrint) window.syncPcbSpecsToPrint();
 
@@ -374,14 +374,14 @@ window.handlePrintProcess = function(pageValidator = null, onlyValidate = false)
     basicIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            if (el.value.trim() === '') { el.classList.add('input-error'); isComplete = false; } 
+            if (el.value.trim() === '') { el.classList.add('input-error'); isComplete = false; }
             else { el.classList.remove('input-error'); }
         }
     });
 
     const cycleSelect = document.getElementById('cycle-select');
     const cycleInput = document.getElementById('cycle-input');
-    if (cycleSelect && (window.reportData.cycle === '' || window.reportData.cycle === '請選擇' || window.reportData.cycle === null)) { 
+    if (cycleSelect && (window.reportData.cycle === '' || window.reportData.cycle === '請選擇' || window.reportData.cycle === null)) {
         cycleSelect.classList.add('input-error'); isComplete = false;
     } else if (window.reportData.cycle === 'has' && window.reportData.cycleInput.trim() === '') {
         if (cycleInput) cycleInput.classList.add('input-error'); isComplete = false;
@@ -424,79 +424,123 @@ window.handlePrintProcess = function(pageValidator = null, onlyValidate = false)
     return true;
 };
 
-// === PDF Logic (已優化分頁) ===
-window.handlePDFProcess = function(pageValidator = null) {
+// === PDF Logic ===
+window.handlePDFProcess = async function (pageValidator = null) {
     if (typeof html2pdf === 'undefined') { window.showToast("PDF 生成元件尚未載入完成", "error"); return; }
-    
-    // 1. 執行基礎驗證 (驗證失敗則停止)
     if (!window.handlePrintProcess(pageValidator, true)) return;
 
-    // 2. 自動存檔
     if (typeof window.saveCurrentReportToHistory === 'function') {
         window.saveCurrentReportToHistory();
     }
 
-    // 3. 顯示 Loading 遮罩
     const overlay = document.createElement('div');
     overlay.className = 'loading-overlay active';
-    overlay.innerHTML = '<div class="spinner"></div><div style="margin-top:15px;font-weight:bold;color:#b38728;font-size:16px;">正在優化排版並生成 PDF...</div>';
+    overlay.innerHTML = '<div class="spinner"></div><div style="margin-top:15px;font-weight:bold;color:#b38728;font-size:16px;">正在處理表頭與分頁...</div>';
     document.body.appendChild(overlay);
 
-    // 4. 設定檔名
-    const client = window.reportData.client || '客戶';
-    const partNo = window.reportData.partno || '料號';
-    const reportTitle = document.getElementById('unified-header-container').getAttribute('data-title') || '報告';
-    const safePartNo = partNo.replace(/[\/\\:*?"<>|]/g, '_');
-    const fileName = `${client} ${safePartNo} ${reportTitle}.pdf`;
-    
-    // 5. 抓取要轉換的元素
-    const element = document.querySelector('.a4-paper');
+    try {
+        // 1. 準備檔案名稱
+        const client = window.reportData.client || '客戶';
+        const partNo = window.reportData.partno || '料號';
+        const reportTitle = document.getElementById('unified-header-container').getAttribute('data-title') || '報告';
+        const safePartNo = partNo.replace(/[\/\\:*?"<>|]/g, '_');
+        const fileName = `${client} ${safePartNo} ${reportTitle}.pdf`;
+        const element = document.querySelector('.a4-paper');
 
-    // === [關鍵修改] PDF 設定 ===
-    const opt = {
-        margin:       [5, 5, 5, 5], // 上, 右, 下, 左 (mm) - 留一點邊距避免貼邊
-        filename:     fileName,
-        image:        { type: 'jpeg', quality: 0.98 }, // 圖片品質
-        html2canvas:  { 
-            scale: 2,       // 提高解析度 (2=兩倍清晰)
-            useCORS: true,  // 允許跨域圖片
-            scrollY: 0,     // 修正滾動偏移
-            letterRendering: true,
-            windowWidth: 1000 // [新增] 強制渲染寬度，避免 RWD 跑版
-        },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        
-        // ★ 重點：分頁設定 ★
-        pagebreak: { 
-            mode: ['avoid-all', 'css', 'legacy'], // 啟用所有避開模式 (讀取 CSS break-inside: avoid)
-            before: '.page-break-before',         // (選用) 遇到此 class 強制換頁
-            after:  '.page-break-after',          // (選用) 遇到此 class 後強制換頁
-            avoid:  ['tr', '.signature-section', '.final-decision-box'] // 強制這些元素不被切斷
+        // 2. [新增] 截取表頭圖片 (在隱藏前)
+        const headerEl = document.querySelector('.report-header-modern');
+        let headerImgData = null;
+        let headerHeightMm = 35; // 預設值
+        let headerWidthMm = 190; // 預設寬度
+
+        if (headerEl) {
+            // 強制表頭顯示樣式以供截圖
+            const originalStyle = headerEl.getAttribute('style');
+            headerEl.style.width = getComputedStyle(element).width; // 確保與內容等寬
+            headerEl.style.background = '#fff';
+
+            const canvas = await html2canvas(headerEl, { scale: 2, useCORS: true });
+            headerImgData = canvas.toDataURL('image/jpeg', 1.0);
+
+            // 計算在 A4 上的高度 (A4 寬 210mm, 左右邊距各 10mm -> 內容寬 190mm)
+            const imgRatio = canvas.height / canvas.width;
+            headerWidthMm = 190;
+            headerHeightMm = headerWidthMm * imgRatio;
+
+            // 恢復樣式
+            if (originalStyle) headerEl.setAttribute('style', originalStyle); else headerEl.removeAttribute('style');
         }
-    };
 
-    // 6. 套用 PDF 專用樣式標記
-    document.body.classList.add('printing-pdf');
+        // 3. 設定邊距 (上邊距 = 表頭高度 + 5mm 間距)
+        const marginTop = headerImgData ? (headerHeightMm + 5) : 15;
 
-    // 7. 執行轉換
-    setTimeout(() => {
-        html2pdf().set(opt).from(element).save().then(function() {
-            // 成功後清理
+        const opt = {
+            margin: [marginTop, 10, 15, 10], // 動態上邊距
+            filename: fileName,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                scrollY: 0,
+                letterRendering: true,
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: {
+                mode: ['avoid-all', 'css', 'legacy'],
+                avoid: ['tr', '.info-item', '.sign-box', '.final-decision-box', '.section-header-wrapper', '.result-item']
+            }
+        };
+
+        // 4. 開始生成 (隱藏 HTML Header)
+        document.body.classList.add('printing-pdf');
+
+        // 等待 CSS 渲染 (display: none 生效)
+        await new Promise(r => setTimeout(r, 100));
+
+        html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+            const totalPages = pdf.internal.getNumberOfPages();
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            for (let i = 1; i <= totalPages; i++) {
+                pdf.setPage(i);
+
+                // [新增] 貼上表頭 (每一頁)
+                if (headerImgData) {
+                    // x=10 (左邊距), y=10-margin修正? 不, y=10 (頂端起始)
+                    // 注意：margin 會裁切內容，但 addImage 可以畫在 margin 區域
+                    // 我們設定了 marginTop，所以內容從更下面開始，我們可以把 header 畫在 (10, 5) 左右
+                    pdf.addImage(headerImgData, 'JPEG', 10, 5, headerWidthMm, headerHeightMm);
+                }
+
+                // 頁尾邏輯
+                pdf.setFontSize(9);
+                pdf.setTextColor(100, 100, 100);
+
+                const dateStr = new Date().toLocaleString('zh-TW', { hour12: false });
+                pdf.text(`Print: ${dateStr}`, 10, pageHeight - 8);
+
+                const pageStr = `Page ${i} of ${totalPages}`;
+                pdf.text(pageStr, pageWidth - 10 - pdf.getTextWidth(pageStr), pageHeight - 8);
+
+                pdf.setFontSize(8);
+                pdf.setTextColor(150, 150, 150);
+                pdf.text("JS-FORM-001 Rev.A", pageWidth / 2, pageHeight - 8, { align: 'center' });
+            }
+        }).save().then(function () {
+            // 完成
             document.body.classList.remove('printing-pdf');
-            if(document.body.contains(overlay)) document.body.removeChild(overlay);
-            
-            // 恢復被隱藏的列 (如果有)
+            if (document.body.contains(overlay)) document.body.removeChild(overlay);
             document.querySelectorAll('.print-hidden-row').forEach(row => row.classList.remove('print-hidden-row'));
             const remarksContainer = document.getElementById('unified-remarks-container');
             if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
-            
             window.showToast("PDF 下載成功！");
-        }).catch(function(err) {
-            // 失敗處理
-            console.error(err);
-            if(document.body.contains(overlay)) document.body.removeChild(overlay);
-            window.showToast("PDF 生成失敗", "error");
-            document.body.classList.remove('printing-pdf');
         });
-    }, 800); // 稍微延遲以確保畫面渲染完成
+
+    } catch (err) {
+        console.error(err);
+        if (document.body.contains(overlay)) document.body.removeChild(overlay);
+        window.showToast("PDF 生成失敗: " + err.message, "error");
+        document.body.classList.remove('printing-pdf');
+    }
 };
