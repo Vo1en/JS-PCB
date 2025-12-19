@@ -1169,8 +1169,16 @@ body.show-signatures .stamp-img {
         align-items: center !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+        /* [新增] 瀏覽器列印時每頁重複表頭 */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #fff;
+        z-index: 1000;
     }
 
+    /* [已修復] 補回誤刪的樣式 */
     .report-title-badge {
         background: none !important;
         -webkit-text-fill-color: #000 !important;
@@ -1180,9 +1188,11 @@ body.show-signatures .stamp-img {
         box-shadow: none !important;
     }
 
+    /* 確保內容不被 fixed header 遮擋 */
     .page-container {
+        padding-top: 40mm;
+        /* 預留空間給 fixed header */
         display: block;
-        padding: 0;
         margin: 0;
         width: 100%;
         height: auto;
@@ -1338,8 +1348,17 @@ body.printing-pdf .final-decision-box {
 }
 
 body.printing-pdf .report-header-modern {
-    display: none !important;
-    /* PDF 模式下隱藏原 HTML 表頭，改由 JS 統一在每頁繪製圖片 */
+    display: flex !important;
+    position: static !important;
+    /* [重要] PDF 模式下不使用 fixed，避免 html2pdf 渲染異常 */
+    margin: 0 !important;
+    width: 100% !important;
+}
+
+body.printing-pdf .page-container,
+body.printing-pdf {
+    padding-top: 0 !important;
+    /* PDF 模式下不需要 padding */
 }
 
 body.printing-pdf .print-simple-header {

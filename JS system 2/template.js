@@ -425,7 +425,8 @@ window.handlePrintProcess = function (pageValidator = null, onlyValidate = false
 };
 
 // === PDF Logic ===
-window.handlePDFProcess = async function (pageValidator = null) {
+// === PDF Logic ===
+window.handlePDFProcess = function (pageValidator = null) {
     if (typeof html2pdf === 'undefined') { window.showToast("PDF 生成元件尚未載入完成", "error"); return; }
     if (!window.handlePrintProcess(pageValidator, true)) return;
 
@@ -435,68 +436,36 @@ window.handlePDFProcess = async function (pageValidator = null) {
 
     const overlay = document.createElement('div');
     overlay.className = 'loading-overlay active';
-    overlay.innerHTML = '<div class="spinner"></div><div style="margin-top:15px;font-weight:bold;color:#b38728;font-size:16px;">正在處理表頭與分頁...</div>';
+    overlay.innerHTML = '<div class="spinner"></div><div style="margin-top:15px;font-weight:bold;color:#b38728;font-size:16px;">正在生成 PDF，請稍候...</div>';
     document.body.appendChild(overlay);
 
-    try {
-        // 1. 準備檔案名稱
-        const client = window.reportData.client || '客戶';
-        const partNo = window.reportData.partno || '料號';
-        const reportTitle = document.getElementById('unified-header-container').getAttribute('data-title') || '報告';
-        const safePartNo = partNo.replace(/[\/\\:*?"<>|]/g, '_');
-        const fileName = `${client} ${safePartNo} ${reportTitle}.pdf`;
-        const element = document.querySelector('.a4-paper');
+    const client = window.reportData.client || '客戶';
+    const partNo = window.reportData.partno || '料號';
+    const reportTitle = document.getElementById('unified-header-container').getAttribute('data-title') || '報告';
+    const safePartNo = partNo.replace(/[\/\\:*?"<>|]/g, '_');
+    const fileName = `${client} ${safePartNo} ${reportTitle}.pdf`;
+    const element = document.querySelector('.a4-paper');
 
-        // 2. [新增] 截取表頭圖片 (在隱藏前)
-        const headerEl = document.querySelector('.report-header-modern');
-        let headerImgData = null;
-        let headerHeightMm = 35; // 預設值
-        let headerWidthMm = 190; // 預設寬度
-
-        if (headerEl) {
-            // 強制表頭顯示樣式以供截圖
-            const originalStyle = headerEl.getAttribute('style');
-            headerEl.style.width = getComputedStyle(element).width; // 確保與內容等寬
-            headerEl.style.background = '#fff';
-
-            const canvas = await html2canvas(headerEl, { scale: 2, useCORS: true });
-            headerImgData = canvas.toDataURL('image/jpeg', 1.0);
-
-            // 計算在 A4 上的高度 (A4 寬 210mm, 左右邊距各 10mm -> 內容寬 190mm)
-            const imgRatio = canvas.height / canvas.width;
-            headerWidthMm = 190;
-            headerHeightMm = headerWidthMm * imgRatio;
-
-            // 恢復樣式
-            if (originalStyle) headerEl.setAttribute('style', originalStyle); else headerEl.removeAttribute('style');
+    const opt = {
+        margin: [10, 10, 15, 10], // 上、右、下、左 (下邊距留給頁碼)
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+            scrollY: 0,
+            letterRendering: true,
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: {
+            mode: ['avoid-all', 'css', 'legacy'],
+            avoid: ['tr', '.info-item', '.sign-box', '.final-decision-box', '.section-header-wrapper', '.result-item']
         }
+    };
 
-        // 3. 設定邊距 (上邊距 = 表頭高度 + 5mm 間距)
-        const marginTop = headerImgData ? (headerHeightMm + 5) : 15;
+    document.body.classList.add('printing-pdf');
 
-        const opt = {
-            margin: [marginTop, 10, 15, 10], // 動態上邊距
-            filename: fileName,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: {
-                scale: 2,
-                useCORS: true,
-                scrollY: 0,
-                letterRendering: true,
-            },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: {
-                mode: ['avoid-all', 'css', 'legacy'],
-                avoid: ['tr', '.info-item', '.sign-box', '.final-decision-box', '.section-header-wrapper', '.result-item']
-            }
-        };
-
-        // 4. 開始生成 (隱藏 HTML Header)
-        document.body.classList.add('printing-pdf');
-
-        // 等待 CSS 渲染 (display: none 生效)
-        await new Promise(r => setTimeout(r, 100));
-
+    setTimeout(() => {
         html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
             const totalPages = pdf.internal.getNumberOfPages();
             const pageWidth = pdf.internal.pageSize.getWidth();
@@ -504,43 +473,34 @@ window.handlePDFProcess = async function (pageValidator = null) {
 
             for (let i = 1; i <= totalPages; i++) {
                 pdf.setPage(i);
-
-                // [新增] 貼上表頭 (每一頁)
-                if (headerImgData) {
-                    // x=10 (左邊距), y=10-margin修正? 不, y=10 (頂端起始)
-                    // 注意：margin 會裁切內容，但 addImage 可以畫在 margin 區域
-                    // 我們設定了 marginTop，所以內容從更下面開始，我們可以把 header 畫在 (10, 5) 左右
-                    pdf.addImage(headerImgData, 'JPEG', 10, 5, headerWidthMm, headerHeightMm);
-                }
-
-                // 頁尾邏輯
                 pdf.setFontSize(9);
                 pdf.setTextColor(100, 100, 100);
 
+                // 左下角：列印資訊
                 const dateStr = new Date().toLocaleString('zh-TW', { hour12: false });
                 pdf.text(`Print: ${dateStr}`, 10, pageHeight - 8);
 
+                // 右下角：頁碼 (Page x of y)
                 const pageStr = `Page ${i} of ${totalPages}`;
                 pdf.text(pageStr, pageWidth - 10 - pdf.getTextWidth(pageStr), pageHeight - 8);
 
+                // 中間：ISO 表單編號
                 pdf.setFontSize(8);
                 pdf.setTextColor(150, 150, 150);
                 pdf.text("JS-FORM-001 Rev.A", pageWidth / 2, pageHeight - 8, { align: 'center' });
             }
         }).save().then(function () {
-            // 完成
             document.body.classList.remove('printing-pdf');
             if (document.body.contains(overlay)) document.body.removeChild(overlay);
             document.querySelectorAll('.print-hidden-row').forEach(row => row.classList.remove('print-hidden-row'));
             const remarksContainer = document.getElementById('unified-remarks-container');
             if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
             window.showToast("PDF 下載成功！");
+        }).catch(function (err) {
+            console.error(err);
+            if (document.body.contains(overlay)) document.body.removeChild(overlay);
+            window.showToast("PDF 生成失敗", "error");
+            document.body.classList.remove('printing-pdf');
         });
-
-    } catch (err) {
-        console.error(err);
-        if (document.body.contains(overlay)) document.body.removeChild(overlay);
-        window.showToast("PDF 生成失敗: " + err.message, "error");
-        document.body.classList.remove('printing-pdf');
-    }
+    }, 800);
 };
