@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>駿鑫工具管理系統</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 0L20 60H40L30 100L80 40H60L70 0Z' fill='%23c2a878'/></svg>">
+    
+    <style>
+        /* --- 引入字型 --- */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
+
+        /* 繼承原有的高級配色 */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #fcfaf5 0%, #f0ebde 100%);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(194, 168, 120, 0.5);
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --gold-gradient: linear-gradient(135deg, #c2a878 0%, #e3d1a8 50%, #9e8b6b 100%);
+            --gold-text-gradient: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            --card-hover-shadow: rgba(194, 168, 120, 0.4);
+        }
+
+        body {
+            font-family: 'Roboto', 'Noto Sans TC', "Microsoft JhengHei", Arial, sans-serif;
+            margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; color: var(--text-main);
+            background: var(--bg-gradient),
+                repeating-linear-gradient(135deg, rgba(194, 168, 120, 0.3), rgba(194, 168, 120, 0.15) 4px, transparent 4px, transparent 500px), 
+                repeating-linear-gradient(-45deg, rgba(150, 150, 150, 0.25), rgba(150, 150, 150, 0.12) 4px, transparent 4px, transparent 500px),
+                radial-gradient(circle at 10% 80%, rgba(200, 190, 170, 0.3) 5%, transparent 60%), 
+                radial-gradient(circle at 70% 20%, rgba(200, 190, 170, 0.3) 5%, transparent 60%), 
+                var(--bg-gradient); 
+            background-size: 100% 100%, 1500px 1500px, 1500px 1500px, 100% 100%, 100% 100%, 100% 100%;
+            background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; 
+        }
+
+        body::before { content: ''; position: absolute; top: -20%; left: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(194, 168, 120, 0.15) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; pointer-events: none; }
+
+        .container {
+            position: relative; background-color: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            padding: 60px 40px; border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15), inset 0 0 0 1px var(--glass-border);
+            text-align: center; max-width: 900px; width: 90%;
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        h1 { color: var(--text-main); margin: 0 0 40px 0; line-height: 1.3; }
+        h1 span.brand { display: block; font-size: 2.8rem; font-weight: 800; background: var(--gold-text-gradient); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; animation: shine 5s linear infinite; }
+        h1 span.system { display: block; font-size: 1.2rem; color: #c2a878; font-weight: 400; letter-spacing: 6px; text-transform: uppercase; }
+        h1::after { content: ''; display: block; width: 80px; height: 2px; background: linear-gradient(90deg, transparent, #c2a878, transparent); margin: 25px auto 0; opacity: 0.8; }
+
+        .options-grid { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; margin-bottom: 50px; }
+        .option-card { display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; width: 260px; height: 200px; background: linear-gradient(145deg, #ffffff, #f0f4f8); border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.1), -2px -2px 4px rgba(255,255,255,1); transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; overflow: hidden; border: 2px solid #e2e8f0; cursor: pointer; }
+        .option-icon { font-size: 55px; margin-bottom: 15px; transition: transform 0.4s ease; background: var(--gold-gradient); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+        .option-title { font-size: 1.3rem; font-weight: 500; color: var(--text-main); margin-bottom: 5px; transition: color 0.3s; letter-spacing: 1px; }
+        .option-desc { font-size: 0.8rem; color: var(--text-sub); font-family: 'Roboto', sans-serif; font-weight: 300; letter-spacing: 1px; transition: color 0.3s; text-transform: uppercase; }
+
+        /* Hover Effects */
+        .option-card:hover { transform: translateY(-8px); border-color: #c2a878; box-shadow: 0 15px 35px var(--card-hover-shadow); }
+        .option-card:hover .option-icon { transform: scale(1.1); -webkit-text-fill-color: #fff; }
+        .option-card:hover .option-title, .option-card:hover .option-desc { color: #fff; }
+        
+        .card-order::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(161, 142, 114, 0.9), rgba(105, 90, 66, 0.9)); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
+        .card-inspection::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(73, 113, 149, 0.9), rgba(52, 78, 100, 0.9)); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
+        .card-test::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(60, 150, 110, 0.9), rgba(40, 100, 75, 0.9)); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
+        .card-spec::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0, 123, 194, 0.9), rgba(0, 76, 122, 0.9)); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
+        
+        /* [新增] 標籤系統的樣式 (紫色漸層) */
+        .card-label::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(124, 58, 237, 0.9), rgba(76, 29, 149, 0.9)); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
+
+        .option-card:hover::before { opacity: 1; }
+        .option-card > * { position: relative; z-index: 2; }
+
+        /* === 歷史紀錄儀表板樣式 (優化對齊版) === */
+        .history-section {
+            width: 100%; max-width: 840px; margin-top: 10px;
+            background: #fff; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(194, 168, 120, 0.3);
+            overflow: hidden;
+            animation: fadeInUp 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .history-header {
+            background: rgba(194, 168, 120, 0.1);
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(194, 168, 120, 0.3);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .history-title { font-size: 1rem; font-weight: 700; color: #555; display: flex; align-items: center; gap: 8px; }
+        .history-title::before { content: '🕒'; }
+        
+        /* 強制表格佈局固定 */
+        .history-list { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 14px; 
+            table-layout: fixed; 
+        }
+        
+        .history-list th, .history-list td {
+            padding: 12px 15px; 
+            border-bottom: 1px solid #f5f5f5;
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis; 
+        }
+        
+        .history-list th {
+            color: #888; 
+            font-weight: 500; 
+            font-size: 13px; 
+            border-bottom: 1px solid #eee;
+            background-color: #fdfdfd;
+        }
+
+        /* === 桌面版欄位設定 === */
+        /* [修正] 時間、類型、操作：置中對齊 */
+        .history-list th:nth-child(1), .history-list td:nth-child(1) { width: 18%; text-align: center; } /* 時間 */
+        .history-list th:nth-child(2), .history-list td:nth-child(2) { width: 18%; text-align: center; } /* 類型 */
+        
+        /* 客戶、料號：靠左對齊 */
+        .history-list th:nth-child(3), .history-list td:nth-child(3) { width: 25%; text-align: center; } /* 客戶 */
+        .history-list th:nth-child(4), .history-list td:nth-child(4) { width: 25%; text-align: center; } /* 料號 */
+        
+        /* 操作：置中對齊 */
+        .history-list th:nth-child(5), .history-list td:nth-child(5) { width: 14%; text-align: center; } /* 操作 */
+
+        .history-list tr:last-child td { border-bottom: none; }
+        .history-list tr:hover { background-color: #fcfcfc; }
+        
+        .history-tag { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .tag-inspection { background: #e0f2fe; color: #0369a1; }
+        .tag-test { background: #dcfce7; color: #15803d; }
+        .tag-spec { background: #fef3c7; color: #92400e; }
+
+        .btn-load {
+            background: #fff; border: 1px solid #ddd; padding: 4px 12px; border-radius: 4px; 
+            cursor: pointer; color: #555; font-size: 12px; transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-load:hover { border-color: #c2a878; color: #b38728; background: #fffdf5; }
+        .empty-history { padding: 30px; color: #999; font-size: 14px; text-align: center; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shine { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+        @media (max-width: 600px) {
+            .container { padding: 40px 20px; width: 85%; }
+            h1 span.brand { font-size: 2.2rem; }
+            .option-card { width: 100%; height: 140px; flex-direction: row; justify-content: flex-start; padding-left: 30px; background: #ffffff; }
+            .option-icon { margin-bottom: 0; margin-right: 25px; font-size: 36px; }
+            .option-info { text-align: left; }
+            
+            /* === 手機版歷史紀錄優化 === */
+            /* 1. 隱藏第三欄 (客戶) */
+            .history-list th:nth-child(3), .history-list td:nth-child(3) { display: none; }
+            
+            /* 2. 重新分配手機版寬度，對齊方式繼承桌面版 (置中/靠左/置中) */
+            .history-list th:nth-child(1), .history-list td:nth-child(1) { width: 22%; } /* 時間 */
+            .history-list th:nth-child(2), .history-list td:nth-child(2) { width: 25%; } /* 類型 */
+            .history-list th:nth-child(4), .history-list td:nth-child(4) { width: 33%; } /* 料號 */
+            .history-list th:nth-child(5), .history-list td:nth-child(5) { width: 20%; } /* 操作 */
+
+            .history-list td { padding: 10px 8px; font-size: 13px; }
+            .btn-load { padding: 6px 10px; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>
+            <span class="brand">駿鑫</span>
+            <span class="system">工具管理系統</span>
+        </h1>
+
+        <div class="options-grid">
+            <a href="spec-generator.html" class="option-card card-order">
+                <div class="option-icon">📝</div>
+                <div class="option-info">
+                    <div class="option-title">規格產生器</div>
+                    <div class="option-desc">Spec Generator</div>
+                </div>
+            </a>
+            
+            <a href="inspection-report.html" class="option-card card-inspection">
+                <div class="option-icon">🔬</div>
+                <div class="option-info">
+                    <div class="option-title">出貨檢驗報告</div>
+                    <div class="option-desc">Inspection Report</div>
+                </div>
+            </a>
+
+            <a href="test-report.html" class="option-card card-test">
+                <div class="option-icon">📋</div>
+                <div class="option-info">
+                    <div class="option-title">電性測試報告</div>
+                    <div class="option-desc">Test Report</div>
+                </div>
+            </a>
+            
+            <a href="http://192.168.0.114:8000" class="option-card card-label">
+                <div class="option-icon">🏷️</div>
+                <div class="option-info">
+                    <div class="option-title">客戶標籤</div>
+                    <div class="option-desc">Label Print</div>
+                </div>
+            </a>
+
+            <a href="https://drive.google.com/file/d/1tW2bywohN62zzBRWE1Q0_976g6Yu2xkR/view?usp=sharing" class="option-card card-spec" target="_blank">
+                <div class="option-icon">📜</div>
+                <div class="option-info">
+                    <div class="option-title">製程能力與交期規範</div>
+                    <div class="option-desc">Process Capability</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="history-section">
+            <div class="history-header">
+                <div class="history-title">最近的紀錄</div>
+                <button onclick="localStorage.removeItem('js_pcb_history'); renderHistory();" style="border:none; background:none; cursor:pointer; color:#999; font-size:12px;">清除紀錄</button>
+            </div>
+            <div id="history-content">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem('js_pcb_history') || '[]');
+            const container = document.getElementById('history-content');
+            
+            if (history.length === 0) {
+                container.innerHTML = '<div class="empty-history">尚無紀錄，請先至各功能生成報表。</div>';
+                return;
+            }
+
+            let html = '<table class="history-list"><thead><tr><th>時間</th><th>類型</th><th>客戶</th><th>料號</th><th>操作</th></tr></thead><tbody>';
+            
+            history.forEach(item => {
+                let tagClass = 'tag-spec';
+                let typeName = '規格單';
+                // 根據檔名或存檔時的 type 判斷
+                if (item.page && item.page.includes('inspection')) { tagClass = 'tag-inspection'; typeName = '出貨檢驗'; }
+                else if (item.page && item.page.includes('test')) { tagClass = 'tag-test'; typeName = '電性測試'; }
+                else if (item.page && item.page.includes('spec')) { tagClass = 'tag-spec'; typeName = '規格單'; }
+                
+                // 解析 ISO 日期
+                const d = new Date(item.timestamp);
+                // 顯示格式： MM/DD
+                const dateShort = isNaN(d.getTime()) ? "-" : (d.getMonth() + 1).toString().padStart(2, '0') + '/' + d.getDate().toString().padStart(2, '0');
+                
+                // 客戶欄位如果沒有值，顯示 -
+                const clientName = item.client || '-';
+
+                html += `
+                    <tr>
+                        <td>${dateShort}</td>
+                        <td><span class="history-tag ${tagClass}">${typeName}</span></td>
+                        <td>${clientName}</td>
+                        <td title="${item.partno}">${item.partno}</td>
+                        <td>
+                            <button class="btn-load" onclick="loadRecord('${item.page}', '${item.id}')">載入</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function loadRecord(page, id) {
+            window.location.href = `${page}?historyId=${id}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', renderHistory);
+    </script>
+</body>
+
+</html>
