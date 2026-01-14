@@ -282,7 +282,8 @@ function renderRemarks() {
     const container = document.getElementById("unified-remarks-container");
     if (!container) return;
     const hideSignature = container.getAttribute("data-hide-signature") === "true";
-    let html = `<div class="remarks-section"><div class="label-box">備註</div><textarea class="remarks-input" id="remarks-area" rows="2" placeholder="請輸入備註..."></textarea></div>`;
+    const labelText = container.getAttribute("data-remarks-label") || "備註";
+    let html = `<div class="remarks-section"><div class="label-box">${labelText}</div><textarea class="remarks-input" id="remarks-area" rows="2" placeholder="請輸入${labelText}..."></textarea></div>`;
     if (!hideSignature) {
         html += `<div class="signature-control-area"><label class="toggle-label"><input type="checkbox" id="use-signature-img" checked onchange="toggleSignatures(this)"><span>電子簽章</span></label></div>`;
     }
