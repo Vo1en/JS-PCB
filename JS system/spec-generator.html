@@ -17,10 +17,12 @@
                 gap: 10px;
                 justify-content: center !important;
             }
+
             .panel-result-box .btn-glass-base {
                 margin-right: 0 !important;
                 width: 100%;
             }
+
             .panel-result-label {
                 font-size: 14px;
             }
@@ -465,10 +467,12 @@
                                 <span class="label">單片尺寸</span>
                                 <div class="info-content-wrap" style="display: flex; gap: 5px; align-items: center;">
                                     <input type="text" id="panelSingleX" placeholder="X"
-                                        class="input-line-custom input-medium" oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
+                                        class="input-line-custom input-medium" oninput="updatePanelPreview()"
+                                        onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
                                     <span>×</span>
                                     <input type="text" id="panelSingleY" placeholder="Y"
-                                        class="input-line-custom input-medium" oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
+                                        class="input-line-custom input-medium" oninput="updatePanelPreview()"
+                                        onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
                                     <span>mm</span>
                                 </div>
                             </div>
@@ -478,12 +482,12 @@
                                 <span class="label">排版方式</span>
                                 <div class="info-content-wrap" style="display: flex; gap: 5px; align-items: center;">
                                     <input type="text" id="panelLayoutX" placeholder="列"
-                                        class="input-line-custom input-short" value="1"
-                                        oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 1; updatePanelPreview()" />
+                                        class="input-line-custom input-short" value="1" oninput="updatePanelPreview()"
+                                        onchange="this.value = parseFloat(this.value) || 1; updatePanelPreview()" />
                                     <span>×</span>
                                     <input type="text" id="panelLayoutY" placeholder="行"
-                                        class="input-line-custom input-short" value="1"
-                                        oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 1; updatePanelPreview()" />
+                                        class="input-line-custom input-short" value="1" oninput="updatePanelPreview()"
+                                        onchange="this.value = parseFloat(this.value) || 1; updatePanelPreview()" />
                                 </div>
                             </div>
 
@@ -493,12 +497,12 @@
                                 <div class="info-content-wrap" style="display: flex; gap: 5px; align-items: center;">
                                     <span>X:</span>
                                     <input type="text" id="panelSpacingX" placeholder="0"
-                                        class="input-line-custom input-short" value="0"
-                                        oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
+                                        class="input-line-custom input-short" value="0" oninput="updatePanelPreview()"
+                                        onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
                                     <span>Y:</span>
                                     <input type="text" id="panelSpacingY" placeholder="0"
-                                        class="input-line-custom input-short" value="0"
-                                        oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
+                                        class="input-line-custom input-short" value="0" oninput="updatePanelPreview()"
+                                        onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
                                     <span>mm</span>
                                 </div>
                             </div>
@@ -515,8 +519,8 @@
                                         <option value="all">四周</option>
                                     </select>
                                     <input type="text" id="panelBreakWidth" placeholder="5"
-                                        class="input-line-custom input-short" value="5"
-                                        oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
+                                        class="input-line-custom input-short" value="5" oninput="updatePanelPreview()"
+                                        onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
                                     <span>mm</span>
                                 </div>
                             </div>
@@ -704,6 +708,7 @@
     <script src="template.js"></script>
     <script src="js/generator-core.js"></script>
     <script src="js/panel-draw.js"></script>
+    <script src="js/protection.js"></script>
 </body>
 
 </html>
