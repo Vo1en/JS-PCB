@@ -845,9 +845,9 @@ async function downloadPDF() {
             pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
         }
 
-        const partNo = getValue("partNo") || "PCB_Spec";
-        // [Modified] User requested filename format
-        pdf.save(`${partNo}_PCB製作規格單.pdf`);
+        const partNo = getValue("partNo");
+        const filename = partNo ? `${partNo} PCB製作規格單.pdf` : "PCB製作規格單.pdf";
+        pdf.save(filename);
 
         if (typeof window.showToast === 'function') window.showToast("正式報表下載成功！");
 
@@ -882,7 +882,8 @@ function downloadPanelImage() {
 
         // 下載圖片
         const link = document.createElement('a');
-        link.download = 'Panel_Layout_Drawing.png';
+        const partNo = getValue("partNo");
+        link.download = partNo ? `${partNo} 排版示意圖.png` : "排版示意圖.png";
         link.href = sourceCanvas.toDataURL("image/png");
         document.body.appendChild(link);
         link.click();

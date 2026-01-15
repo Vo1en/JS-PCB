@@ -10,6 +10,22 @@
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 0L20 60H40L30 100L80 40H60L70 0Z' fill='%23c2a878'/></svg>">
     <link rel="stylesheet" href="css/generator-style.css">
+    <style>
+        @media (max-width: 600px) {
+            .panel-result-box {
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: center !important;
+            }
+            .panel-result-box .btn-glass-base {
+                margin-right: 0 !important;
+                width: 100%;
+            }
+            .panel-result-label {
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 
 <body class="">
@@ -449,10 +465,10 @@
                                 <span class="label">單片尺寸</span>
                                 <div class="info-content-wrap" style="display: flex; gap: 5px; align-items: center;">
                                     <input type="text" id="panelSingleX" placeholder="X"
-                                        class="input-line-custom input-medium" oninput="updatePanelPreview()" />
+                                        class="input-line-custom input-medium" oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
                                     <span>×</span>
                                     <input type="text" id="panelSingleY" placeholder="Y"
-                                        class="input-line-custom input-medium" oninput="updatePanelPreview()" />
+                                        class="input-line-custom input-medium" oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
                                     <span>mm</span>
                                 </div>
                             </div>
@@ -463,11 +479,11 @@
                                 <div class="info-content-wrap" style="display: flex; gap: 5px; align-items: center;">
                                     <input type="text" id="panelLayoutX" placeholder="列"
                                         class="input-line-custom input-short" value="1"
-                                        oninput="updatePanelPreview()" />
+                                        oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 1; updatePanelPreview()" />
                                     <span>×</span>
                                     <input type="text" id="panelLayoutY" placeholder="行"
                                         class="input-line-custom input-short" value="1"
-                                        oninput="updatePanelPreview()" />
+                                        oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 1; updatePanelPreview()" />
                                 </div>
                             </div>
 
@@ -478,11 +494,11 @@
                                     <span>X:</span>
                                     <input type="text" id="panelSpacingX" placeholder="0"
                                         class="input-line-custom input-short" value="0"
-                                        oninput="updatePanelPreview()" />
+                                        oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
                                     <span>Y:</span>
                                     <input type="text" id="panelSpacingY" placeholder="0"
                                         class="input-line-custom input-short" value="0"
-                                        oninput="updatePanelPreview()" />
+                                        oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
                                     <span>mm</span>
                                 </div>
                             </div>
@@ -495,12 +511,12 @@
                                         onchange="updatePanelPreview()">
                                         <option value="none">無</option>
                                         <option value="lr">左右</option>
-                                        <option value="tb">上下</option>
-                                        <option value="all" selected>四周</option>
+                                        <option value="tb" selected>上下</option>
+                                        <option value="all">四周</option>
                                     </select>
                                     <input type="text" id="panelBreakWidth" placeholder="5"
                                         class="input-line-custom input-short" value="5"
-                                        oninput="updatePanelPreview()" />
+                                        oninput="updatePanelPreview()" onchange="this.value = parseFloat(this.value) || 0; updatePanelPreview()" />
                                     <span>mm</span>
                                 </div>
                             </div>

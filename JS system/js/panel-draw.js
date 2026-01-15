@@ -18,17 +18,12 @@ function updatePanelPreview(isExport = false) {
     let allowSpacingY = layoutY > 1;
 
     if (breakPos === 'none') {
-        allowSpacingX = false;
-        allowSpacingY = false;
         breakWidthInput.style.display = 'none';
         breakWidthLabel.style.display = 'none';
     } else {
         breakWidthInput.style.display = 'block';
         breakWidthLabel.style.display = 'inline';
     }
-
-    if (breakPos === 'tb') allowSpacingY = false;
-    if (breakPos === 'lr') allowSpacingX = false;
 
     // 更新輸入框狀態 (僅在非 Export 模式下操作 UI)
     if (!isExport) {
@@ -138,21 +133,25 @@ function updatePanelPreview(isExport = false) {
 
     // 繪製 V-cut 線條
     ctx.lineWidth = 1;
-    // 垂直分隔線
-    for (let i = 1; i < layoutX; i++) {
-        const vx = arrayStartX + i * boardW + (i - 0.5) * gapW + gapW / 2;
-        ctx.beginPath();
-        ctx.moveTo(vx, arrayStartY);
-        ctx.lineTo(vx, arrayStartY + arrayH);
-        ctx.stroke();
+    // 垂直分隔線 (僅在無間距時繪製)
+    if (spacingX === 0) {
+        for (let i = 1; i < layoutX; i++) {
+            const vx = arrayStartX + i * boardW + (i - 0.5) * gapW + gapW / 2;
+            ctx.beginPath();
+            ctx.moveTo(vx, arrayStartY);
+            ctx.lineTo(vx, arrayStartY + arrayH);
+            ctx.stroke();
+        }
     }
-    // 水平分隔線
-    for (let j = 1; j < layoutY; j++) {
-        const vy = arrayStartY + j * boardH + (j - 0.5) * gapH + gapH / 2;
-        ctx.beginPath();
-        ctx.moveTo(arrayStartX, vy);
-        ctx.lineTo(arrayStartX + arrayW, vy);
-        ctx.stroke();
+    // 水平分隔線 (僅在無間距時繪製)
+    if (spacingY === 0) {
+        for (let j = 1; j < layoutY; j++) {
+            const vy = arrayStartY + j * boardH + (j - 0.5) * gapH + gapH / 2;
+            ctx.beginPath();
+            ctx.moveTo(arrayStartX, vy);
+            ctx.lineTo(arrayStartX + arrayW, vy);
+            ctx.stroke();
+        }
     }
 
     // 繪製折斷邊分隔線
