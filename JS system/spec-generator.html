@@ -1,0 +1,694 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>駿鑫 規格產生器</title>
+    <link rel="stylesheet" href="report.css">
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 0L20 60H40L30 100L80 40H60L70 0Z' fill='%23c2a878'/></svg>">
+    <link rel="stylesheet" href="css/generator-style.css">
+</head>
+
+<body class="">
+    <!-- Dark Mode Toggle -->
+    <button id="dark-mode-toggle" title="切換深色模式">🌙</button>
+
+    <div class="main-container">
+        <div id="navbar-container"></div>
+
+        <div class="page-container">
+            <div class="a4-paper">
+
+                <div id="unified-header-container" data-title="規格產生器" data-simple="true"></div>
+
+                <section class="info-grid-custom">
+
+                    <div class="info-item-custom">
+                        <span class="label">料號</span>
+                        <div class="info-content-wrap">
+                            <input type="text" id="partNo" class="input-line-custom" placeholder="(選填)"
+                                style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase();" />
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">板材</span>
+                            <div class="info-content-wrap">
+                                <select id="material" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option selected>FR-4</option>
+                                    <option>FR-1</option>
+                                    <option>鋁基板</option>
+                                    <option value="custom">自行輸入</option>
+                                </select>
+                                <div id="material_custom_div" class="custom-input-wrapper">
+                                    <input type="text" id="material_custom" placeholder="請自行輸入板材"
+                                        class="input-line-custom" />
+                                    <button type="button" class="reset-btn" onclick="resetSelect('material')"
+                                        title="切換回選單">×</button>
+                                </div>
+                                <div id="materialWarning" class="warning"
+                                    style="display:none; width: 100%; margin-top: 5px; margin-left: 0 !important;">
+                                    FR-1 交期較長，建議以 FR-4 製作
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">層別</span>
+                            <div class="info-content-wrap">
+                                <select id="layers" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option>單面板</option>
+                                    <option selected>雙面板</option>
+                                    <option>四層板</option>
+                                    <option>六層板</option>
+                                    <option>八層板</option>
+                                    <option>十層板</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">成品板厚</span>
+                            <div class="info-content-wrap">
+                                <select id="thickness" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option value="0.4 mm">0.4 mm</option>
+                                    <option value="0.6 mm">0.6 mm</option>
+                                    <option value="0.8 mm">0.8 mm</option>
+                                    <option value="1.0 mm">1.0 mm</option>
+                                    <option value="1.2 mm">1.2 mm</option>
+                                    <option value="1.6 mm" selected>1.6 mm</option>
+                                    <option value="2.0 mm">2.0 mm</option>
+                                    <option value="2.4 mm">2.4 mm</option>
+                                    <option value="3.0 mm">3.0 mm</option>
+                                    <option value="3.2 mm">3.2 mm</option>
+                                    <option value="custom">自行輸入</option>
+                                </select>
+                                <div id="thickness_custom_div" class="custom-input-wrapper">
+                                    <input type="text" id="thickness_custom" placeholder="請自行輸入板厚"
+                                        class="input-line-custom" />
+                                    <button type="button" class="reset-btn" onclick="resetSelect('thickness')"
+                                        title="切換回選單">×</button>
+                                </div>
+                                <div id="thicknessWarning" class="warning"
+                                    style="display:none; width: 100%; margin-top: 5px; margin-left: 0 !important;">
+                                    板厚 0.4 mm 太薄，無法進行 V-Cut。若需拼板，建議採用郵票孔設計。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">內層銅厚</span>
+                            <div class="info-content-wrap">
+                                <select id="innerCu" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option>0.5 oz</option>
+                                    <option>1 oz</option>
+                                    <option>2 oz</option>
+                                </select>
+                                <div id="innerCuWarning" class="warning"
+                                    style="display:none; width: 100%; margin-top: 5px; margin-left: 0 !important;">
+                                    單面板、雙面板不支援內層銅厚
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">外層銅厚</span>
+                            <div class="info-content-wrap">
+                                <select id="outerCu" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option selected>1 oz</option>
+                                    <option>2 oz</option>
+                                    <option>3 oz</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">防焊顏色</span>
+                            <div class="info-content-wrap">
+                                <select id="solderMask" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option value="綠色" selected>🟢 綠色</option>
+                                    <option value="藍色">🔵 藍色</option>
+                                    <option value="黑色">⚫ 黑色</option>
+                                    <option value="白色">⚪ 白色</option>
+                                    <option value="紅色">🔴 紅色</option>
+                                    <option value="黃色">🟡 黃色</option>
+                                    <option value="無"> 無</option>
+                                    <option value="custom">自行輸入</option>
+                                </select>
+                                <div id="solderMask_custom_div" class="custom-input-wrapper">
+                                    <input type="text" id="solderMask_custom" placeholder="請自行輸入防焊顏色"
+                                        class="input-line-custom" />
+                                    <button type="button" class="reset-btn" onclick="resetSelect('solderMask')"
+                                        title="切換回選單">×</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">文字顏色</span>
+                            <div class="info-content-wrap">
+                                <select id="legendColor" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option value="白字" selected>⚪ 白字</option>
+                                    <option value="黑字">⚫ 黑字</option>
+                                    <option value="無">無</option>
+                                    <option value="custom">自行輸入</option>
+                                </select>
+                                <div id="legendColor_custom_div" class="custom-input-wrapper">
+                                    <input type="text" id="legendColor_custom" placeholder="請自行輸入文字顏色"
+                                        class="input-line-custom" />
+                                    <button type="button" class="reset-btn" onclick="resetSelect('legendColor')"
+                                        title="切換回選單">×</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">表面處理</span>
+                            <div class="info-content-wrap">
+                                <select id="finish" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option value="-">-</option>
+                                    <option value="有鉛噴錫">有鉛噴錫</option>
+                                    <option value="無鉛噴錫" selected>無鉛噴錫</option>
+                                    <option value="化金 1u">化金 1u"</option>
+                                    <option value="化金 2u">化金 2u"</option>
+                                    <option value="化金 3u">化金 3u"</option>
+                                    <option value="硬金 3u">硬金 3u"</option>
+                                    <option value="硬金 5u">硬金 5u"</option>
+                                    <option value="OSP">OSP</option>
+                                    <option value="裸銅">裸銅</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="finishWarning" class="warning" style="display:none;">
+                            六層板以上，統一製做化金 2u 表面處理
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">金(錫)手指</span>
+                            <div class="info-content-wrap">
+                                <select id="goldFinger" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option>斜邊30°</option>
+                                    <option>斜邊45°</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">電性測試</span>
+                            <div class="info-content-wrap">
+                                <select id="testMethod" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option selected>全測</option>
+                                    <option>抽測</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">特殊製程#1</span>
+                            <div class="info-content-wrap">
+                                <select id="special1" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option>半孔</option>
+                                    <option>塞孔</option>
+                                    <option>樹脂塞孔</option>
+                                    <option>BGA</option>
+                                    <option>側邊鍍銅</option>
+                                    <option>阻抗要求</option>
+                                    <option value="custom">自行輸入</option>
+                                </select>
+                                <div id="special1_custom_div" class="custom-input-wrapper">
+                                    <input type="text" id="special1_custom" placeholder="請自行輸入特殊製程"
+                                        class="input-line-custom" />
+                                    <button type="button" class="reset-btn" onclick="resetSelect('special1')"
+                                        title="切換回選單">×</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="special1Warning" class="warning" style="display:none;">
+                            六層板以上，統一製作樹脂塞孔製程
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">特殊製程#2</span>
+                            <div class="info-content-wrap">
+                                <select id="special2" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option>半孔</option>
+                                    <option>塞孔</option>
+                                    <option>樹脂塞孔</option>
+                                    <option>BGA</option>
+                                    <option>側邊鍍銅</option>
+                                    <option>阻抗要求</option>
+                                    <option value="custom">自行輸入</option>
+                                </select>
+                                <div id="special2_custom_div" class="custom-input-wrapper">
+                                    <input type="text" id="special2_custom" placeholder="請自行輸入特殊製程"
+                                        class="input-line-custom" />
+                                    <button type="button" class="reset-btn" onclick="resetSelect('special2')"
+                                        title="切換回選單">×</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">特殊製程#3</span>
+                            <div class="info-content-wrap">
+                                <select id="special3" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option>半孔</option>
+                                    <option>塞孔</option>
+                                    <option>樹脂塞孔</option>
+                                    <option>BGA</option>
+                                    <option>側邊鍍銅</option>
+                                    <option>阻抗要求</option>
+                                    <option value="custom">自行輸入</option>
+                                </select>
+                                <div id="special3_custom_div" class="custom-input-wrapper">
+                                    <input type="text" id="special3_custom" placeholder="請自行輸入特殊製程"
+                                        class="input-line-custom" />
+                                    <button type="button" class="reset-btn" onclick="resetSelect('special3')"
+                                        title="切換回選單">×</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-item-custom">
+                            <span class="label">數量(出貨片)</span>
+                            <div class="info-content-wrap">
+                                <select id="qty" class="input-line-custom" onchange="onSelectChange(this)">
+                                    <option>-</option>
+                                    <option selected>5</option>
+                                    <option>10</option>
+                                    <option>15</option>
+                                    <option>20</option>
+                                    <option>25</option>
+                                    <option>30</option>
+                                    <option>50</option>
+                                    <option>75</option>
+                                    <option>100</option>
+                                    <option>125</option>
+                                    <option>150</option>
+                                    <option>200</option>
+                                    <option value="custom">自行輸入</option>
+                                </select>
+                                <div id="qty_custom_div" class="custom-input-wrapper">
+                                    <input type="text" id="qty_custom" placeholder="請自行輸入數量" class="input-line-custom"
+                                        oninput="formatNumber(this)" />
+                                    <button type="button" class="reset-btn" onclick="resetSelect('qty')"
+                                        title="切換回選單">×</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-item-custom">
+                        <span class="label">訂單金額</span>
+                        <div class="info-content-wrap">
+                            <input type="text" id="specialAmount" inputmode="numeric" oninput="formatNumber(this)"
+                                placeholder="請輸入金額" class="input-line-custom" />
+                        </div>
+                    </div>
+
+                    <div class="field-group-wrap">
+                        <div class="info-content-wrap" style="width: 100%;">
+                            <div id="unified-remarks-container" data-hide-signature="true" data-remarks-label="訂單備註">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="engineering-section">
+                        <h3 class="engineering-header">
+                            <span class="header-indicator"></span>
+                            工程製作說明
+                        </h3>
+
+
+                        <!-- 尺寸欄位已移除，改用連片配置工具內的單片尺寸 -->
+
+                        <div class="field-group-wrap">
+                            <div class="info-item-custom">
+                                <span class="label">UL</span>
+                                <div class="info-content-wrap">
+                                    <select id="ulOption" class="input-line-custom" onchange="onSelectChange(this)">
+                                        <option>-</option>
+                                        <option>不需要</option>
+                                        <option>需要(每PCS)</option>
+                                        <option>需要(折斷邊上)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-group-wrap">
+                            <div class="info-item-custom">
+                                <span class="label">週期</span>
+                                <div class="info-content-wrap">
+                                    <select id="dateCodeOption" class="input-line-custom"
+                                        onchange="onSelectChange(this)">
+                                        <option>-</option>
+                                        <option>不需要</option>
+                                        <option>需要(每PCS)</option>
+                                        <option>需要(折斷邊上)</option>
+                                        <option value="custom">自行輸入</option>
+                                    </select>
+                                    <div id="dateCodeOption_custom_div" class="custom-input-wrapper">
+                                        <input type="text" id="dateCodeOption_custom" placeholder="請自行輸入週期要求"
+                                            class="input-line-custom" />
+                                        <button type="button" class="reset-btn" onclick="resetSelect('dateCodeOption')"
+                                            title="切換回選單">×</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-group-wrap">
+                            <div class="info-item-custom">
+                                <span class="label">出貨方式</span>
+                                <div class="info-content-wrap">
+                                    <select id="shippingMethod" class="input-line-custom"
+                                        onchange="onSelectChange(this)">
+                                        <option>-</option>
+                                        <option>單片出貨</option>
+                                        <option>連片出貨</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-group-wrap" id="panelizingMethod_wrapper" style="display: none;">
+                            <div class="info-item-custom">
+                                <span class="label">連片方式</span>
+                                <div class="info-content-wrap">
+                                    <select id="panelizingMethod" class="input-line-custom"
+                                        onchange="onSelectChange(this)">
+                                        <option>-</option>
+                                        <option>照檔案製作</option>
+                                        <option>工程代排版</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 工程備註 -->
+                        <div class="field-group-wrap">
+                            <div class="info-item-custom" style="height: auto;">
+                                <span class="label">工程備註</span>
+                                <div class="info-content-wrap">
+                                    <textarea id="engRemarkInput" class="textArea-custom"
+                                        placeholder="請輸入工程相關備註..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 連片配置工具 (當選擇「工程代排版」時顯示) -->
+                        <div id="panelization_tool" class="panelization-tool">
+                            <h4 class="panel-tool-header">排版小工具</h4>
+
+                            <!-- 單片尺寸 -->
+                            <div class="info-item-custom" style="border-bottom: none; margin-bottom: 10px;">
+                                <span class="label">單片尺寸</span>
+                                <div class="info-content-wrap" style="display: flex; gap: 5px; align-items: center;">
+                                    <input type="text" id="panelSingleX" placeholder="X"
+                                        class="input-line-custom input-medium" oninput="updatePanelPreview()" />
+                                    <span>×</span>
+                                    <input type="text" id="panelSingleY" placeholder="Y"
+                                        class="input-line-custom input-medium" oninput="updatePanelPreview()" />
+                                    <span>mm</span>
+                                </div>
+                            </div>
+
+                            <!-- 排版方式 -->
+                            <div class="info-item-custom" style="border-bottom: none; margin-bottom: 10px;">
+                                <span class="label">排版方式</span>
+                                <div class="info-content-wrap" style="display: flex; gap: 5px; align-items: center;">
+                                    <input type="text" id="panelLayoutX" placeholder="列"
+                                        class="input-line-custom input-short" value="1"
+                                        oninput="updatePanelPreview()" />
+                                    <span>×</span>
+                                    <input type="text" id="panelLayoutY" placeholder="行"
+                                        class="input-line-custom input-short" value="1"
+                                        oninput="updatePanelPreview()" />
+                                </div>
+                            </div>
+
+                            <!-- 間距 -->
+                            <div class="info-item-custom" style="border-bottom: none; margin-bottom: 10px;">
+                                <span class="label">排版間距</span>
+                                <div class="info-content-wrap" style="display: flex; gap: 5px; align-items: center;">
+                                    <span>X:</span>
+                                    <input type="text" id="panelSpacingX" placeholder="0"
+                                        class="input-line-custom input-short" value="0"
+                                        oninput="updatePanelPreview()" />
+                                    <span>Y:</span>
+                                    <input type="text" id="panelSpacingY" placeholder="0"
+                                        class="input-line-custom input-short" value="0"
+                                        oninput="updatePanelPreview()" />
+                                    <span>mm</span>
+                                </div>
+                            </div>
+
+                            <!-- 折斷邊 -->
+                            <div class="info-item-custom" style="border-bottom: none; margin-bottom: 10px;">
+                                <span class="label">折斷邊</span>
+                                <div class="info-content-wrap" style="display: flex; gap: 8px; align-items: center;">
+                                    <select id="panelBreakPos" class="input-line-custom" style="width: 80px;"
+                                        onchange="updatePanelPreview()">
+                                        <option value="none">無</option>
+                                        <option value="lr">左右</option>
+                                        <option value="tb" selected>上下</option>
+                                        <option value="all">四周</option>
+                                    </select>
+                                    <input type="text" id="panelBreakWidth" placeholder="8"
+                                        class="input-line-custom input-short" value="8"
+                                        oninput="updatePanelPreview()" />
+                                    <span>mm</span>
+                                </div>
+                            </div>
+
+                            <!-- 排版後尺寸 -->
+                            <!-- [Modified] Wrap layout for mobile optimization -->
+                            <div class="info-item-custom panel-result-box"
+                                style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; width: 100%; margin-bottom: 5px;">
+                                    <span class="label panel-result-label">排版後尺寸</span>
+                                    <span id="panelResultSize" class="panel-result-value">--
+                                        × --
+                                        mm</span>
+                                </div>
+                                <button type="button" class="btn-glass-base btn-glass-blue"
+                                    onclick="downloadPanelImage()"
+                                    style="font-size: 14px; padding: 4px 12px; margin-left: auto;">下載排版示意圖</button>
+                            </div>
+
+                            <!-- 預覽圖區塊 (置於下方，更大) -->
+                            <div class="panel-preview-box" style="text-align: center;">
+                                <canvas id="panelPreviewCanvas" width="650" height="450"
+                                    style="max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+
+                    </div> <!-- End of engineering-section-container -->
+
+                </section>
+
+
+
+                <div class="btn-row">
+                    <button type="button" class="btn-glass-base btn-glass-gold"
+                        onclick="generateAndCopyText()">一鍵生成+複製</button>
+                    <button type="button" class="btn-glass-base btn-glass-blue" onclick="downloadPDF()">生成製作規格單</button>
+                    <button type="button" class="btn-glass-base btn-glass-red" onclick="resetAllFields()">清空重填</button>
+                </div>
+
+                <div class="output-area">
+                    <span class="output-label">規格訊息</span>
+                    <textarea id="output-text" placeholder="點擊「生成文字」按鈕後，會在此處顯示完整的 PCB 規格資訊" readonly></textarea>
+                </div>
+
+                <!-- [新增] PDF 導出專用隱藏區塊 -->
+                <div id="pdf-export-container"
+                    style="position: absolute; left: -9999px; top: 0; width: 210mm; background: #fff; padding: 20px; box-sizing: border-box;">
+                    <!-- 標題 -->
+                    <div
+                        style="text-align: center; margin-bottom: 20px; border-bottom: 3px solid #b38728; padding-bottom: 10px;">
+                        <h1 style="margin: 0; font-size: 24px; color: #333;">PCB 製作規格單</h1>
+                        <span style="font-size: 12px; color: #666;">Production Specification Sheet</span>
+                    </div>
+
+                    <!-- 規格表格 -->
+                    <table class="pdf-table"
+                        style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+                        <style>
+                            .pdf-table th,
+                            .pdf-table td {
+                                border: 1px solid #000;
+                                padding: 8px;
+                                vertical-align: middle;
+                            }
+
+                            .pdf-table th {
+                                background-color: #f0f0f0;
+                                width: 15%;
+                                text-align: center;
+                                font-weight: bold;
+                                white-space: nowrap;
+                            }
+
+                            .pdf-table td {
+                                width: 35%;
+                            }
+
+                            .pdf-section-header {
+                                background-color: #b38728;
+                                color: #fff;
+                                font-weight: bold;
+                                text-align: center;
+                                padding: 5px;
+                                border: 1px solid #000;
+                            }
+                        </style>
+                        <tr>
+                            <td colspan="4" class="pdf-section-header">基本規格 (Basic Information)</td>
+                        </tr>
+                        <tr>
+                            <th>料號 (Part No)</th>
+                            <td id="pdf-partNo"></td>
+                            <th>日期 (Date)</th>
+                            <td id="pdf-date"></td>
+                        </tr>
+                        <tr>
+                            <th>板材 (Material)</th>
+                            <td id="pdf-material"></td>
+                            <th>層數 (Layers)</th>
+                            <td id="pdf-layers"></td>
+                        </tr>
+                        <tr>
+                            <th>板厚 (Thickness)</th>
+                            <td id="pdf-thickness"></td>
+                            <th>表面處理 (Finish)</th>
+                            <td id="pdf-finish"></td>
+                        </tr>
+                        <tr>
+                            <th>內層銅厚</th>
+                            <td id="pdf-innerCu"></td>
+                            <th>外層銅厚</th>
+                            <td id="pdf-outerCu"></td>
+                        </tr>
+                        <tr>
+                            <th>防焊顏色 (Mask)</th>
+                            <td id="pdf-solderMask"></td>
+                            <th>文字顏色 (Legend)</th>
+                            <td id="pdf-legendColor"></td>
+                        </tr>
+                        <tr>
+                            <th>金手指</th>
+                            <td id="pdf-goldFinger"></td>
+                            <th>電測 (Test)</th>
+                            <td id="pdf-testMethod"></td>
+                        </tr>
+                        <tr>
+                            <th>數量 (Qty)</th>
+                            <td id="pdf-qty"></td>
+                            <th>訂單金額</th>
+                            <td id="pdf-amount"></td>
+                        </tr>
+                        <tr>
+                            <th>特殊製程</th>
+                            <td colspan="3" id="pdf-specials"></td>
+                        </tr>
+                        <tr>
+                            <th>訂單備註</th>
+                            <td colspan="3" id="pdf-remark" style="height: 40px; vertical-align: top;"></td>
+                        </tr>
+
+                        <!-- 工程資訊 -->
+                        <tr>
+                            <td colspan="4" class="pdf-section-header">工程製作說明 (Engineering Specs)</td>
+                        </tr>
+                        <tr>
+                            <th>UL 標記</th>
+                            <td id="pdf-ul"></td>
+                            <th>週期標記</th>
+                            <td id="pdf-datecode"></td>
+                        </tr>
+                        <tr>
+                            <th>出貨方式</th>
+                            <td id="pdf-shipping"></td>
+                            <th>連片方式</th>
+                            <td id="pdf-panel-method"></td>
+                        </tr>
+                        <tr>
+                            <th>排版備註</th>
+                            <td colspan="3" id="pdf-panel-details"></td>
+                        </tr>
+                        <tr>
+                            <th>工程備註</th>
+                            <td colspan="3" id="pdf-eng-remark" style="height: 40px; vertical-align: top;"></td>
+                        </tr>
+                    </table>
+
+                    <!-- 排版圖 -->
+                    <div id="pdf-panel-drawing-container"
+                        style="display: none; width: 100%; border: 1px solid #000; padding: 10px; box-sizing: border-box; text-align: center;">
+                        <div style="margin-bottom: 5px; font-weight: bold; text-align: left;">排版示意圖 (Panel Layout)</div>
+                        <img id="pdf-panel-img" style="max-width: 100%; max-height: 500px; object-fit: contain;" />
+                    </div>
+
+                    <div style="margin-top: 20px; font-size: 10px; color: #999; text-align: right;">
+                        Generated by JS-PCB Spec Generator
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="navbar.js"></script>
+    <script src="template.js"></script>
+    <script src="js/generator-core.js"></script>
+    <script src="js/panel-draw.js"></script>
+</body>
+
+</html>
