@@ -1,0 +1,504 @@
+[
+  {
+    "customer_name": "庫存",
+    "copies": 1,
+    "timestamp": "2025-12-30T17:03:24.869456"
+  },
+  {
+    "customer_name": "庫存",
+    "copies": 1,
+    "timestamp": "2025-12-30T17:03:48.737866"
+  },
+  {
+    "customer_name": "春迅",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:23:10.234450"
+  },
+  {
+    "customer_name": "盟訊",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:23:11.393953"
+  },
+  {
+    "customer_name": "漢沅",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:23:12.560851"
+  },
+  {
+    "customer_name": "精元",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:23:13.653764"
+  },
+  {
+    "customer_name": "農勝",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:25:06.331729"
+  },
+  {
+    "customer_name": "漢沅",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:25:07.606362"
+  },
+  {
+    "customer_name": "盟訊",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:25:08.734978"
+  },
+  {
+    "customer_name": "聯德",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:25:10.222000"
+  },
+  {
+    "customer_name": "柏璿",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:25:55.379754"
+  },
+  {
+    "customer_name": "歐陸通",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:25:55.415455"
+  },
+  {
+    "customer_name": "元宏",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:25:55.479901"
+  },
+  {
+    "customer_name": "聯比禔",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:25:55.543608"
+  },
+  {
+    "customer_name": "成昇",
+    "copies": 1,
+    "device": "XP000 (127.0.0.1)",
+    "timestamp": "2025-12-30T17:25:55.608821"
+  },
+  {
+    "customer_name": "庫存",
+    "copies": 20,
+    "device": "XP000 (192.168.0.114)",
+    "timestamp": "2025-12-31T08:33:47.421739"
+  },
+  {
+    "customer_name": "佳鑫",
+    "copies": 2,
+    "device": "192.168.0.110",
+    "timestamp": "2025-12-31T09:40:53.774080"
+  },
+  {
+    "customer_name": "德彥醫技",
+    "copies": 2,
+    "device": "192.168.0.110",
+    "timestamp": "2025-12-31T10:09:17.618235"
+  },
+  {
+    "customer_name": "普崴",
+    "copies": 2,
+    "device": "192.168.0.104",
+    "timestamp": "2025-12-31T14:27:27.316547"
+  },
+  {
+    "customer_name": "京華",
+    "copies": 1,
+    "device": "192.168.0.104",
+    "timestamp": "2025-12-31T16:23:46.016353"
+  },
+  {
+    "customer_name": "鐘王",
+    "copies": 1,
+    "device": "192.168.0.104",
+    "timestamp": "2025-12-31T16:27:48.929850"
+  },
+  {
+    "customer_name": "嘉馬",
+    "copies": 1,
+    "device": "192.168.0.104",
+    "timestamp": "2025-12-31T16:32:48.023502"
+  },
+  {
+    "customer_name": "高享",
+    "copies": 1,
+    "device": "XP777 (192.168.0.111)",
+    "timestamp": "2025-12-31T16:55:28.216492"
+  },
+  {
+    "customer_name": "高亨",
+    "copies": 1,
+    "device": "XP777 (192.168.0.111)",
+    "timestamp": "2025-12-31T16:56:08.262006"
+  },
+  {
+    "customer_name": "精利",
+    "copies": 10,
+    "device": "192.168.0.112",
+    "timestamp": "2026-01-05T09:28:53.786698"
+  },
+  {
+    "customer_name": "尚翊",
+    "copies": 1,
+    "device": "XP777 (192.168.0.109)",
+    "timestamp": "2026-01-05T10:12:45.872348"
+  },
+  {
+    "customer_name": "廣繼電",
+    "copies": 1,
+    "device": "XP777 (192.168.0.109)",
+    "timestamp": "2026-01-05T10:12:57.335931"
+  },
+  {
+    "customer_name": "泓瑜",
+    "copies": 1,
+    "device": "XP777 (192.168.0.109)",
+    "timestamp": "2026-01-05T10:56:00.011317"
+  },
+  {
+    "customer_name": "泓瑜",
+    "copies": 1,
+    "device": "XP777 (192.168.0.109)",
+    "timestamp": "2026-01-05T10:56:04.526562"
+  },
+  {
+    "customer_name": "精科",
+    "copies": 1,
+    "device": "192.168.0.112",
+    "timestamp": "2026-01-05T11:07:26.808034"
+  },
+  {
+    "customer_name": "惠特",
+    "copies": 1,
+    "device": "XP000 (192.168.0.114)",
+    "timestamp": "2026-01-05T13:07:23.706932"
+  },
+  {
+    "customer_name": "晶功",
+    "copies": 20,
+    "device": "192.168.0.112",
+    "timestamp": "2026-01-05T16:40:27.990361"
+  },
+  {
+    "customer_name": "廣美",
+    "copies": 1,
+    "device": "XP777 (192.168.0.109)",
+    "timestamp": "2026-01-06T10:52:32.087379"
+  },
+  {
+    "customer_name": "浤巨",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-06T15:19:34.782865"
+  },
+  {
+    "customer_name": "高亨",
+    "copies": 10,
+    "device": "192.168.0.107",
+    "timestamp": "2026-01-07T09:21:23.130533"
+  },
+  {
+    "customer_name": "元偉易",
+    "copies": 1,
+    "device": "192.168.0.107",
+    "timestamp": "2026-01-07T09:25:28.847216"
+  },
+  {
+    "customer_name": "元偉易",
+    "copies": 1,
+    "device": "192.168.0.107",
+    "timestamp": "2026-01-07T09:25:29.861648"
+  },
+  {
+    "customer_name": "熀文",
+    "copies": 1,
+    "device": "192.168.0.107",
+    "timestamp": "2026-01-07T09:32:56.480045"
+  },
+  {
+    "customer_name": "典亮",
+    "copies": 10,
+    "device": "192.168.0.107",
+    "timestamp": "2026-01-07T11:51:24.931718"
+  },
+  {
+    "customer_name": "寰電",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-07T15:03:10.490426"
+  },
+  {
+    "customer_name": "昶瑞",
+    "copies": 1,
+    "device": "XP000 (192.168.0.114)",
+    "timestamp": "2026-01-07T16:28:12.977386"
+  },
+  {
+    "customer_name": "鴻溢",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-08T08:32:48.485004"
+  },
+  {
+    "customer_name": "柏和昕",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-08T15:24:45.113797"
+  },
+  {
+    "customer_name": "柏和昕",
+    "copies": 5,
+    "device": "192.168.0.106",
+    "timestamp": "2026-01-09T08:32:25.399929"
+  },
+  {
+    "customer_name": "小崧",
+    "copies": 2,
+    "device": "192.168.0.105",
+    "timestamp": "2026-01-09T11:44:43.275539"
+  },
+  {
+    "customer_name": "小崧",
+    "copies": 1,
+    "device": "192.168.0.105",
+    "timestamp": "2026-01-09T11:46:53.999148"
+  },
+  {
+    "customer_name": "鴻溢",
+    "copies": 1,
+    "device": "192.168.0.105",
+    "timestamp": "2026-01-09T11:59:04.544823"
+  },
+  {
+    "customer_name": "鐘王",
+    "copies": 2,
+    "device": "192.168.0.105",
+    "timestamp": "2026-01-09T14:07:40.088989"
+  },
+  {
+    "customer_name": "新選擇",
+    "copies": 1,
+    "device": "192.168.0.105",
+    "timestamp": "2026-01-09T14:33:26.321676"
+  },
+  {
+    "customer_name": "正龍",
+    "copies": 1,
+    "device": "192.168.0.105",
+    "timestamp": "2026-01-09T14:36:52.879904"
+  },
+  {
+    "customer_name": "東達",
+    "copies": 2,
+    "device": "192.168.0.105",
+    "timestamp": "2026-01-09T14:57:45.259914"
+  },
+  {
+    "customer_name": "道邦",
+    "copies": 1,
+    "device": "192.168.0.105",
+    "timestamp": "2026-01-09T15:40:14.812338"
+  },
+  {
+    "customer_name": "燊宏",
+    "copies": 1,
+    "device": "192.168.0.105",
+    "timestamp": "2026-01-09T15:42:58.710227"
+  },
+  {
+    "customer_name": "廣美",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-12T08:22:46.958293"
+  },
+  {
+    "customer_name": "新禾",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-12T08:23:20.342653"
+  },
+  {
+    "customer_name": "柏璿",
+    "copies": 1,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-12T08:59:03.129575"
+  },
+  {
+    "customer_name": "柏璿",
+    "copies": 1,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-12T09:01:01.936328"
+  },
+  {
+    "customer_name": "柏璿",
+    "copies": 1,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-12T09:29:54.276592"
+  },
+  {
+    "customer_name": "聯德",
+    "copies": 1,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-12T09:30:07.285921"
+  },
+  {
+    "customer_name": "柏璿",
+    "copies": 1,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-12T09:30:22.260397"
+  },
+  {
+    "customer_name": "柏璿",
+    "copies": 1,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-12T09:30:59.239477"
+  },
+  {
+    "customer_name": "柏璿",
+    "copies": 1,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-12T09:31:27.314238"
+  },
+  {
+    "customer_name": "柏璿",
+    "copies": 1,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-12T09:34:41.802112"
+  },
+  {
+    "customer_name": "柏璿",
+    "copies": 1,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-12T09:41:26.937307"
+  },
+  {
+    "customer_name": "廣繼電",
+    "copies": 1,
+    "device": "XP000 (192.168.0.114)",
+    "timestamp": "2026-01-12T10:12:29.791036"
+  },
+  {
+    "customer_name": "伽南",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-12T10:25:14.478184"
+  },
+  {
+    "customer_name": "燿煒",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-12T10:25:25.634496"
+  },
+  {
+    "customer_name": "惠特",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-12T10:41:09.466825"
+  },
+  {
+    "customer_name": "廣周",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-12T10:49:57.251941"
+  },
+  {
+    "customer_name": "燿煒",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-12T10:54:56.049760"
+  },
+  {
+    "customer_name": "弘益",
+    "copies": 2,
+    "device": "192.168.0.109",
+    "timestamp": "2026-01-13T07:42:15.533738"
+  },
+  {
+    "customer_name": "寰電",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-13T10:33:36.392274"
+  },
+  {
+    "customer_name": "岳僑漢",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-13T15:37:39.909737"
+  },
+  {
+    "customer_name": "柏和昕",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-13T15:45:00.054164"
+  },
+  {
+    "customer_name": "泓瑜",
+    "copies": 1,
+    "device": "XP777 (192.168.0.117)",
+    "timestamp": "2026-01-13T16:05:48.385302"
+  },
+  {
+    "customer_name": "鴻溢",
+    "copies": 20,
+    "device": "192.168.0.106",
+    "timestamp": "2026-01-14T10:04:27.845662"
+  },
+  {
+    "customer_name": "威爾可",
+    "copies": 1,
+    "device": "192.168.0.106",
+    "timestamp": "2026-01-14T14:49:54.339372"
+  },
+  {
+    "customer_name": "威爾可",
+    "copies": 1,
+    "device": "192.168.0.106",
+    "timestamp": "2026-01-14T14:49:55.538313"
+  },
+  {
+    "customer_name": "億利",
+    "copies": 10,
+    "device": "192.168.0.106",
+    "timestamp": "2026-01-14T15:03:17.140615"
+  },
+  {
+    "customer_name": "威爾可",
+    "copies": 5,
+    "device": "192.168.0.106",
+    "timestamp": "2026-01-14T15:04:57.791130"
+  },
+  {
+    "customer_name": "柏璿",
+    "copies": 1,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-16T09:19:58.223569"
+  },
+  {
+    "customer_name": "聯德",
+    "copies": 5,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-16T09:20:08.440367"
+  },
+  {
+    "customer_name": "庫存",
+    "copies": 20,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-16T09:20:44.608747"
+  },
+  {
+    "customer_name": "庫存",
+    "copies": 20,
+    "device": "192.168.0.120",
+    "timestamp": "2026-01-16T09:23:28.601445"
+  }
+]
