@@ -674,14 +674,15 @@ document.addEventListener('DOMContentLoaded', function () {
     initDesktopOptions();
     initSpecialProcessOptions();
 
-    document.querySelectorAll('.custom-input-wrapper input').forEach(input => {
-        input.addEventListener('blur', function () {
-            if (this.value.trim() === '') {
-                const selectId = this.id.replace('_custom', '');
-                resetSelect(selectId);
-            }
-        });
-    });
+    // [修正] 移除 blur 自動重置，解決手機版輸入時鍵盤收起造成跳回的 bug
+    // document.querySelectorAll('.custom-input-wrapper input').forEach(input => {
+    //     input.addEventListener('blur', function () {
+    //         if (this.value.trim() === '') {
+    //             const selectId = this.id.replace('_custom', '');
+    //             resetSelect(selectId);
+    //         }
+    //     });
+    // });
     updateStates();
 });
 
