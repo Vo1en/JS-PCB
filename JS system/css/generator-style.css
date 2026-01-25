@@ -738,6 +738,13 @@ body.dark-mode .panel-result-value {
     font-size: 120% !important;
     /* 放大月份年份字體 */
     padding-top: 5px !important;
+    /* [新增] 年月對調：使用 flex-reverse */
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    justify-content: center !important;
+    align-items: center !important;
+    /* [新增] 垂直置中 */
+    gap: 8px !important;
 }
 
 .flatpickr-current-month .flatpickr-monthDropdown-months,
@@ -792,6 +799,16 @@ span.flatpickr-weekday {
     /* 增加每一格高度 */
     line-height: 42px !important;
     margin-top: 2px !important;
+    max-width: none !important;
+}
+
+/* [新增] 確保日曆容器填滿 340px 寬度，解決右邊留白 */
+.flatpickr-innerContainer,
+.flatpickr-rContainer,
+.flatpickr-days,
+.dayContainer {
+    width: 100% !important;
+    max-width: 100% !important;
 }
 
 /* 周末顏色區隔 */
