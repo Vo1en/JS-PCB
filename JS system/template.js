@@ -6,6 +6,7 @@ window.reportData = {
     date: "",
     partno: "",
     qty: "",
+    product: "PCB",
     unit: "PNL",
     cycle: "", 
     cycleInput: "",
@@ -241,7 +242,7 @@ function renderHeader() {
             </div>
             <div class="info-item">
                 <span class="label">品名</span>
-                <span class="fixed-product-value" id="ui-product-name"></span>
+                <input type="text" id="ui-product-name" class="input-line" value="PCB" oninput="updateReportData('product', this.value); syncToPrint('print-product-name', this.value); if (window.checkCompletion) window.checkCompletion();">
             </div>
             <div class="info-item">
                 <span class="label">數量</span>
