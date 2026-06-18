@@ -7,8 +7,8 @@ window.reportData = {
     partno: "",
     qty: "",
     product: "PCB",
-    unit: "PNL",
-    cycle: "", 
+    unit: "PCS",
+    cycle: "",
     cycleInput: "",
 };
 
@@ -37,6 +37,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 6. 檢查 URL 是否有歷史紀錄 ID，有的話讀取資料
     checkAndLoadHistory();
+
+    // 7. [ERP 整合] 若 URL 帶 ?orderId，自動帶入該訂單的 PCB 規格
+    //    存成 promise，讓「產生 PDF」能等帶入完成才擷取(避免按太快抓到空白)
+    window.__JS_SPEC_READY = loadOrderSpecIfPresent();
 });
 
 // === Mobile Friendly 優化 ===
@@ -249,8 +253,8 @@ function renderHeader() {
                 <div class="input-group">
                     <input type="text" id="qty-input" class="input-line" placeholder="請輸入" style="flex: 2;">
                     <select id="qty-unit" class="unit-select" style="flex: 1;" onchange="updateReportData('unit', this.value)">
-                        <option value="PNL" selected>PNL</option>
-                        <option value="PCS">PCS</option>
+                        <option value="PCS" selected>PCS</option>
+                        <option value="SET">SET</option>
                     </select>
                 </div>
             </div>
@@ -369,6 +373,13 @@ function initTemplateLogic() {
 
 // === Print Logic ===
 window.handlePrintProcess = function(pageValidator = null, onlyValidate = false) {
+    // [ERP 整合] 電性測試報告：訂單電測為「無/未測」時，生成前先確認一次
+    if (window.__JS_REPORT_TEST_IS_NONE && !window.__JS_TEST_NONE_CONFIRMED) {
+        const ok = window.confirm('⚠ 此訂單的電性測試為「' + (window.__JS_REPORT_TEST_VALUE || '無') + '」，可能不需要電測報告。\n仍要繼續生成嗎？');
+        if (!ok) return false;
+        window.__JS_TEST_NONE_CONFIRMED = true;
+    }
+
     let isComplete = true;
     if (window.syncPcbSpecsToPrint) window.syncPcbSpecsToPrint();
 
@@ -416,65 +427,385 @@ window.handlePrintProcess = function(pageValidator = null, onlyValidate = false)
         window.saveCurrentReportToHistory();
     }
 
-    window.print();
-    setTimeout(() => {
-        document.querySelectorAll('.print-hidden-row').forEach(row => row.classList.remove('print-hidden-row'));
-        if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
-        const nominalSpecA = document.getElementById('spec-hole1-nominal');
-        if (nominalSpecA) nominalSpecA.classList.remove('input-error');
-    }, 500);
+    // [ERP] 有 orderId（從 ERP 訂單開啟）→ 走伺服器端 Chromium 產多頁 PDF（每頁公司抬頭、完美分頁）+ 存回訂單。
+    //       無 orderId（獨立使用）→ 退回瀏覽器原生列印。
+    if (window.__JS_REPORT_ORDER_ID && typeof jsServerRenderPdf === 'function') {
+        jsServerRenderPdf(pageValidator);
+    } else {
+        window.print();
+        setTimeout(() => {
+            document.querySelectorAll('.print-hidden-row').forEach(row => row.classList.remove('print-hidden-row'));
+            if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
+            const nominalSpecA = document.getElementById('spec-hole1-nominal');
+            if (nominalSpecA) nominalSpecA.classList.remove('input-error');
+        }, 800);
+    }
     return true;
 };
 
-// === PDF Logic ===
+// === 「生成PDF」與「列印」一致：走瀏覽器原生列印，於列印視窗選「另存為 PDF」 ===
+// （改用原生列印後版面才會跟畫面一致、不跑掉、每頁有抬頭；html2pdf 截圖法已棄用於畫面輸出）
 window.handlePDFProcess = function(pageValidator = null) {
-    if (typeof html2pdf === 'undefined') { window.showToast("PDF 生成元件尚未載入完成", "error"); return; }
-    if (!window.handlePrintProcess(pageValidator, true)) return;
+    return window.handlePrintProcess(pageValidator);
+};
 
-    if (typeof window.saveCurrentReportToHistory === 'function') {
-        window.saveCurrentReportToHistory();
-    }
+/* =====================================================================
+ *  [新增] ERP 整合：依 URL ?orderId 自動帶入該訂單的 PCB 規格
+ *  - 只在有完整表頭的報告頁（出貨檢驗 / 電性測試）執行，規格產生器略過
+ *  - 對得上下拉選項就選；對不上自動切「其他」並原文填入（生成前可手改）
+ *  - 資料來源：GET /api/orders/[id]/report-spec（伺服器端授權）
+ * ===================================================================== */
+window.__JS_REPORT_ORDER_ID = null;
+window.__JS_REPORT_TEST_IS_NONE = false;
+window.__JS_REPORT_TEST_VALUE = '';
+window.__JS_TEST_NONE_CONFIRMED = false;
+
+// [ERP] 讀 CSRF token（double-submit cookie，HttpOnly=false 可讀）→ 放進 x-csrf-token 標頭，
+// 否則 ERP 的 CSRF 中介層會把 API 的 POST 擋成 403。
+function jsGetCsrfToken() {
+    const m = document.cookie.match(/(?:^|;\s*)(?:__Host-csrf|csrf)=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+}
+
+// [優化] 報告抬頭圖快取：抬頭只有「出貨檢驗 / 電性測試」兩種且內容固定，擷取一次存 localStorage 重用，
+// 省掉每次列印用 html2canvas 重畫抬頭(~1.3s)。日後抬頭若改版，把版本號 +1 即可作廢舊快取。
+var JS_HEADER_CACHE_VER = 'v1';
+function jsGetCachedHeader(title) {
+    try {
+        var raw = localStorage.getItem('js_rpt_hdr_' + JS_HEADER_CACHE_VER + '_' + title);
+        if (raw) { var o = JSON.parse(raw); if (o && o.img && o.aspect > 0) return o; }
+    } catch (e) {}
+    return null;
+}
+function jsSetCachedHeader(title, img, aspect) {
+    try { localStorage.setItem('js_rpt_hdr_' + JS_HEADER_CACHE_VER + '_' + title, JSON.stringify({ img: img, aspect: aspect })); } catch (e) {}
+}
+
+// （已移除舊的 html2pdf 存檔流程 jsBuildReportPdfBlob / jsUploadReportPdf：
+//  列印已改走伺服器端 Chromium 產 PDF，存回訂單由 /api/orders/[id]/report-pdf-render 在伺服器端完成。）
+
+// [ERP] 伺服器端 Chromium 產 PDF：擷取目前報告 HTML → 送後端 → 取回多頁 PDF（每頁抬頭）並已存回訂單
+async function jsServerRenderPdf(pageValidator) {
+    if (!window.__JS_REPORT_ORDER_ID) { window.print(); return; }
+    if (window.__JS_GENERATING) { if (window.showToast) window.showToast('PDF 產生中，請稍候…'); return; } // 防止重複點擊
+    window.__JS_GENERATING = true;
+
+    // 在 user gesture 內先開分頁，避免被彈窗攔截
+    const win = window.open('', '_blank');
+    if (win) { try { win.document.write('<!doctype html><meta charset="utf-8"><title>產生 PDF…</title><body style="font-family:sans-serif;padding:40px;color:#555">正在產生 PDF（每頁含抬頭），請稍候…</body>'); } catch (e) {} }
 
     const overlay = document.createElement('div');
     overlay.className = 'loading-overlay active';
-    overlay.innerHTML = '<div class="spinner"></div><div style="margin-top:15px;font-weight:bold;color:#b38728;font-size:16px;">正在生成 PDF，請稍候...</div>';
+    overlay.innerHTML = '<div class="spinner"></div><div style="margin-top:15px;font-weight:bold;color:#b38728;font-size:16px;">正在產生 PDF…</div>';
     document.body.appendChild(overlay);
 
-    const client = window.reportData.client || '客戶';
-    const partNo = window.reportData.partno || '料號';
-    const reportTitle = document.getElementById('unified-header-container').getAttribute('data-title') || '報告';
-    const safePartNo = partNo.replace(/[\/\\:*?"<>|]/g, '_');
-    const fileName = `${client} ${safePartNo} ${reportTitle}.pdf`;
-    const element = document.querySelector('.a4-paper');
-
-    const opt = {
-        margin: 0,
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true, 
-            scrollY: 0,
-            letterRendering: true,
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    document.body.classList.add('printing-pdf');
-
-    setTimeout(() => {
-        html2pdf().set(opt).from(element).save().then(function() {
-            document.body.classList.remove('printing-pdf');
-            if(document.body.contains(overlay)) document.body.removeChild(overlay);
-            document.querySelectorAll('.print-hidden-row').forEach(row => row.classList.remove('print-hidden-row'));
-            const remarksContainer = document.getElementById('unified-remarks-container');
-            if (remarksContainer) remarksContainer.classList.remove('print-hide-remarks');
-            window.showToast("PDF 下載成功！");
-        }).catch(function(err) {
-            console.error(err);
-            if(document.body.contains(overlay)) document.body.removeChild(overlay);
-            window.showToast("PDF 生成失敗", "error");
-            document.body.classList.remove('printing-pdf');
+    try {
+        // 關鍵：按列印太快時，訂單規格(report-spec)可能還沒帶入完成 → 先等它(最多 8s，任何卡住都不拖死產 PDF)，避免擷取到空白
+        if (window.__JS_SPEC_READY) { try { await Promise.race([window.__JS_SPEC_READY, new Promise(function (r) { setTimeout(r, 8000); })]); } catch (e) {} }
+        // 同步列印用欄位 + 隱藏空孔徑列（在帶入完成「之後」，讓擷取到的 HTML 是最終狀態）
+        if (pageValidator) { try { pageValidator(); } catch (e) {} }
+        else if (typeof window.checkInspectionCompletion === 'function') { try { window.checkInspectionCompletion(); } catch (e) {} }
+        // clone + 把表單值凍結成屬性，讓 outerHTML 帶得出目前畫面狀態（input/textarea/select）
+        const src = document.querySelector('.a4-paper');
+        const clone = src.cloneNode(true);
+        // 欄位值裡的半形雙引號(" U+0022)會破壞擷取 HTML 的屬性 → 伺服器 setContent 崩潰(如表面處理「化金1u"」)。
+        // 換成吋號符號(″ U+2033)：語意正確(吋)且不會破壞 HTML。
+        var _sq = String.fromCharCode(34), _inch = String.fromCharCode(8243);
+        clone.querySelectorAll('input').forEach(function (i) { i.setAttribute('value', String(i.value || '').split(_sq).join(_inch)); });
+        clone.querySelectorAll('textarea').forEach(function (t) { t.textContent = String(t.value || '').split(_sq).join(_inch); });
+        clone.querySelectorAll('select').forEach(function (s) {
+            Array.from(s.options).forEach(function (o) { o.removeAttribute('selected'); });
+            if (s.selectedIndex >= 0) s.options[s.selectedIndex].setAttribute('selected', 'selected');
         });
-    }, 800);
-};
+        const html = clone.outerHTML;
+        const reportType = (document.getElementById('unified-header-container') && document.getElementById('unified-header-container').getAttribute('data-title')) || '報告';
+        const bodyClass = document.body.classList.contains('show-signatures') ? 'show-signatures' : '';
+
+        // 擷取「原版抬頭」成圖（clone 到固定寬度維持桌面比例）→ 後端當每頁 headerTemplate，與原報告一致
+        // [優化] 先查快取：同一種報告(reportType)的抬頭固定不變，擷取過就直接重用，省 ~1.3s/張
+        let headerImg = null, headerAspect = 0;
+        const cachedHeader = jsGetCachedHeader(reportType);
+        if (cachedHeader) {
+            headerImg = cachedHeader.img; headerAspect = cachedHeader.aspect;
+        } else {
+            try {
+                const hEl = document.querySelector('.report-header-modern');
+                if (hEl && window.html2canvas) {
+                    const holder = document.createElement('div');
+                    holder.style.cssText = 'position:fixed;left:-100000px;top:0;width:760px;background:#ffffff;';
+                    const hClone = hEl.cloneNode(true);
+                    hClone.style.width = '100%'; hClone.style.margin = '0';
+                    // 金色漸層文字(background-clip:text)無法被 html2canvas 擷取(會變空白金塊)，改成實心金字
+                    const badge = hClone.querySelector('.report-title-badge');
+                    if (badge) {
+                        badge.style.background = 'none';
+                        badge.style.webkitBackgroundClip = 'border-box';
+                        badge.style.backgroundClip = 'border-box';
+                        badge.style.webkitTextFillColor = '#b38728';
+                        badge.style.color = '#b38728';
+                        badge.style.animation = 'none';
+                    }
+                    holder.appendChild(hClone); document.body.appendChild(holder);
+                    await new Promise(function (r) { setTimeout(r, 30); });
+                    const hc = await window.html2canvas(hClone, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 760, windowWidth: 900 });
+                    document.body.removeChild(holder);
+                    headerImg = hc.toDataURL('image/png');
+                    headerAspect = hc.height / hc.width;
+                    if (headerImg && headerAspect > 0) jsSetCachedHeader(reportType, headerImg, headerAspect);
+                }
+            } catch (e) { console.warn('擷取原版抬頭失敗，後端改用文字抬頭', e); headerImg = null; }
+        }
+
+        function postRender() {
+            return fetch('/api/orders/' + window.__JS_REPORT_ORDER_ID + '/report-pdf-render', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'x-csrf-token': jsGetCsrfToken() },
+                body: JSON.stringify({ html: html, reportType: reportType, bodyClass: bodyClass, headerImg: headerImg, headerAspect: headerAspect })
+            });
+        }
+        // 伺服器若偶發 5xx(如記憶體不足讓 Chromium 中途關閉)，等幾秒換個 Lambda 再試一次 → 自動救回
+        let res = await postRender();
+        if (!res.ok && res.status >= 500) {
+            await new Promise(function (r) { setTimeout(r, 3500); });
+            res = await postRender();
+        }
+        if (!res.ok) {
+            let errMsg = 'HTTP ' + res.status;
+            try { const j = await res.json(); if (j && j.error) errMsg = j.error; } catch (e) {}
+            throw new Error(errMsg);
+        }
+        const saved = res.headers.get('X-Saved') === '1';
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        if (win && !win.closed) win.location.href = url;
+        else { const a = document.createElement('a'); a.href = url; a.download = reportType + '.pdf'; document.body.appendChild(a); a.click(); a.remove(); }
+        if (typeof jsSaveReportTemplate === 'function') jsSaveReportTemplate();
+        window.showToast(saved ? 'PDF 已產生並存回此訂單' : 'PDF 已產生（但存回訂單失敗，請重試）', saved ? 'success' : 'error');
+    } catch (e) {
+        console.error('伺服器產生 PDF 失敗', e);
+        if (win && !win.closed) win.close();
+        window.showToast('產生 PDF 失敗：' + (e && e.message ? e.message : e), 'error');
+    } finally {
+        window.__JS_GENERATING = false;
+        if (document.body.contains(overlay)) document.body.removeChild(overlay);
+        document.querySelectorAll('.print-hidden-row').forEach(function (r) { r.classList.remove('print-hidden-row'); });
+        const rc = document.getElementById('unified-remarks-container'); if (rc) rc.classList.remove('print-hide-remarks');
+    }
+}
+
+function jsReportGetParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
+}
+function jsReportDispatch(el, type) {
+    el.dispatchEvent(new Event(type, { bubbles: true }));
+}
+// 去 emoji、吋號(")、全/半形空白，讓「化金 1u"」與「化金1u」等寫法能對上下拉
+function jsReportNormalize(s) {
+    return (s || '').replace(/[🟢⚪🔴⚫🔵🟡🟠🟣🟤]/g, '').replace(/["”〞＂″]/g, '').replace(/\s+/g, '').trim();
+}
+// 防焊/文字常見「雙面/單面」前綴 → 比對時嘗試去掉（雙面綠色 → 綠色）
+function jsReportStripSide(s) {
+    return (s || '').replace(/^(雙面|單面|正反面|正反)/, '').trim();
+}
+// 表面處理高頻別名
+const JS_REPORT_SURFACE_ALIASES = { '無鉛': '無鉛噴錫', '有鉛': '有鉛噴錫', 'O.S.P': 'OSP' };
+
+function jsReportFillText(id, value) {
+    const el = document.getElementById(id);
+    if (el && value != null && String(value) !== '') {
+        el.value = value;
+        jsReportDispatch(el, 'input');
+    }
+}
+function jsReportSetSelect(el, value) {
+    if (!el || value == null || value === '') return false;
+    const v = String(value).trim();
+    for (const opt of el.options) {
+        if (opt.value === v || opt.textContent.trim() === v) {
+            el.value = opt.value;
+            jsReportDispatch(el, 'change');
+            return true;
+        }
+    }
+    return false;
+}
+// 取得 inspection-report 內以 data-print-target 標示的 toggle-select
+function jsReportToggle(printTarget) {
+    return document.querySelector('.toggle-select[data-print-target="' + printTarget + '"]');
+}
+// inspection-report PCB 規格欄：對得上選項就選，對不上切「其他」原文填入
+function jsReportFillToggle(selectEl, rawValue) {
+    if (!selectEl || rawValue == null || String(rawValue).trim() === '') return;
+    const raw = String(rawValue).trim();
+    const candidates = [raw, jsReportStripSide(raw)];
+    if (JS_REPORT_SURFACE_ALIASES[raw]) candidates.push(JS_REPORT_SURFACE_ALIASES[raw]);
+    const normSet = candidates.map(jsReportNormalize);
+
+    let matched = null;
+    for (const opt of selectEl.options) {
+        if (opt.disabled || opt.value === '' || opt.value === '其他') continue;
+        const ov = jsReportNormalize(opt.value);
+        const ot = jsReportNormalize(opt.textContent);
+        if (normSet.includes(ov) || normSet.includes(ot)) { matched = opt; break; }
+    }
+
+    if (matched) {
+        selectEl.value = matched.value;
+        jsReportDispatch(selectEl, 'change');
+    } else {
+        // 切到「其他」並原文填入（initToggleLogic 的 change 監聽會顯示輸入框）
+        selectEl.value = '其他';
+        jsReportDispatch(selectEl, 'change');
+        const box = document.getElementById(selectEl.getAttribute('data-target'));
+        const input = box ? box.querySelector('input') : null;
+        if (input) {
+            input.value = raw;
+            jsReportDispatch(input, 'input');
+        }
+    }
+}
+
+function jsReportFill(spec) {
+    // ── 表頭 ──
+    jsReportFillText('ui-client', spec.client);
+    jsReportFillText('ui-partno', spec.partNo);
+    // 品名：預設 PCB（可手改）；訂單規格若有帶 product 就覆寫，否則維持預設值。
+    if (spec.product) jsReportFillText('ui-product-name', spec.product);
+
+    // 數量 + 單位（先設單位，再設數量；數量 input 監聽會更新 print-qty 與電測 PASS/FAIL）
+    jsReportSetSelect(document.getElementById('qty-unit'), spec.qtyUnit);
+    jsReportFillText('qty-input', spec.qty);
+
+    // 週期
+    const cycleSelect = document.getElementById('cycle-select');
+    if (cycleSelect && spec.cycle) {
+        cycleSelect.value = spec.cycle;
+        jsReportDispatch(cycleSelect, 'change');
+        if (spec.cycle === 'has') {
+            const ci = document.getElementById('cycle-input');
+            if (ci) { ci.value = spec.cycleInput || ''; jsReportDispatch(ci, 'input'); }
+        }
+    }
+
+    // ── PCB 規格區（僅出貨檢驗報告有 #pcb-spec-section）──
+    const pcb = document.getElementById('pcb-spec-section');
+    if (pcb) {
+        // 多層板有內層銅厚時，先把「內層銅厚」欄顯示出來（單/雙面板維持隱藏）
+        if (typeof window.revealInnerCopper === 'function') {
+            window.revealInnerCopper(!!(spec.innerCopper && String(spec.innerCopper).trim()));
+        }
+        jsReportFillToggle(jsReportToggle('print-material'), spec.material);
+        jsReportFillToggle(jsReportToggle('print-layer'), spec.layerType);
+        jsReportFillToggle(jsReportToggle('print-thickness'), spec.boardThickness);
+        jsReportFillToggle(jsReportToggle('print-inner-copper'), spec.innerCopper);
+        jsReportFillToggle(jsReportToggle('print-copper'), spec.outerCopper);
+        jsReportFillToggle(jsReportToggle('print-mask'), spec.solderMask);
+        jsReportFillToggle(jsReportToggle('print-legend'), spec.legend);
+        jsReportFillToggle(jsReportToggle('print-surface'), spec.surfaceFinish);
+
+        // 尺寸 + 排版（會連動填入下方「長度/寬度」標稱規格）
+        jsReportFillText('dim-length-input', spec.dimLength);
+        jsReportFillText('dim-width-input', spec.dimWidth);
+        jsReportFillText('pnl-x', spec.panelX);
+        jsReportFillText('pnl-y', spec.panelY);
+
+        // 依需求：實際量測值 / 判定留空，由現場人工填（規格已帶入即可）
+        document.querySelectorAll('#inspection-data-table .data-field').forEach(function (c) { c.textContent = ''; });
+        document.querySelectorAll('#inspection-data-table .judgment-field').forEach(function (c) { c.textContent = ''; c.style.color = ''; });
+    }
+
+    if (window.checkCompletion) window.checkCompletion();
+}
+
+// [沿用] 目前報告類型
+function jsReportKind() {
+    const p = window.location.pathname;
+    if (/inspection-report/.test(p)) return 'inspection';
+    if (/test-report/.test(p)) return 'test';
+    return 'other';
+}
+
+// [沿用] 把目前報告的「手動黏著欄位」存成範本（依料號，下次同料號可沿用）
+async function jsSaveReportTemplate() {
+    if (!window.__JS_REPORT_ORDER_ID) return;
+    if (typeof window.captureReportTemplate !== 'function') return;
+    try {
+        const template = window.captureReportTemplate();
+        await fetch('/api/orders/' + window.__JS_REPORT_ORDER_ID + '/report-template', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'x-csrf-token': jsGetCsrfToken() },
+            body: JSON.stringify({ kind: jsReportKind(), template: template })
+        });
+    } catch (e) { console.warn('儲存沿用範本失敗', e); }
+}
+
+// [沿用] 在操作按鈕區加上「↻ 沿用上次」按鈕
+function jsAddReuseButton(template) {
+    const bar = document.querySelector('.action-buttons');
+    if (!bar || document.getElementById('btn-reuse-last')) return;
+    const btn = document.createElement('button');
+    btn.id = 'btn-reuse-last';
+    btn.type = 'button';
+    btn.className = 'btn-print';
+    btn.style.cssText = 'background: rgba(0,122,255,0.12); color:#004d99; border:1px solid rgba(0,122,255,0.35);';
+    btn.innerHTML = '<span style="font-size:18px;line-height:1;">&#8635;</span> 沿用上次';
+    btn.title = '沿用上次同料號報告的孔徑規格 / 測試參數 / 備註（量測值會重新隨機）';
+    btn.addEventListener('click', function () {
+        if (typeof window.applyReportTemplate === 'function') {
+            window.applyReportTemplate(template);
+            if (window.showToast) window.showToast('已沿用上次同料號的設定，數值已重新隨機');
+        }
+    });
+    bar.appendChild(btn);
+}
+
+async function loadOrderSpecIfPresent() {
+    const orderId = jsReportGetParam('orderId');
+    if (!orderId) return;
+    // 僅在有完整表頭（ui-client）的報告頁執行；規格產生器(simple header)略過
+    if (!document.getElementById('ui-client')) return;
+    window.__JS_REPORT_ORDER_ID = orderId;
+    try {
+        const res = await fetch('/api/orders/' + orderId + '/report-spec', { credentials: 'same-origin' });
+        const json = await res.json().catch(() => null);
+        if (!json || !json.success) {
+            if (window.showToast) window.showToast('無法載入訂單規格：' + ((json && json.error) || res.status), 'error');
+            return;
+        }
+        const spec = json.data;
+        jsReportFill(spec);
+
+        // 電性測試報告：訂單電測為「無/未測」→ 設旗標，生成前由 handlePrintProcess 跳確認
+        const isTestPage = /test-report/.test(window.location.pathname);
+        if (isTestPage && spec.electricalTestIsNone) {
+            window.__JS_REPORT_TEST_IS_NONE = true;
+            window.__JS_REPORT_TEST_VALUE = spec.electricalTest || '無';
+            setTimeout(function () {
+                if (window.showToast) window.showToast('⚠ 此訂單電測為「' + (spec.electricalTest || '無') + '」，請確認是否需要電測報告', 'error');
+            }, 700);
+        }
+        if (window.showToast) {
+            window.showToast('已帶入訂單 ' + (spec.partNo || spec.client || '') + ' 的規格');
+        }
+        // [沿用] 若此料號以前做過同類報告，提供「↻ 沿用上次」按鈕。
+        // 非阻塞(不 await)：report-template 查詢若慢/hang 不可拖住 loadOrderSpecIfPresent，
+        // 否則會連帶卡住「產生 PDF」(jsServerRenderPdf 會等規格帶入完成才擷取)。
+        (function () {
+            let kind;
+            try { kind = jsReportKind(); } catch (e) { return; }
+            if (kind !== 'inspection' && kind !== 'test') return;
+            fetch('/api/orders/' + orderId + '/report-template?kind=' + kind, { credentials: 'same-origin' })
+                .then(function (tr) { return tr.json(); })
+                .then(function (tj) {
+                    if (tj && tj.success && tj.data && tj.data.template) {
+                        jsAddReuseButton(tj.data.template);
+                        if (window.showToast) window.showToast('此料號有上次紀錄，可按「↻ 沿用上次」帶入孔徑/參數');
+                    }
+                })
+                .catch(function () { /* 沒範本就略過 */ });
+        })();
+    } catch (e) {
+        console.error('[report] 載入訂單規格失敗', e);
+        if (window.showToast) window.showToast('載入訂單規格失敗', 'error');
+    }
+}

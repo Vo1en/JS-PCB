@@ -1,4 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Roboto:wght@300;400;700&display=swap');
+/* [伺服器 PDF + 速度] 同源本地 Noto Sans TC(woff2，較小較快)。
+   移除原本的 Google Fonts @import：伺服器端 Chromium 產 PDF 時外部 @import 常來不及載入 → 中文缺字
+   (鉛/錫/綠 變豆腐)，且每次產 PDF 都要等外部抓取(慢)。改同源 woff2，瀏覽器與伺服器皆可靠且更快。
+   Noto Sans TC 本身含拉丁字，移除 Roboto 後數字/英文改用其拉丁字仍乾淨。 */
+@font-face {
+    font-family: 'Noto Sans TC';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/NotoSansTC-Regular.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Noto Sans TC';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/NotoSansTC-Bold.woff2') format('woff2');
+}
 
 :root {
     /* 金色系主色調 */
@@ -139,8 +156,7 @@ body {
 .unit-select { border: none; background: transparent; font-size: 14px; width: 100%; outline: none; min-width: 0; }
 .split-input { width: 90px; text-align: center; min-width: 0; flex-shrink: 0; }
 .unit-display-text { width: 70px !important; min-width: 70px !important; font-size: 12px !important; font-weight: 600 !important; color: #666; white-space: nowrap; text-align: left !important; flex-shrink: 0; }
-.fixed-product-value { font-size: 14px; padding: 5px; width: 100%; color: #000; }
-.fixed-product-value::after { content: "PCB"; }
+/* 品名改為可編輯輸入框（預設 PCB），不再用固定 span + ::after 注入文字 */
 
 /* === 表格與簽名 === */
 .table-wrapper { margin-bottom: 20px; overflow-x: auto; }
@@ -410,3 +426,29 @@ body.printing-pdf.show-signatures .stamp-img { display: inline-block !important;
 
 body.printing-pdf input, body.printing-pdf .table-input, body.printing-pdf .editable-cell, body.printing-pdf .data-field, body.printing-pdf .remarks-input { border: none !important; background: transparent !important; margin: 0 !important; padding: 0 !important; height: auto !important; font-size: 14px; vertical-align: middle; }
 body.printing-pdf .editable-cell { border-bottom: 1px dashed #000 !important; }
+
+/* [ERP] 原生列印多頁優化：避免切行、檢驗表頭每頁重複 */
+@media print {
+    .inspection-table thead { display: table-header-group; }
+    .inspection-table tr,
+    .info-item,
+    .signature-section,
+    .final-decision-box,
+    .remarks-section { break-inside: avoid; page-break-inside: avoid; }
+}
+
+/* [ERP] 公司抬頭維持「在內文流程中」(只在第一頁)，確保基本資訊不被蓋住。
+   每頁重複公司抬頭在純瀏覽器列印不可靠(會壓到內容)，若需要請改伺服器端產 PDF。
+   多頁時：檢驗數據表的欄位表頭(thead)會自動每頁重複(見上一個 @media print 區塊)。 */
+
+/* [ERP] 乾淨跨頁：避免第1/2頁之間硬切、底部留白。
+   關鍵：列印時 .a4-paper 不可用 flex（彈性盒無法乾淨分頁），.table-wrapper 不可有 overflow。 */
+@media print {
+    .a4-paper { display: block !important; }
+    .table-wrapper { overflow: visible !important; overflow-x: visible !important; }
+    .inspection-table { page-break-inside: auto; break-inside: auto; }
+    .inspection-table thead { display: table-header-group; }
+    .inspection-table tr { page-break-inside: avoid; break-inside: avoid; }
+    /* 判定/簽名整塊不被拆開、且不要孤兒在頁尾 */
+    .final-decision-box, .signature-section, .remarks-section { break-inside: avoid; page-break-inside: avoid; }
+}
