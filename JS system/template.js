@@ -41,6 +41,15 @@ document.addEventListener("DOMContentLoaded", function() {
     // 7. [ERP 整合] 若 URL 帶 ?orderId，自動帶入該訂單的 PCB 規格
     //    存成 promise，讓「產生 PDF」能等帶入完成才擷取(避免按太快抓到空白)
     window.__JS_SPEC_READY = loadOrderSpecIfPresent();
+
+    // 8. [獨立站] 預熱外部 PDF 微服務：頁面一載入就提前把 Chromium 冷啟動付掉，
+    //    使用者填完表單按列印時服務已是熱的（~1.7s）而非冷啟動（~8s）。fire-and-forget，失敗不影響。
+    if (!window.__JS_REPORT_ORDER_ID && window.__JS_PDF_ENDPOINT) {
+        try {
+            var _u = window.__JS_PDF_ENDPOINT + (window.__JS_PDF_ENDPOINT.indexOf('?') >= 0 ? '&' : '?') + 'warmup=1';
+            fetch(_u, { method: 'GET', mode: 'cors', cache: 'no-store' }).catch(function () {});
+        } catch (e) {}
+    }
 });
 
 // === Mobile Friendly 優化 ===
