@@ -429,7 +429,7 @@ window.handlePrintProcess = function(pageValidator = null, onlyValidate = false)
 
     // [ERP] 有 orderId（從 ERP 訂單開啟）→ 走伺服器端 Chromium 產多頁 PDF（每頁公司抬頭、完美分頁）+ 存回訂單。
     //       無 orderId（獨立使用）→ 退回瀏覽器原生列印。
-    if (window.__JS_REPORT_ORDER_ID && typeof jsServerRenderPdf === 'function') {
+    if ((window.__JS_REPORT_ORDER_ID || window.__JS_PDF_ENDPOINT) && typeof jsServerRenderPdf === 'function') {
         jsServerRenderPdf(pageValidator);
     } else {
         window.print();
@@ -456,6 +456,10 @@ window.handlePDFProcess = function(pageValidator = null) {
  *  - 資料來源：GET /api/orders/[id]/report-spec（伺服器端授權）
  * ===================================================================== */
 window.__JS_REPORT_ORDER_ID = null;
+// [獨立站 / GitHub Pages] 沒有後端 → 指定外部「Chromium 產 PDF」微服務端點（Vercel），
+// 輸出與 ERP 一致。留空字串 = 不啟用，維持瀏覽器原生列印（安全 fallback）。
+// 部署微服務後，把網址填進下面字串即可（例：https://js-pcb-pdf.vercel.app/api/render）。
+window.__JS_PDF_ENDPOINT = window.__JS_PDF_ENDPOINT || "";
 window.__JS_REPORT_TEST_IS_NONE = false;
 window.__JS_REPORT_TEST_VALUE = '';
 window.__JS_TEST_NONE_CONFIRMED = false;
@@ -486,7 +490,7 @@ function jsSetCachedHeader(title, img, aspect) {
 
 // [ERP] 伺服器端 Chromium 產 PDF：擷取目前報告 HTML → 送後端 → 取回多頁 PDF（每頁抬頭）並已存回訂單
 async function jsServerRenderPdf(pageValidator) {
-    if (!window.__JS_REPORT_ORDER_ID) { window.print(); return; }
+    if (!window.__JS_REPORT_ORDER_ID && !window.__JS_PDF_ENDPOINT) { window.print(); return; }
     if (window.__JS_GENERATING) { if (window.showToast) window.showToast('PDF 產生中，請稍候…'); return; } // 防止重複點擊
     window.__JS_GENERATING = true;
 
@@ -557,9 +561,18 @@ async function jsServerRenderPdf(pageValidator) {
         }
 
         function postRender() {
-            return fetch('/api/orders/' + window.__JS_REPORT_ORDER_ID + '/report-pdf-render', {
-                method: 'POST', credentials: 'same-origin',
-                headers: { 'Content-Type': 'application/json', 'x-csrf-token': jsGetCsrfToken() },
+            // ERP 模式（有 orderId）：走同源訂單端點，帶 CSRF、產完存回訂單。
+            if (window.__JS_REPORT_ORDER_ID) {
+                return fetch('/api/orders/' + window.__JS_REPORT_ORDER_ID + '/report-pdf-render', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'x-csrf-token': jsGetCsrfToken() },
+                    body: JSON.stringify({ html: html, reportType: reportType, bodyClass: bodyClass, headerImg: headerImg, headerAspect: headerAspect })
+                });
+            }
+            // 獨立站模式：呼叫外部 PDF 微服務（跨網域，不帶 cookie/CSRF，只送報告內容）。
+            return fetch(window.__JS_PDF_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ html: html, reportType: reportType, bodyClass: bodyClass, headerImg: headerImg, headerAspect: headerAspect })
             });
         }
@@ -579,8 +592,14 @@ async function jsServerRenderPdf(pageValidator) {
         const url = URL.createObjectURL(blob);
         if (win && !win.closed) win.location.href = url;
         else { const a = document.createElement('a'); a.href = url; a.download = reportType + '.pdf'; document.body.appendChild(a); a.click(); a.remove(); }
-        if (typeof jsSaveReportTemplate === 'function') jsSaveReportTemplate();
-        window.showToast(saved ? 'PDF 已產生並存回此訂單' : 'PDF 已產生（但存回訂單失敗，請重試）', saved ? 'success' : 'error');
+        if (window.__JS_REPORT_ORDER_ID) {
+            // ERP 模式：另存料號範本 + 顯示存回訂單結果
+            if (typeof jsSaveReportTemplate === 'function') jsSaveReportTemplate();
+            window.showToast(saved ? 'PDF 已產生並存回此訂單' : 'PDF 已產生（但存回訂單失敗，請重試）', saved ? 'success' : 'error');
+        } else {
+            // 獨立站模式：只產 PDF
+            window.showToast('PDF 已產生', 'success');
+        }
     } catch (e) {
         console.error('伺服器產生 PDF 失敗', e);
         if (win && !win.closed) win.close();
